@@ -10,17 +10,21 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@jlt/constants": "workspace:*",
+    "@jlt/types": "workspace:*",
+    "@jlt/ui": "workspace:*",
+    "@jlt/utils": "workspace:*",
     "next": "^15.1.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "@jlt/ui": "workspace:*",
-    "@jlt/types": "workspace:*",
-    "@jlt/utils": "workspace:*",
-    "@jlt/constants": "workspace:*"
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "typescript": "^5.7.3",
+    "@tailwindcss/postcss": "^4.3.3",
+    "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
-    "@types/node": "^22.0.0"
+    "autoprefixer": "^10.5.4",
+    "postcss": "^8.5.25",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^5.7.3"
   }
 }

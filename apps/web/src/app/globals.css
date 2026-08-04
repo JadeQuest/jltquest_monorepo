@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+@layer utilities {
+  .font-gilroyMedium {
+    font-family: 'Gilroy-Medium', 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-weight: 500;
+  }
+  .font-gilroyBold {
+    font-family: 'Gilroy-Bold', 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-weight: 700;
+  }
+  .font-gilroyRegular {
+    font-family: 'Gilroy-Regular', 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-weight: 400;
+  }
+}

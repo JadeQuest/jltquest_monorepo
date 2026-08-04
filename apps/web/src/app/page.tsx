@@ -1,4 +1,3 @@
-import React from 'react';
 import { Button } from '@jlt/ui';
 import { APP_NAME } from '@jlt/constants';
 

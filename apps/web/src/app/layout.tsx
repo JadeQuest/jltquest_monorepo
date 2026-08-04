@@ -1,5 +1,3 @@
-import React from 'react';
-
 export const metadata = {
   title: 'JLTQuest Web App',
   description: 'Next.js Frontend for JLTQuest',

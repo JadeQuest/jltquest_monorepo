@@ -4,4 +4,11 @@ declare module 'react' {
   export type ReactNode = any;
   export type ButtonHTMLAttributes<T> = any;
 }
+
 declare module 'react/jsx-runtime';
+
+declare namespace JSX {
+  interface IntrinsicElements {
+    [elemName: string]: any;
+  }
+}

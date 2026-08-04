@@ -1,0 +1,14 @@
+{
+  "name": "jltquest-monorepo",
+  "version": "1.0.0",
+  "description": "JLTQuest Monorepo containing Frontend, Backend, and Mobile applications",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --parallel --filter backend --filter frontend dev",
+    "dev:backend": "pnpm --filter backend dev",
+    "dev:frontend": "pnpm --filter frontend dev",
+    "build": "pnpm -r build",
+    "start": "pnpm --parallel --filter backend --filter frontend start",
+    "test": "pnpm -r test"
+  }
+}

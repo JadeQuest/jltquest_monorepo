@@ -1,0 +1,9 @@
+{
+  "name": "@jlt/config",
+  "version": "1.0.0",
+  "private": true,
+  "main": "./index.js",
+  "exports": {
+    "./tsconfig": "./tsconfig.base.json"
+  }
+}

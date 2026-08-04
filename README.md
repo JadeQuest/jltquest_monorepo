@@ -1,57 +1,69 @@
 # JLTQuest Monorepo
 
-This repository is managed as a pnpm workspace and contains the folder structure for:
-- **`backend`**: Node.js / Express REST API and services
-- **`frontend`**: Web application
-- **`mobile`**: Mobile application (Flutter / React Native)
+A clean, scalable **PNPM Monorepo** architecture designed for modern full-stack web, API, and mobile development.
 
----
-
-## 📁 Repository Structure
+## Monorepo Architecture
 
 ```
-jltquest_monorepo/
-├── backend/            # Express Backend API
-│   ├── src/
-│   │   ├── config/
-│   │   ├── controllers/
-│   │   ├── middleware/
-│   │   ├── models/
-│   │   ├── routes/
-│   │   └── services/
-│   └── package.json
-├── frontend/           # Web Application
-│   ├── src/
-│   │   ├── assets/
-│   │   ├── components/
-│   │   ├── pages/
-│   │   ├── services/
-│   │   ├── styles/
-│   │   └── utils/
-│   ├── public/
-│   └── package.json
-├── mobile/             # Mobile Application
-│   ├── lib/
-│   │   ├── models/
-│   │   ├── screens/
-│   │   ├── services/
-│   │   └── widgets/
-│   └── pubspec.yaml
-├── package.json        # Workspace Root Config
-└── pnpm-workspace.yaml # PNPM Workspace Definition
+my-monorepo/
+│
+├── apps/
+│   ├── web/                  # Next.js (Frontend)
+│   ├── api/                  # Backend (Express/TypeScript)
+│   └── mobile/               # React Native (Expo)
+│
+├── packages/
+│   ├── ui/                   # Shared React components (@jlt/ui)
+│   ├── types/                # Shared TypeScript types (@jlt/types)
+│   ├── utils/                # Shared utility functions (@jlt/utils)
+│   ├── config/               # ESLint, Prettier, TSConfig (@jlt/config)
+│   ├── constants/            # Shared constants (@jlt/constants)
+│   ├── hooks/                # Shared React hooks (@jlt/hooks)
+│   ├── validation/           # Zod schemas (@jlt/validation)
+│   ├── api-client/           # Axios/Fetch SDK (@jlt/api-client)
+│   └── database/             # Prisma schemas & client (@jlt/database)
+│
+├── scripts/                  # Setup, generate, release scripts
+├── docs/                     # Architectural documentation
+├── .github/workflows/        # CI/CD workflows
+├── .vscode/                  # Workspace settings
+├── package.json              # Workspace root configuration
+├── pnpm-workspace.yaml       # PNPM workspace definition
+├── turbo.json                # Turborepo task pipeline
+└── tsconfig.json             # Root TypeScript config
 ```
 
----
+## Getting Started
 
-## 🚀 Getting Started
-
-### Prerequisites
-- Node.js >= 18
-- pnpm >= 8 (`npm i -g pnpm`)
-
-### Installation
-
-Install all workspace dependencies:
+### 1. Install Dependencies
 ```bash
 pnpm install
 ```
+
+### 2. Development Mode
+Start all apps (`web`, `api`, `mobile`) in development mode using Turborepo:
+```bash
+pnpm run dev
+```
+
+### 3. Build All Projects
+```bash
+pnpm run build
+```
+
+### 4. Typecheck All Projects
+```bash
+pnpm run typecheck
+```
+
+## Technology Stack
+
+| App / Layer | Technology |
+| :--- | :--- |
+| **Frontend App** | Next.js (App Router), React 19 |
+| **Backend API** | Express, TypeScript |
+| **Mobile App** | Expo React Native |
+| **Database** | PostgreSQL + Prisma Schema |
+| **Validation** | Zod Schemas |
+| **Task Runner** | Turborepo |
+| **Package Manager** | PNPM Workspaces |

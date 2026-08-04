@@ -1,12 +1,28 @@
-import { Button } from '@jlt/ui';
-import { APP_NAME } from '@jlt/constants';
+import styles from './page.module.css';
+
+import BackgroundShapes from './BackgroundShapes';
 
 export default function HomePage() {
   return (
-    <main style={{ padding: '40px', fontFamily: 'system-ui, sans-serif' }}>
-      <h1>Welcome to {APP_NAME} Web Frontend</h1>
-      <p>Built with Next.js App Router and Shared Monorepo Packages.</p>
-      <Button>Shared UI Button</Button>
-    </main>
+    <>
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+      <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&family=Syne:wght@700;800&family=Zen+Dots&display=swap" rel="stylesheet" />
+
+      <div className={styles.wrapper}>
+        <div className={styles.canvas}>
+          {/* Pure SVG background shapes directly from Figma */}
+          <BackgroundShapes />
+          
+          {/* Foreground elements */}
+          <div className={styles.mascot}></div>
+          <div className={styles.welcomeText}>Welcome to</div>
+          <div className={styles.jltText}>jlt</div>
+          <div className={styles.partnerText}>
+            A Trusted<br />Partner of<br />JAXMART
+          </div>
+        </div>
+      </div>
+    </>
   );
 }

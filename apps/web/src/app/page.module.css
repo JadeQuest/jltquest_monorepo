@@ -1,0 +1,103 @@
+@font-face {
+  font-family: 'Blockat DEMO';
+  src: url('/fonts/Blockat-DEMO.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Gilroy-Medium';
+  src: url('/fonts/Gilroy-Medium.ttf') format('truetype'),
+    url('/fonts/Gilroy-Medium.woff2') format('woff2'),
+    url('/fonts/Gilroy-Medium.woff') format('woff');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+.wrapper {
+  width: 100vw;
+  height: 100vh;
+  background-color: #000000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.canvas {
+  width: 1920px;
+  height: 1080px;
+  background-color: #000000;
+  position: relative;
+  transform: scale(calc(min(100vw / 1920, 100vh / 1080)));
+  transform-origin: center center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+
+.welcomeText {
+  position: absolute;
+  top: 505px;
+  left: 166px;
+  width: 511px;
+  height: 103px;
+  font-family: "Blockat DEMO", "Zen Dots", "Syne", sans-serif;
+  font-size: 75px;
+  font-weight: 400;
+  color: #FFFFFF;
+  text-transform: uppercase;
+  text-align: center;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mascot {
+  position: absolute;
+  top: 353px;
+  left: 685px;
+  width: 459px;
+  height: 454px;
+  background: url("/images/v1_7.png") no-repeat center center;
+  background-size: contain;
+  filter: drop-shadow(0 15px 25px rgba(0, 0, 0, 0.5));
+}
+
+
+.jltText {
+  position: absolute;
+  top: 387px;
+  left: 1005px;
+  width: 551px;
+  height: 305px;
+  font-family: "Blockat DEMO", "Syne", "Zen Dots", sans-serif;
+  font-size: 338px;
+  font-weight: 400;
+  color: #FFFFFF;
+  text-align: center;
+  line-height: 0.8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.partnerText {
+  position: absolute;
+  top: 474px;
+  left: 1520px;
+  width: 244px;
+  height: 165px;
+  font-family: "Gilroy-Medium", "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+  font-size: 45px;
+  font-weight: 500;
+  color: #FFFFFF;
+  text-align: left;
+  line-height: 1.1;
+  display: flex;
+  align-items: center;
+}

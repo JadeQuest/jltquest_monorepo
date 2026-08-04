@@ -1,6 +1,6 @@
 import styles from './page.module.css';
 
-import BackgroundShapes from './BackgroundShapes';
+import DashboardSvg from './DashboardSvg';
 
 export default function HomePage() {
   return (
@@ -11,18 +11,11 @@ export default function HomePage() {
 
       <div className={styles.wrapper}>
         <div className={styles.canvas}>
-          {/* Pure SVG background shapes directly from Figma */}
-          <BackgroundShapes />
-          
-          {/* Foreground elements */}
-          <div className={styles.mascot}></div>
-          <div className={styles.welcomeText}>Welcome to</div>
-          <div className={styles.jltText}>jlt</div>
-          <div className={styles.partnerText}>
-            A Trusted<br />Partner of<br />JAXMART
-          </div>
+          {/* Fully fidelity vector layout directly from Figma */}
+          <DashboardSvg />
         </div>
       </div>
     </>
   );
 }
+

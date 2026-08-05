@@ -22,7 +22,6 @@ const LandingPage: React.FC = () => {
       <LandingNav />
 
       {/* Page sections */}
-      <HeroSection />
       <FeaturesSection />
       <HowItWorksSection />
       <CTASection />

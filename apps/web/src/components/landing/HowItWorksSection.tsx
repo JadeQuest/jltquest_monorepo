@@ -63,7 +63,7 @@ const steps: StepProps[] = [
 
 export const HowItWorksSection: React.FC = () => {
   return (
-    <section className="relative w-full py-24 px-6 overflow-hidden">
+    <section id="how-it-works" className="relative w-full py-24 px-6 overflow-hidden">
       {/* Separator line */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[60%] h-px bg-gradient-to-r from-transparent via-[#360C9F]/60 to-transparent" />
 

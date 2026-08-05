@@ -5,7 +5,7 @@ import Link from 'next/link';
 
 export const CTASection: React.FC = () => {
   return (
-    <section className="relative w-full py-24 px-6 overflow-hidden bg-[#080411]">
+    <section id="rewards" className="relative w-full py-24 px-6 overflow-hidden bg-[#080411]">
       {/* Top separator */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[60%] h-px bg-gradient-to-r from-transparent via-[#7B2CBF]/60 to-transparent" />
 

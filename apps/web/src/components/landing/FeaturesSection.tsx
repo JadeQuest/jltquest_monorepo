@@ -78,7 +78,7 @@ const features: FeatureCardProps[] = [
 
 export const FeaturesSection: React.FC = () => {
   return (
-    <section className="relative w-full py-24 px-6 bg-[#080411] overflow-hidden">
+    <section id="features" className="relative w-full py-24 px-6 bg-[#080411] overflow-hidden">
       {/* Background blurs */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[400px] rounded-full bg-radial from-[#360C9F]/20 via-transparent to-transparent blur-[120px] pointer-events-none" />
 

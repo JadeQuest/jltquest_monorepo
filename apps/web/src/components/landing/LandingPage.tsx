@@ -21,6 +21,9 @@ const LandingPage: React.FC = () => {
       {/* Fixed navigation bar */}
       <LandingNav />
 
+      {/* Hero section */}
+      <HeroSection />
+
       {/* Page sections */}
       <FeaturesSection />
       <HowItWorksSection />

@@ -219,50 +219,18 @@ export default function Splash({ onClick }: SplashProps) {
         src="/Mascot.svg"
         alt="JLT Quest Mascot"
         aria-label="JLT Quest Mascot character"
-        style={{
-          position: 'absolute',
-          left: '35.68%',
-          top: '32.69%',
-          width: '23.9%',
-          height: '42.04%',
-          objectFit: 'contain',
-          zIndex: 10,
-          pointerEvents: 'none',
-          filter: 'drop-shadow(0 20px 40px rgba(0,0,0,0.6))',
-          animation: 'mascotFloat 5s ease-in-out infinite',
-        }}
+        className="absolute left-[50%] md:left-[47%] top-[50%] md:top-[53%] -translate-x-[50%] -translate-y-[50%] w-[55vw] sm:w-[40vw] md:w-[24vw] max-w-[460px] h-auto object-contain z-10 pointer-events-none drop-shadow-[0_20px_40px_rgba(0,0,0,0.6)] animate-float"
       />
 
-
-
-      {/* ─── Scroll Cue ─── */}
+      {/* ─── Click / Tap Cue ─── */}
       <div
         aria-hidden="true"
-        style={{
-          position: 'absolute',
-          bottom: '28px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          zIndex: 20,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '6px',
-          animation: 'scrollBounce 2s ease-in-out infinite',
-        }}
+        className="absolute bottom-7 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-1.5 animate-bounce cursor-pointer"
       >
-        <span
-          style={{
-            fontFamily: 'Gilroy-Regular, Plus Jakarta Sans, system-ui, sans-serif',
-            fontSize: '0.65rem',
-            color: 'rgba(255,255,255,0.4)',
-            letterSpacing: '0.2em',
-            textTransform: 'uppercase',
-          }}
-        >
-          SCROLL
+        <span className="font-gilroyMedium text-[11px] sm:text-xs text-white/60 tracking-[0.25em] uppercase glass-pill px-4 py-1.5 border border-white/10 shadow-lg">
+          CLICK OR TAP ANYWHERE TO ENTER
         </span>
-        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="rgba(255,255,255,0.35)" strokeWidth={2}>
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="rgba(255,255,255,0.6)" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
         </svg>
       </div>

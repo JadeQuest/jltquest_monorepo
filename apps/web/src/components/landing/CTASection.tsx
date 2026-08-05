@@ -6,8 +6,8 @@ import Link from 'next/link';
 export const CTASection: React.FC = () => {
   return (
     <section id="rewards" className="relative w-full py-24 px-6 overflow-hidden bg-[#080411]">
-      {/* Top separator */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[60%] h-px bg-gradient-to-r from-transparent via-[#7B2CBF]/60 to-transparent" />
+      {/* Top separator line */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[70%] h-0.5 bg-gradient-to-r from-transparent via-[#FF007F] via-[#00F0FF] to-transparent bg-[length:200%_100%] animate-[borderGradientRotate_4s_ease_infinite]" />
 
       {/* Ambient blurs */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -22,6 +22,8 @@ export const CTASection: React.FC = () => {
           <img
             src="/Mascot.svg"
             alt="JLT Quest Mascot"
+            loading="lazy"
+            decoding="async"
             className="relative w-36 h-36 object-contain drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)] animate-float"
           />
         </div>
@@ -50,7 +52,7 @@ export const CTASection: React.FC = () => {
               className="glass-pill px-5 py-2.5 flex items-center gap-2.5 animate-float"
               style={{ animationDelay: `${i * 0.4}s` }}
             >
-              <img src="/Coin.svg" alt="JLT Coin" className="w-6 h-6 object-contain animate-sparkle" style={{ animationDelay: `${i * 0.3}s` }} />
+              <img src="/Coin.svg" alt="JLT Coin" loading="lazy" decoding="async" className="w-6 h-6 object-contain animate-sparkle" style={{ animationDelay: `${i * 0.3}s` }} />
               <span className="font-gilroyBold text-white text-sm">
                 {i === 1 ? '+250 Coins' : i === 2 ? 'Rare Drop' : '2× Bonus'}
               </span>

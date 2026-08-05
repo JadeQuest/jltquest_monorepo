@@ -17,11 +17,11 @@ export const CollectRaresCard: React.FC = () => {
         </p>
       </div>
 
-      {/* Fan of Official Collect Rare Cards with Exact Dimensions & Box-Shadow Specification */}
-      <div className="relative w-full h-44 mt-2 flex items-center justify-center">
+      {/* Fan of Official Collect Rare Cards */}
+      <div className="relative w-full h-36 sm:h-44 mt-2 flex items-center justify-center">
         {/* Collect3 Card - Explorer */}
         <div
-          className="absolute right-6 bottom-2 w-[121px] h-[166px] rounded-[10px] overflow-hidden transform rotate-[15deg] group-hover:rotate-[22deg] transition-transform duration-500 z-0 flex flex-col"
+          className="absolute right-2 sm:right-6 bottom-2 w-[95px] sm:w-[121px] h-[130px] sm:h-[166px] rounded-[10px] overflow-hidden transform rotate-[15deg] group-hover:rotate-[22deg] transition-transform duration-500 z-0 flex flex-col"
           style={{ boxShadow: '2px 6px 4.5px 0px rgba(0, 0, 0, 0.7)' }}
         >
           <img
@@ -29,9 +29,8 @@ export const CollectRaresCard: React.FC = () => {
             alt="Collect Rare 3"
             className="absolute inset-0 w-full h-full object-cover -z-10"
           />
-          {/* Sleek Compact Top Header Banner */}
-          <div className="w-full bg-[#7B2CBF] rounded-b-[40%] py-1 px-1 text-center shadow-sm border-b border-purple-300/30 z-10">
-            <span className="text-white font-gilroyBold text-[10px] font-bold tracking-wider uppercase drop-shadow-sm">
+          <div className="w-full bg-[#7B2CBF] rounded-b-[40%] py-0.5 sm:py-1 px-1 text-center shadow-sm border-b border-purple-300/30 z-10">
+            <span className="text-white font-gilroyBold text-[9px] sm:text-[10px] font-bold tracking-wider uppercase drop-shadow-sm">
               Explorer
             </span>
           </div>
@@ -39,7 +38,7 @@ export const CollectRaresCard: React.FC = () => {
 
         {/* Collect2 Card - Leader */}
         <div
-          className="absolute left-1/2 -translate-x-1/2 bottom-3 w-[121px] h-[166px] rounded-[10px] overflow-hidden transform rotate-[4deg] group-hover:rotate-[8deg] transition-transform duration-500 z-10 flex flex-col"
+          className="absolute left-1/2 -translate-x-1/2 bottom-3 w-[95px] sm:w-[121px] h-[130px] sm:h-[166px] rounded-[10px] overflow-hidden transform rotate-[4deg] group-hover:rotate-[8deg] transition-transform duration-500 z-10 flex flex-col"
           style={{ boxShadow: '2px 6px 4.5px 0px rgba(0, 0, 0, 0.7)' }}
         >
           <img
@@ -47,9 +46,8 @@ export const CollectRaresCard: React.FC = () => {
             alt="Collect Rare 2"
             className="absolute inset-0 w-full h-full object-cover -z-10"
           />
-          {/* Sleek Compact Top Header Banner */}
-          <div className="w-full bg-[#059669] rounded-b-[40%] py-1 px-1 text-center shadow-sm border-b border-emerald-300/30 z-10">
-            <span className="text-white font-gilroyBold text-[10px] font-bold tracking-wider uppercase drop-shadow-sm">
+          <div className="w-full bg-[#059669] rounded-b-[40%] py-0.5 sm:py-1 px-1 text-center shadow-sm border-b border-emerald-300/30 z-10">
+            <span className="text-white font-gilroyBold text-[9px] sm:text-[10px] font-bold tracking-wider uppercase drop-shadow-sm">
               Leader
             </span>
           </div>
@@ -57,7 +55,7 @@ export const CollectRaresCard: React.FC = () => {
 
         {/* Collect1 Card - Starter */}
         <div
-          className="absolute left-6 bottom-1 w-[121px] h-[166px] rounded-[10px] overflow-hidden transform -rotate-[10deg] group-hover:-rotate-[14deg] transition-transform duration-500 z-20 flex flex-col"
+          className="absolute left-2 sm:left-6 bottom-1 w-[95px] sm:w-[121px] h-[130px] sm:h-[166px] rounded-[10px] overflow-hidden transform -rotate-[10deg] group-hover:-rotate-[14deg] transition-transform duration-500 z-20 flex flex-col"
           style={{ boxShadow: '2px 6px 4.5px 0px rgba(0, 0, 0, 0.7)' }}
         >
           <img
@@ -65,9 +63,8 @@ export const CollectRaresCard: React.FC = () => {
             alt="Collect Rare 1"
             className="absolute inset-0 w-full h-full object-cover -z-10"
           />
-          {/* Sleek Compact Top Header Banner */}
-          <div className="w-full bg-[#3B82F6] rounded-b-[40%] py-1 px-1 text-center shadow-sm border-b border-blue-200/40 z-10">
-            <span className="text-white font-gilroyBold text-[10px] font-bold tracking-wider uppercase drop-shadow-sm">
+          <div className="w-full bg-[#3B82F6] rounded-b-[40%] py-0.5 sm:py-1 px-1 text-center shadow-sm border-b border-blue-200/40 z-10">
+            <span className="text-white font-gilroyBold text-[9px] sm:text-[10px] font-bold tracking-wider uppercase drop-shadow-sm">
               Starter
             </span>
           </div>

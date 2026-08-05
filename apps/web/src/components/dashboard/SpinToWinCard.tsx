@@ -16,7 +16,15 @@ export const SpinToWinCard: React.FC = () => {
     'Legendary Shiny',
   ];
 
-  const handleSpin = () => {
+  const spinTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  React.useEffect(() => {
+    return () => {
+      if (spinTimeoutRef.current) clearTimeout(spinTimeoutRef.current);
+    };
+  }, []);
+
+  const handleSpin = React.useCallback(() => {
     if (isSpinning) return;
     setIsSpinning(true);
     setPrize(null);
@@ -25,12 +33,13 @@ export const SpinToWinCard: React.FC = () => {
     const newRotation = rotation + 1440 + extraDegrees;
     setRotation(newRotation);
 
-    setTimeout(() => {
+    if (spinTimeoutRef.current) clearTimeout(spinTimeoutRef.current);
+    spinTimeoutRef.current = setTimeout(() => {
       setIsSpinning(false);
       const prizeIndex = Math.floor(((newRotation % 360) / 360) * prizes.length);
       setPrize(prizes[prizeIndex] || '50 Coins');
     }, 3500);
-  };
+  }, [isSpinning, rotation, prizes]);
 
   return (
     <div className="daily-card-panel p-6 flex flex-col items-center justify-between h-[360px] relative overflow-hidden select-none">
@@ -45,7 +54,7 @@ export const SpinToWinCard: React.FC = () => {
         </div>
       </div>
 
-      {/* South Side Spin Wheel Graphic - Large, attached to bottom, spanning edge-to-edge covering both bottom corners */}
+      {/* South Side Spin Wheel Graphic */}
       <div
         className="absolute -bottom-16 left-1/2 -translate-x-1/2 w-[340px] h-[340px] flex items-center justify-center cursor-pointer group z-20"
         onClick={handleSpin}
@@ -56,6 +65,7 @@ export const SpinToWinCard: React.FC = () => {
           className="w-full h-full relative z-20 flex items-center justify-center"
           style={{
             transform: `rotate(${rotation}deg)`,
+            willChange: isSpinning ? 'transform' : 'auto',
             transition: isSpinning ? 'transform 3.5s cubic-bezier(0.15, 0.9, 0.15, 1)' : 'none',
           }}
         >

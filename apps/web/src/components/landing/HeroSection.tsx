@@ -38,21 +38,29 @@ export const HeroSection: React.FC = () => {
     return () => clearInterval(timer);
   }, []);
 
-  const handleClaimBonus = () => {
+  const coinTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+  useEffect(() => {
+    return () => {
+      if (coinTimeoutRef.current) clearTimeout(coinTimeoutRef.current);
+    };
+  }, []);
+
+  const triggerCoinAnimation = React.useCallback(() => {
+    setFloatingCoins((prev) => [...prev, Date.now()]);
+    if (coinTimeoutRef.current) clearTimeout(coinTimeoutRef.current);
+    coinTimeoutRef.current = setTimeout(() => {
+      setFloatingCoins((prev) => prev.slice(1));
+    }, 1500);
+  }, []);
+
+  const handleClaimBonus = React.useCallback(() => {
     if (claimedBonus) return;
     setClaimedBonus(true);
     setCoinsCount((prev) => prev + 150);
     triggerCoinAnimation();
-  };
+  }, [claimedBonus, triggerCoinAnimation]);
 
-  const triggerCoinAnimation = () => {
-    setFloatingCoins((prev) => [...prev, Date.now()]);
-    setTimeout(() => {
-      setFloatingCoins((prev) => prev.slice(1));
-    }, 1500);
-  };
-
-  const handleSimulateQuest = () => {
+  const handleSimulateQuest = React.useCallback(() => {
     if (questCompleted) return;
     if (questProgress < 3) {
       const nextProgress = questProgress + 1;
@@ -63,7 +71,7 @@ export const HeroSection: React.FC = () => {
         triggerCoinAnimation();
       }
     }
-  };
+  }, [questCompleted, questProgress, triggerCoinAnimation]);
 
   const currentActivity = liveActivities[currentActivityIndex];
 
@@ -85,25 +93,25 @@ export const HeroSection: React.FC = () => {
             
             {/* Live Social Proof Badge + Live Feed Ticker */}
             <div className="flex flex-wrap items-center gap-3">
-              <div className="glass-pill px-4 py-2 inline-flex items-center gap-3 animate-fade-in shadow-[0_0_20px_rgba(54,12,159,0.35)] border border-white/10">
-                <div className="flex -space-x-2 overflow-hidden">
-                  <div className="inline-block h-7 w-7 rounded-full ring-2 ring-[#360C9F] bg-gradient-to-tr from-purple-500 to-indigo-600 flex items-center justify-center text-[10px] font-bold text-white shadow">
+              <div className="glass-pill px-4 py-2 inline-flex items-center gap-3 animate-fade-in shadow-[0_0_20px_rgba(54,12,159,0.35)]">
+                <div className="flex items-center -space-x-2">
+                  <div className="h-7 w-7 rounded-full ring-2 ring-[#360C9F] bg-gradient-to-tr from-purple-500 to-indigo-600 flex items-center justify-center text-[10px] font-gilroyBold text-white leading-none shadow shrink-0 select-none">
                     DK
                   </div>
-                  <div className="inline-block h-7 w-7 rounded-full ring-2 ring-[#360C9F] bg-gradient-to-tr from-pink-500 to-rose-500 flex items-center justify-center text-[10px] font-bold text-white shadow">
+                  <div className="h-7 w-7 rounded-full ring-2 ring-[#360C9F] bg-gradient-to-tr from-pink-500 to-rose-500 flex items-center justify-center text-[10px] font-gilroyBold text-white leading-none shadow shrink-0 select-none">
                     JM
                   </div>
-                  <div className="inline-block h-7 w-7 rounded-full ring-2 ring-[#360C9F] bg-gradient-to-tr from-amber-400 to-orange-500 flex items-center justify-center text-[10px] font-bold text-white shadow">
+                  <div className="h-7 w-7 rounded-full ring-2 ring-[#360C9F] bg-gradient-to-tr from-amber-400 to-orange-500 flex items-center justify-center text-[10px] font-gilroyBold text-white leading-none shadow shrink-0 select-none">
                     AR
                   </div>
                 </div>
                 
                 <div className="flex items-center gap-2">
-                  <span className="relative flex h-2.5 w-2.5">
+                  <span className="relative flex h-2.5 w-2.5 shrink-0">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                     <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
                   </span>
-                  <span className="font-gilroyMedium text-xs sm:text-sm text-white/90">
+                  <span className="font-gilroyMedium text-xs sm:text-sm text-white/90 leading-none">
                     <strong className="text-white font-gilroyBold">1,420 players</strong> online now
                   </span>
                 </div>
@@ -341,7 +349,7 @@ export const HeroSection: React.FC = () => {
         </div>
 
         {/* ── BOTTOM STATS BAR ── */}
-        <div className="mt-20 pt-10 border-t border-white/10 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+        <div className="mt-20 pt-10 animated-border-t grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
           <div className="flex flex-col items-center gap-1 group">
             <span className="font-gilroyBold text-3xl sm:text-4xl text-white tracking-tight group-hover:scale-105 transition-transform duration-200">
               50,000+

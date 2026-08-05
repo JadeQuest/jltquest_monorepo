@@ -9,30 +9,40 @@ export const LandingNav: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', handleScroll);
+    let ticking = false;
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          setScrolled(window.scrollY > 20);
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const scrollToSection = (id: string) => {
+  const scrollToSection = React.useCallback((id: string) => {
     setMobileMenuOpen(false);
     const element = document.getElementById(id);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
     }
-  };
+  }, []);
 
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
         scrolled
-          ? 'bg-[#080411]/80 backdrop-blur-xl border-b border-white/10 shadow-2xl py-3.5'
+          ? 'bg-[#080411]/85 backdrop-blur-xl animated-border-b shadow-2xl py-3.5'
           : 'bg-transparent py-5'
       }`}
     >
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
         
-        {/* Brand Logo & Tagline */}
+        {/* Brand Logo */}
         <Link href="/" className="flex items-center gap-3 group">
           <div className="relative">
             <img
@@ -40,14 +50,6 @@ export const LandingNav: React.FC = () => {
               alt="JLT Logo"
               className="w-12 h-12 sm:w-14 sm:h-14 object-contain drop-shadow-[0_0_15px_rgba(255,162,141,0.6)] group-hover:drop-shadow-[0_0_25px_rgba(255,162,141,0.9)] group-hover:scale-105 transition-all duration-300"
             />
-          </div>
-          <div className="flex flex-col">
-            <span className="font-gilroyBold text-white text-lg tracking-wider group-hover:text-[#FFA28D] transition-colors">
-              JLTQuest
-            </span>
-            <span className="font-gilroyRegular text-[10px] text-purple-300/80 tracking-widest uppercase -mt-1">
-              By JaxMart
-            </span>
           </div>
         </Link>
 

@@ -5,11 +5,15 @@ import React, { useState } from 'react';
 interface SidebarProps {
   activeTab?: string;
   onSelectTab?: (tab: string) => void;
+  isMobileOpen?: boolean;
+  onMobileClose?: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
   activeTab = 'Discover',
   onSelectTab,
+  isMobileOpen = false,
+  onMobileClose,
 }) => {
   const [selected, setSelected] = useState(activeTab);
 
@@ -23,15 +27,26 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const handleTabClick = (id: string) => {
     setSelected(id);
     if (onSelectTab) onSelectTab(id);
+    if (onMobileClose) onMobileClose();
   };
 
-  return (
-    <aside className="w-[320px] shrink-0 flex flex-col justify-start h-full p-6 z-20 relative select-none">
+  const navContent = (
+    <>
       {/* Top Section: Logo & Nav */}
       <div className="flex flex-col gap-6">
-        {/* JLT Official Vector SVG Logo - Margin left and top added */}
-        <div className="flex items-center gap-2 pl-3 pt-2 h-[60px] mb-2">
+        {/* JLT Official Vector SVG Logo */}
+        <div className="flex items-center justify-between pl-3 pt-2 h-[60px] mb-2">
           <img src="/jlt.svg" alt="JLT Logo" className="w-[65px] h-[61px] object-contain drop-shadow-[0_0_12px_rgba(255,255,255,0.3)]" />
+          {isMobileOpen && (
+            <button
+              onClick={onMobileClose}
+              type="button"
+              className="lg:hidden p-2 rounded-xl bg-white/10 text-white font-bold"
+              aria-label="Close navigation menu"
+            >
+              ✕
+            </button>
+          )}
         </div>
 
         {/* Navigation List */}
@@ -48,7 +63,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     : 'text-gray-300 hover:text-white hover:bg-white/5'
                 }`}
               >
-                {/* Icon Image without background box */}
                 <div className="w-8 h-8 flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-110">
                   <img
                     src={item.iconSrc}
@@ -69,19 +83,39 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </nav>
       </div>
 
-      {/* Mascot Section: Slightly below (mt-10) and larger mascot (290px x 290px) */}
-      <div className="relative mt-10 group cursor-pointer">
-        {/* Glow behind mascot */}
+      {/* Mascot Section */}
+      <div className="relative mt-8 group cursor-pointer hidden sm:block">
         <div className="absolute inset-0 bg-gradient-to-tr from-[#340073]/40 via-[#7B2CBF]/30 to-transparent blur-2xl rounded-full scale-125 -z-10 group-hover:scale-150 transition-transform duration-500" />
-
-        <div className="relative w-full h-[290px] flex items-center justify-center animate-float">
+        <div className="relative w-full h-[240px] xl:h-[280px] flex items-center justify-center animate-float">
           <img
             src="/Mascot.svg"
             alt="JLT Mascot"
-            className="w-[290px] h-[290px] object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.5)]"
+            className="w-[240px] xl:w-[280px] h-[240px] xl:h-[280px] object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.5)]"
           />
         </div>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Desktop Sidebar */}
+      <aside className="hidden lg:flex w-[280px] xl:w-[320px] shrink-0 flex-col justify-start h-full p-6 z-20 relative select-none">
+        {navContent}
+      </aside>
+
+      {/* Mobile Drawer Backdrop & Menu */}
+      {isMobileOpen && (
+        <div className="lg:hidden fixed inset-0 z-50 flex">
+          <div
+            className="fixed inset-0 bg-black/80 backdrop-blur-md"
+            onClick={onMobileClose}
+          />
+          <div className="relative w-[300px] max-w-[85vw] h-full bg-[#080411] p-6 flex flex-col justify-start z-50 border-r border-white/10 overflow-y-auto shadow-2xl animate-fade-in">
+            {navContent}
+          </div>
+        </div>
+      )}
+    </>
   );
 };

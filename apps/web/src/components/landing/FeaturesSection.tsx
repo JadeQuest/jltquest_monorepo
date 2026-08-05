@@ -10,14 +10,14 @@ interface FeatureCardProps {
   delay: string;
 }
 
-const FeatureCard: React.FC<FeatureCardProps> = ({ icon, iconAlt, title, description, delay }) => (
+const FeatureCard: React.FC<FeatureCardProps> = React.memo(({ icon, iconAlt, title, description, delay }) => (
   <div
     className="glass-panel p-7 flex flex-col gap-5 group cursor-default animate-fade-up hover:-translate-y-1 transition-transform duration-300"
     style={{ animationDelay: delay, opacity: 0 }}
   >
     {/* Icon */}
     <div className="w-16 h-16 rounded-2xl glass-btn flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300">
-      <img src={icon} alt={iconAlt} className="w-10 h-10 object-contain" />
+      <img src={icon} alt={iconAlt} loading="lazy" decoding="async" className="w-10 h-10 object-contain" />
     </div>
 
     {/* Text */}
@@ -29,7 +29,7 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ icon, iconAlt, title, descrip
     {/* Bottom accent line */}
     <div className="mt-auto h-0.5 w-0 group-hover:w-full bg-gradient-to-r from-[#360C9F] to-[#FFA28D] rounded-full transition-all duration-500" />
   </div>
-);
+));
 
 const features: FeatureCardProps[] = [
   {

@@ -1,30 +1,39 @@
 'use client';
 
 import React from 'react';
-import {
-  LandingNav,
-  HeroSection,
-  FeaturesSection,
-  HowItWorksSection,
-  CTASection,
-  LandingFooter,
-} from '@/components/landing';
+import dynamic from 'next/dynamic';
+import { LandingNav } from './LandingNav';
+import { HeroSection } from './HeroSection';
+
+// Dynamic Code Splitting for below-the-fold sections
+const FeaturesSection = dynamic(() => import('./FeaturesSection').then((mod) => mod.FeaturesSection), {
+  ssr: true,
+});
+const HowItWorksSection = dynamic(() => import('./HowItWorksSection').then((mod) => mod.HowItWorksSection), {
+  ssr: true,
+});
+const CTASection = dynamic(() => import('./CTASection').then((mod) => mod.CTASection), {
+  ssr: true,
+});
+const LandingFooter = dynamic(() => import('./LandingFooter').then((mod) => mod.LandingFooter), {
+  ssr: true,
+});
 
 /**
  * LandingPage
  * Full public-facing landing page for JLTQuest.
- * Composed of modular section components for easy maintenance.
+ * Optimized with code splitting, instant hero hydration, and zero main thread blocking.
  */
 const LandingPage: React.FC = () => {
   return (
-    <div className="w-full min-h-screen bg-[#080411] text-white overflow-x-hidden select-none font-gilroyRegular">
+    <div className="w-full min-h-screen bg-[#080411] text-white overflow-x-hidden select-none font-gilroyRegular antialiased">
       {/* Fixed navigation bar */}
       <LandingNav />
 
       {/* Hero section */}
       <HeroSection />
 
-      {/* Page sections */}
+      {/* Lazy code-split below-the-fold sections */}
       <FeaturesSection />
       <HowItWorksSection />
       <CTASection />
@@ -35,4 +44,4 @@ const LandingPage: React.FC = () => {
   );
 };
 
-export default LandingPage;
+export default React.memo(LandingPage);

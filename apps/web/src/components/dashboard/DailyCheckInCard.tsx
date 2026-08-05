@@ -14,10 +14,10 @@ export const DailyCheckInCard: React.FC = () => {
   ];
 
   return (
-    <div className="daily-card-panel p-6 flex flex-col justify-between h-[260px] relative overflow-hidden">
-      <div className="flex items-center justify-between gap-4">
+    <div className="daily-card-panel p-4 sm:p-6 flex flex-col justify-between min-h-[260px] relative overflow-hidden">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex flex-col gap-1.5">
-          <h2 className="text-white font-gilroyBold text-2xl font-bold tracking-tight">
+          <h2 className="text-white font-gilroyBold text-xl sm:text-2xl font-bold tracking-tight">
             Daily Check-In
           </h2>
           <div className="glass-pill px-3 py-1 inline-flex items-center w-fit border border-purple-400/30">
@@ -27,36 +27,36 @@ export const DailyCheckInCard: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-5">
+        <div className="flex flex-wrap items-center gap-3 sm:gap-5">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 relative flex items-center justify-center">
+            <div className="w-6 h-6 sm:w-7 sm:h-7 relative flex items-center justify-center">
               <img
                 src="/Coin.svg"
                 alt="500 Gold Coins Badge"
                 className="w-full h-full object-contain"
               />
             </div>
-            <span className="text-white font-gilroyBold text-base font-bold">500</span>
+            <span className="text-white font-gilroyBold text-sm sm:text-base font-bold">500</span>
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 relative flex items-center justify-center shrink-0">
+            <div className="w-6 h-6 sm:w-7 sm:h-7 relative flex items-center justify-center shrink-0">
               <img
                 src="/jltcolor.svg"
                 alt="50 JLT Badge"
                 className="w-full h-full object-contain"
               />
             </div>
-            <span className="text-white font-gilroyBold text-base font-bold">50</span>
+            <span className="text-white font-gilroyBold text-sm sm:text-base font-bold">50</span>
           </div>
 
-          <button className="glass-btn px-4 py-2 rounded-xl text-white font-gilroyMedium text-sm font-semibold tracking-wide hover:shadow-[0_0_15px_#7B2CBF]">
+          <button className="glass-btn px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-white font-gilroyMedium text-xs sm:text-sm font-semibold tracking-wide hover:shadow-[0_0_15px_#7B2CBF]">
             View Coin
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-7 gap-3 mt-4 items-end">
+      <div className="grid grid-cols-7 gap-1 sm:gap-3 mt-4 items-end overflow-x-auto pb-1">
         {daysData.map((item, idx) => (
           <div key={idx} className="flex flex-col items-center gap-2 group cursor-pointer">
             <span className="text-purple-200 font-gilroyBold text-sm font-bold tracking-wide group-hover:text-white transition-colors">

@@ -13,12 +13,41 @@
   height: 100%;
   background-color: #000000;
   position: relative;
-  flex-shrink: 0;
   overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.canvas svg {
+.dashboardContainer {
   width: 100%;
   height: 100%;
+  max-width: min(1920px, 100vw, 177.78vh);
+  max-height: min(1080px, 56.25vw, 100vh);
+  aspect-ratio: 16 / 9;
+  position: relative;
+  container-type: size;
+  background-color: #000000;
+}
+
+.backgroundSvg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
   display: block;
+  pointer-events: none;
+}
+
+.mascotImage {
+  position: absolute;
+  left: 35.68cqw;
+  top: 32.69cqh;
+  width: 23.9cqw;
+  height: 42.04cqh;
+  z-index: 10;
+  object-fit: contain;
+  pointer-events: none;
 }

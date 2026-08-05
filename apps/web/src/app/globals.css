@@ -19,6 +19,11 @@
     font-family: 'Gilroy-Regular', 'Plus Jakarta Sans', system-ui, sans-serif;
     font-weight: 400;
   }
+  /* Block/display face used in DashboardSvg hero text */
+  .font-blockDisplay {
+    font-family: 'Black Ops One', 'Bebas Neue', 'Arial Black', Impact, sans-serif;
+    font-weight: 400;
+  }
 }
 
 /* Custom Glass & Glowing Utilities */
@@ -168,4 +173,198 @@
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #540c9f;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   DASHBOARD SVG — global CSS classes
+   All inline styles from DashboardSvg.tsx live here so the
+   component markup stays clean and class-based.
+   ═══════════════════════════════════════════════════════════ */
+
+:root {
+  --block-font: 'Black Ops One', 'Bebas Neue', 'Arial Black', Impact, sans-serif;
+  --gilroy:     'Gilroy-Medium', 'Plus Jakarta Sans', system-ui, sans-serif;
+}
+
+/* Outer 16:9 container — container-query context */
+.db-container {
+  position: relative;
+  width: 100%;
+  max-width: 1920px;
+  aspect-ratio: 16 / 9;
+  background: #000;
+  overflow: hidden;
+  container-type: size;
+  container-name: dashboard;
+}
+
+@media (max-width: 640px) {
+  .db-container { aspect-ratio: 4 / 5; }
+}
+
+/* ── Glow blobs (shared base) ── */
+.db-glow {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.db-glow--left-top {
+  background: radial-gradient(ellipse 54% 82% at -5% 40%,
+    #340073 0%, #360C9F 30%, #5B0FAC 50%, transparent 72%);
+  filter: blur(4px);
+}
+
+.db-glow--left-bottom {
+  background: radial-gradient(ellipse 44% 52% at -8% 90%,
+    #FFA28D 0%, #360C9F 34%, #340073 56%, transparent 76%);
+  filter: blur(5px);
+}
+
+.db-glow--right-top {
+  background: radial-gradient(ellipse 56% 78% at 106% 8%,
+    #340073 0%, #360C9F 28%, #6B18B8 48%, transparent 72%);
+  filter: blur(4px);
+}
+
+.db-glow--right-bottom {
+  background: radial-gradient(ellipse 52% 52% at 108% 98%,
+    #FFA28D 0%, #360C9F 34%, #340073 56%, transparent 76%);
+  filter: blur(5px);
+}
+
+/* ── Corner + edge vignette ── */
+.db-vignette {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 48% 48% at   0%   0%, rgba(0,0,0,0.88) 0%, transparent 62%),
+    radial-gradient(ellipse 48% 48% at 100%   0%, rgba(0,0,0,0.88) 0%, transparent 62%),
+    radial-gradient(ellipse 48% 48% at   0% 100%, rgba(0,0,0,0.88) 0%, transparent 62%),
+    radial-gradient(ellipse 48% 48% at 100% 100%, rgba(0,0,0,0.88) 0%, transparent 62%),
+    linear-gradient(to right,  rgba(0,0,0,0.50) 0%, transparent 18%, transparent 82%, rgba(0,0,0,0.50) 100%),
+    linear-gradient(to bottom, rgba(0,0,0,0.52) 0%, transparent 15%, transparent 82%, rgba(0,0,0,0.68) 100%);
+}
+
+/* ── "WELCOME TO" block ── */
+.db-welcome {
+  position: absolute;
+  left: 4cqw;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  line-height: 0.95;
+  gap: 0.3cqh;
+}
+
+.db-welcome__word {
+  font-family: var(--block-font);
+  font-size: 5.5cqw;
+  font-weight: 400;
+  color: #ffffff;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  text-shadow: 0 0 48px rgba(255, 255, 255, 0.18);
+  user-select: none;
+}
+
+/* ── Giant "jlt" gradient letters ── */
+.db-jlt {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-13%, -52%);
+  z-index: 5;
+  line-height: 1;
+  user-select: none;
+  pointer-events: none;
+}
+
+.db-jlt__letters {
+  position: relative;
+  display: inline-block;
+  font-family: var(--block-font);
+  font-size: 24cqw;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  line-height: 0.82;
+  background: linear-gradient(180deg, #FFA28D 0%, #360C9F 50%, #340073 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* White highlight overlay on top of gradient letters */
+.db-jlt__overlay {
+  position: absolute;
+  inset: 0;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
+  line-height: inherit;
+  color: #fff;
+  -webkit-text-fill-color: #fff;
+  mix-blend-mode: overlay;
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+/* ── jlt.svg logo image ── */
+.db-logo {
+  position: absolute;
+  left: 65.7cqw;
+  top: 39.4cqh;
+  width: 18.6cqw;
+  height: 31.3cqh;
+  object-fit: contain;
+  z-index: 6;
+  pointer-events: none;
+}
+
+/* ── "A Trusted Partner of JAXMART" ── */
+.db-partner {
+  position: absolute;
+  right: 3.8cqw;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.6cqh;
+}
+
+.db-partner__line {
+  font-family: var(--gilroy);
+  font-size: 2.35cqw;
+  font-weight: 500;
+  color: #ffffff;
+  -webkit-text-stroke: 0.5px #ffffff;
+  letter-spacing: 0.01em;
+  line-height: 1.2;
+  text-align: right;
+  white-space: nowrap;
+  user-select: none;
+}
+
+/* ── Mascot image ── */
+.db-mascot {
+  position: absolute;
+  right: 6cqw;
+  bottom: 0;
+  width: 32cqw;
+  height: auto;
+  max-height: 92cqh;
+  object-fit: contain;
+  z-index: 7;
+  pointer-events: none;
+  user-select: none;
+  filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.55));
 }

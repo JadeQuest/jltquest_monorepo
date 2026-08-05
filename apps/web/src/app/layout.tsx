@@ -7,8 +7,18 @@ export const metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" style={{ margin: 0, padding: 0, background: '#000000', width: '100%', height: '100%', overflow: 'hidden' }}>
-      <body style={{ margin: 0, padding: 0, background: '#000000', width: '100%', height: '100%', overflow: 'hidden' }}>{children}</body>
+    <html lang="en" className="font-gilroyRegular" style={{ margin: 0, padding: 0, background: '#080411', width: '100%', height: '100%', overflow: 'hidden' }}>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap"
+          rel="stylesheet"
+        />
+      </head>
+      <body className="font-gilroyRegular" style={{ margin: 0, padding: 0, background: '#080411', width: '100%', height: '100%', overflow: 'hidden', fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif" }}>
+        {children}
+      </body>
     </html>
   );
 }

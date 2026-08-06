@@ -10,8 +10,10 @@ export const LevelCard: React.FC = () => {
       <div className="flex items-center gap-6">
         <div className="w-32 h-32 relative flex items-center justify-center shrink-0 animate-float">
           <img
-            src="/ContainerLevel.svg"
+            src="/optimized/container-level.webp"
             alt="Lv. 1 Medal"
+            width={128}
+            height={128}
             className="w-full h-full object-contain drop-shadow-[0_4px_12px_rgba(0,0,0,0.4)]"
           />
         </div>
@@ -31,8 +33,10 @@ export const LevelCard: React.FC = () => {
           <div className="h-full w-1/4 bg-gradient-to-r from-[#360C9F] via-[#7B2CBF] to-[#FFA28D] rounded-full shadow-[0_0_10px_#FFA28D]" />
           <div className="absolute top-1/2 left-1/4 -translate-x-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center transition-transform hover:scale-110">
             <img
-              src="/SlideCoin.svg"
+              src="/optimized/slide-coin.webp"
               alt="Slide Coin Indicator"
+              width={24}
+              height={24}
               className="w-full h-full object-contain"
             />
           </div>

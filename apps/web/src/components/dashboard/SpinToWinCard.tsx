@@ -2,22 +2,22 @@
 
 import React, { useState } from 'react';
 
+const PRIZES = [
+  '50 Coins',
+  'Rare Pass',
+  '2X Boost',
+  '100 Coins',
+  '500 Coins',
+  'Free Spin',
+  'Mystery Box',
+  'Legendary Shiny',
+];
+
 export const SpinToWinCard: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [rotation, setRotation] = useState(0);
   const [isSpinning, setIsSpinning] = useState(false);
   const [prize, setPrize] = useState<string | null>(null);
-
-  const prizes = [
-    '50 Coins',
-    'Rare Pass',
-    '2X Boost',
-    '100 Coins',
-    '500 Coins',
-    'Free Spin',
-    'Mystery Box',
-    'Legendary Shiny',
-  ];
 
   const spinTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
@@ -39,23 +39,23 @@ export const SpinToWinCard: React.FC = () => {
     if (spinTimeoutRef.current) clearTimeout(spinTimeoutRef.current);
     spinTimeoutRef.current = setTimeout(() => {
       setIsSpinning(false);
-      const prizeIndex = Math.floor(((newRotation % 360) / 360) * prizes.length);
-      setPrize(prizes[prizeIndex] || '50 Coins');
+      const prizeIndex = Math.floor(((newRotation % 360) / 360) * PRIZES.length);
+      setPrize(PRIZES[prizeIndex] || '50 Coins');
     }, 3500);
-  }, [isSpinning, rotation, prizes]);
+  }, [isSpinning, rotation]);
 
-  const handleCardClick = () => {
+  const handleCardClick = React.useCallback(() => {
     setIsModalOpen(true);
-  };
+  }, []);
 
-  const closeModal = () => {
+  const closeModal = React.useCallback(() => {
     if (!isSpinning) {
       setIsModalOpen(false);
       // Optional: reset state on close if desired
       // setRotation(0);
       // setPrize(null);
     }
-  };
+  }, [isSpinning]);
 
   return (
     <>
@@ -80,8 +80,12 @@ export const SpinToWinCard: React.FC = () => {
         {/* Decorative wheel for the card */}
         <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 w-[340px] h-[340px] flex items-center justify-center pointer-events-none opacity-80 group-hover:opacity-100 transition-opacity duration-300">
           <img
-            src="/Spin.svg"
+            src="/optimized/spin.webp"
             alt="Spin to Win Wheel"
+            width={340}
+            height={340}
+            loading="lazy"
+            decoding="async"
             className="w-full h-full object-cover object-bottom drop-shadow-[0_10px_25px_rgba(0,0,0,0.7)]"
           />
         </div>
@@ -126,6 +130,9 @@ export const SpinToWinCard: React.FC = () => {
                 <img
                   src="/SpinPopUp.svg"
                   alt="Spin to Win Wheel"
+                  width={420}
+                  height={420}
+                  decoding="async"
                   className="w-full h-full object-contain drop-shadow-[0_12px_30px_rgba(0,0,0,0.85)]"
                 />
               </div>

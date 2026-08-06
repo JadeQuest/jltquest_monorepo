@@ -11,8 +11,12 @@ export const RarePassCard: React.FC = () => {
       {/* Full Background Official RarePassBG SVG */}
       <div className="absolute inset-0 w-full h-full z-0 pointer-events-none overflow-hidden rounded-[25px]">
         <img
-          src="/RarePassBG.svg"
+          src="/optimized/rare-pass-bg.webp"
           alt="Rare Pass Background"
+          width={709}
+          height={401}
+          loading="lazy"
+          decoding="async"
           className="w-full h-full object-cover object-center scale-100 group-hover:scale-105 transition-transform duration-700"
         />
         {/* Dark Vignette / Gradient Overlay to ensure text readability */}

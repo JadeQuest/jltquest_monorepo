@@ -1,8 +1,7 @@
-import '@rainbow-me/rainbowkit/styles.css';
 import './globals.css';
 import type { Metadata, Viewport } from 'next';
-import CookieConsentModal from '@/components/common/CookieConsent';
-import { Web3Provider } from '@/providers/Web3Provider';
+import { CookieConsentLoader } from '@/components/common/CookieConsentLoader';
+import { ServiceWorkerRegistration } from '@/components/common/ServiceWorkerRegistration';
 
 export const metadata: Metadata = {
   title: 'JLTQuest — Play Daily, Earn Real Perks & Collect Rares',
@@ -10,12 +9,29 @@ export const metadata: Metadata = {
   keywords: ['JLTQuest', 'JaxMart', 'Daily Quests', 'Spin to Win', 'Reward Pass', 'JLT Coin'],
   authors: [{ name: 'JLTQuest Team' }],
   metadataBase: new URL('https://jltquest.io'),
+  alternates: {
+    canonical: '/',
+  },
   openGraph: {
     title: 'JLTQuest — Play Daily & Earn Real Perks',
     description: 'Complete quick daily missions, spin for rare passes, and build your reward streak.',
     url: 'https://jltquest.io',
     siteName: 'JLTQuest',
     type: 'website',
+    images: [
+      {
+        url: '/optimized/dashboard-bg.webp',
+        width: 1200,
+        height: 630,
+        alt: 'JLTQuest rewards dashboard',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'JLTQuest — Play Daily & Earn Real Perks',
+    description: 'Complete quick daily missions, spin for rare passes, and build your reward streak.',
+    images: ['/optimized/dashboard-bg.webp'],
   },
   icons: {
     icon: [{ url: '/jlt.svg', type: 'image/svg+xml' }],
@@ -49,19 +65,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           rel="stylesheet"
         />
 
-        {/* Preload critical SVG assets for instant LCP rendering */}
-        <link rel="preload" href="/jltcolor.svg" as="image" type="image/svg+xml" />
+        {/* Preload critical assets for instant splash rendering */}
+        <link rel="preload" href="/optimized/mascot.webp" as="image" type="image/webp" fetchPriority="high" />
         <link rel="preload" href="/jlt.svg" as="image" type="image/svg+xml" />
-        <link rel="preload" href="/Mascot.svg" as="image" type="image/svg+xml" />
       </head>
       <body
         className="font-gilroyRegular bg-[#080411] text-white antialiased selection:bg-[#FFA28D]/30 selection:text-white"
         style={{ margin: 0, padding: 0, background: '#080411', width: '100%', fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif" }}
       >
-        <Web3Provider>
-          {children}
-          <CookieConsentModal />
-        </Web3Provider>
+        {children}
+        <CookieConsentLoader />
+        <ServiceWorkerRegistration />
       </body>
     </html>
   );

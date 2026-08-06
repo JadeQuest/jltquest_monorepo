@@ -3,26 +3,27 @@
 import React, { useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { WagmiProvider } from 'wagmi';
-import { RainbowKitProvider, darkTheme } from '@rainbow-me/rainbowkit';
 import { config } from '@/lib/wagmi';
 
 export function Web3Provider({ children }: { children: React.ReactNode }) {
-  const [queryClient] = useState(() => new QueryClient());
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            staleTime: 60_000,
+            gcTime: 5 * 60_000,
+            refetchOnWindowFocus: false,
+            retry: 1,
+          },
+        },
+      }),
+  );
 
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
-        <RainbowKitProvider
-          theme={darkTheme({
-            accentColor: '#7B2CBF',
-            accentColorForeground: 'white',
-            borderRadius: 'medium',
-            fontStack: 'system',
-            overlayBlur: 'small',
-          })}
-        >
-          {children}
-        </RainbowKitProvider>
+        {children}
       </QueryClientProvider>
     </WagmiProvider>
   );

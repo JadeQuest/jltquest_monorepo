@@ -4,10 +4,13 @@ import React, { useState, useEffect } from 'react';
 import { ShieldCheck, Cookie, X, Check, Lock, Settings } from 'lucide-react';
 import { setCookie, hasConsentBeenGiven, saveConsentForIp } from '@/lib/authCookie';
 
-export const CookieConsentModal: React.FC = () => {
-  const [isOpen, setIsOpen] = useState(false);
+interface CookieConsentModalProps {
+  initialOpen?: boolean;
+}
+
+export const CookieConsentModal: React.FC<CookieConsentModalProps> = ({ initialOpen = false }) => {
+  const [isOpen, setIsOpen] = useState(initialOpen);
   const [showDetails, setShowDetails] = useState(false);
-  const [userIp, setUserIp] = useState<string | undefined>(undefined);
 
   // Preference Toggles
   const [preferences, setPreferences] = useState({
@@ -18,37 +21,23 @@ export const CookieConsentModal: React.FC = () => {
   });
 
   useEffect(() => {
+    if (initialOpen) {
+      setIsOpen(true);
+      return;
+    }
+
     // 1. Immediately check if consent has already been saved on this browser
     if (hasConsentBeenGiven()) {
       return;
     }
 
-    // 2. Schedule popup display after 800ms delay
+    // 2. Schedule popup display after first paint without blocking FCP/LCP
     const timer = setTimeout(() => {
       setIsOpen(true);
     }, 800);
 
-    // 3. Fetch remote IP in background for IP-based persistent record
-    fetch('https://api.ipify.org?format=json')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data && data.ip) {
-          setUserIp(data.ip);
-          const ipConsentKey = `jlt_cookie_consent_${data.ip}`;
-          const localIpConsent = localStorage.getItem(ipConsentKey);
-          if (localIpConsent === 'accepted' || localIpConsent === 'declined') {
-            // Already consented for this IP address -> cancel popup timer and keep hidden
-            clearTimeout(timer);
-            setIsOpen(false);
-          }
-        }
-      })
-      .catch(() => {
-        // Non-blocking fallback: proceed with local state check
-      });
-
     return () => clearTimeout(timer);
-  }, []);
+  }, [initialOpen]);
 
   useEffect(() => {
     // Listen for custom event to re-open modal on-demand (e.g. from footer link)
@@ -73,13 +62,13 @@ export const CookieConsentModal: React.FC = () => {
       functional: true,
       marketing: true,
     });
-    saveConsentForIp(true, userIp);
+    saveConsentForIp(true);
     setCookie('jlt_cookie_prefs', JSON.stringify({ essential: true, performance: true, functional: true, marketing: true }), { days: 365 });
     setIsOpen(false);
   };
 
   const handleSavePreferences = () => {
-    saveConsentForIp(true, userIp);
+    saveConsentForIp(true);
     setCookie('jlt_cookie_prefs', JSON.stringify(preferences), { days: 365 });
     setIsOpen(false);
   };
@@ -87,7 +76,7 @@ export const CookieConsentModal: React.FC = () => {
   const handleDeclineOptional = () => {
     const minimal = { essential: true, performance: false, functional: false, marketing: false };
     setPreferences(minimal);
-    saveConsentForIp(false, userIp);
+    saveConsentForIp(false);
     setCookie('jlt_cookie_prefs', JSON.stringify(minimal), { days: 365 });
     setIsOpen(false);
   };

@@ -31,8 +31,10 @@ export const DailyCheckInCard: React.FC = () => {
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 sm:w-7 sm:h-7 relative flex items-center justify-center">
               <img
-                src="/Coin.svg"
+                src="/optimized/coin.webp"
                 alt="500 Gold Coins Badge"
+                width={28}
+                height={28}
                 className="w-full h-full object-contain"
               />
             </div>
@@ -44,6 +46,8 @@ export const DailyCheckInCard: React.FC = () => {
               <img
                 src="/jltcolor.svg"
                 alt="50 JLT Badge"
+                width={28}
+                height={28}
                 className="w-full h-full object-contain"
               />
             </div>

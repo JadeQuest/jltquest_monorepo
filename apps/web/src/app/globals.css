@@ -3,6 +3,10 @@
 @layer base {
   html, body {
     font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-synthesis: none;
+  }
+  [data-rk] {
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif !important;
   }
 }
 
@@ -50,8 +54,8 @@
 }
 
 @keyframes pulseGlow {
-  0%, 100% { opacity: 0.6; filter: drop-shadow(0 0 15px rgba(255, 120, 80, 0.6)); }
-  50% { opacity: 1; filter: drop-shadow(0 0 30px rgba(255, 160, 50, 0.9)); }
+  0%, 100% { opacity: 0.72; transform: translate3d(0, 0, 0) scale3d(1, 1, 1); }
+  50% { opacity: 1; transform: translate3d(0, -2px, 0) scale3d(1.02, 1.02, 1); }
 }
 
 @keyframes starSparkle {
@@ -75,7 +79,7 @@
 }
 
 .animate-flame {
-  will-change: opacity, filter;
+  will-change: opacity, transform;
   animation: pulseGlow 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
@@ -262,7 +266,33 @@ html {
 
 body {
   overflow-x: hidden;
-  contain: layout style;
+}
+
+@supports (content-visibility: auto) {
+  #features,
+  #how-it-works,
+  #rewards,
+  footer {
+    content-visibility: auto;
+    contain-intrinsic-size: 1px 900px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* Fix RainbowKit portal positioning & avoid dashboard background shifts */
+div[data-rk] {
+  position: relative;
+  z-index: 99999 !important;
 }
 
 /* Custom Scrollbar */

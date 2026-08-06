@@ -325,6 +325,14 @@ export default function Splash({ onClick, onStartTransition, onComplete }: Splas
     animationFrameId = requestAnimationFrame(tick);
   }, [isTransitioning, onClick, onStartTransition, onComplete]);
 
+  // Auto-transition to main landing page after a brief delay (800ms)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      handleSplashClick();
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [handleSplashClick]);
+
   return (
     <div
       ref={containerRef}
@@ -587,9 +595,13 @@ export default function Splash({ onClick, onStartTransition, onComplete }: Splas
       {/* ─── Mascot (Full Character Intact) ─── */}
       <img
         ref={mascotFullRef}
-        src="/Mascot.svg"
+        src="/optimized/mascot.webp"
         alt="JLT Quest Mascot"
         aria-label="JLT Quest Mascot character"
+        width={780}
+        height={780}
+        decoding="async"
+        fetchPriority="high"
         className="absolute left-[50%] md:left-[47%] top-[50%] md:top-[53%] -translate-x-[50%] -translate-y-[50%] w-[55vw] sm:w-[40vw] md:w-[24vw] max-w-[460px] h-auto object-contain z-10 pointer-events-none drop-shadow-[0_20px_40px_rgba(0,0,0,0.6)] animate-float"
         style={{ transformOrigin: 'center center', willChange: 'transform, opacity' }}
       />
@@ -604,7 +616,7 @@ export default function Splash({ onClick, onStartTransition, onComplete }: Splas
         <div
           className="mascot-part absolute inset-0 bg-no-repeat bg-contain"
           style={{
-            backgroundImage: 'url(/Mascot.svg)',
+            backgroundImage: 'url(/optimized/mascot.webp)',
             clipPath: 'polygon(24% 0%, 76% 0%, 76% 32%, 24% 32%)',
             transformOrigin: '50% 16%',
             willChange: 'transform, opacity',
@@ -614,7 +626,7 @@ export default function Splash({ onClick, onStartTransition, onComplete }: Splas
         <div
           className="mascot-part absolute inset-0 bg-no-repeat bg-contain"
           style={{
-            backgroundImage: 'url(/Mascot.svg)',
+            backgroundImage: 'url(/optimized/mascot.webp)',
             clipPath: 'polygon(0% 0%, 28% 0%, 28% 30%, 0% 30%)',
             transformOrigin: '14% 15%',
             willChange: 'transform, opacity',
@@ -624,7 +636,7 @@ export default function Splash({ onClick, onStartTransition, onComplete }: Splas
         <div
           className="mascot-part absolute inset-0 bg-no-repeat bg-contain"
           style={{
-            backgroundImage: 'url(/Mascot.svg)',
+            backgroundImage: 'url(/optimized/mascot.webp)',
             clipPath: 'polygon(72% 0%, 100% 0%, 100% 30%, 72% 30%)',
             transformOrigin: '86% 15%',
             willChange: 'transform, opacity',
@@ -634,7 +646,7 @@ export default function Splash({ onClick, onStartTransition, onComplete }: Splas
         <div
           className="mascot-part absolute inset-0 bg-no-repeat bg-contain"
           style={{
-            backgroundImage: 'url(/Mascot.svg)',
+            backgroundImage: 'url(/optimized/mascot.webp)',
             clipPath: 'polygon(0% 30%, 35% 30%, 35% 65%, 0% 65%)',
             transformOrigin: '17% 48%',
             willChange: 'transform, opacity',
@@ -644,7 +656,7 @@ export default function Splash({ onClick, onStartTransition, onComplete }: Splas
         <div
           className="mascot-part absolute inset-0 bg-no-repeat bg-contain"
           style={{
-            backgroundImage: 'url(/Mascot.svg)',
+            backgroundImage: 'url(/optimized/mascot.webp)',
             clipPath: 'polygon(65% 30%, 100% 30%, 100% 65%, 65% 65%)',
             transformOrigin: '83% 48%',
             willChange: 'transform, opacity',
@@ -654,7 +666,7 @@ export default function Splash({ onClick, onStartTransition, onComplete }: Splas
         <div
           className="mascot-part absolute inset-0 bg-no-repeat bg-contain"
           style={{
-            backgroundImage: 'url(/Mascot.svg)',
+            backgroundImage: 'url(/optimized/mascot.webp)',
             clipPath: 'polygon(25% 30%, 75% 30%, 100% 100%, 0% 100%)',
             transformOrigin: '50% 65%',
             willChange: 'transform, opacity',

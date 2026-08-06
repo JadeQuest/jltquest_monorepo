@@ -17,7 +17,7 @@ const FeatureCard: React.FC<FeatureCardProps> = React.memo(({ icon, iconAlt, tit
   >
     {/* Icon */}
     <div className="w-16 h-16 rounded-2xl glass-btn flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300">
-      <img src={icon} alt={iconAlt} loading="lazy" decoding="async" className="w-10 h-10 object-contain" />
+      <img src={icon} alt={iconAlt} width={40} height={40} loading="lazy" decoding="async" className="w-10 h-10 object-contain" />
     </div>
 
     {/* Text */}
@@ -40,7 +40,7 @@ const features: FeatureCardProps[] = [
     delay: '0.1s',
   },
   {
-    icon: '/Spin.svg',
+    icon: '/optimized/spin.webp',
     iconAlt: 'Spin to Win',
     title: 'Spin to Win',
     description: 'Try your luck with the daily spin wheel. Land on rare passes, coin multipliers, and exclusive loot.',
@@ -68,7 +68,7 @@ const features: FeatureCardProps[] = [
     delay: '0.5s',
   },
   {
-    icon: '/Flame.svg',
+    icon: '/optimized/flame.webp',
     iconAlt: 'Daily Streak',
     title: 'Daily Streaks',
     description: 'Log in every day to build your streak. The longer the streak, the bigger the rewards — stay consistent.',
@@ -89,7 +89,7 @@ export const FeaturesSection: React.FC = () => {
         {/* Section Header */}
         <div className="flex flex-col items-center gap-4 text-center">
           <div className="glass-pill px-5 py-2 inline-flex items-center gap-2">
-            <img src="/jlt.svg" alt="JLT" className="w-5 h-5 object-contain" />
+            <img src="/jlt.svg" alt="JLT" width={20} height={20} loading="lazy" decoding="async" className="w-5 h-5 object-contain" />
             <span className="font-gilroyMedium text-sm text-white/90 tracking-wider uppercase">Everything You Need</span>
           </div>
           <h2 className="font-gilroyBold text-5xl text-white tracking-tight leading-tight">

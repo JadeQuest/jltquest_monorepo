@@ -15,7 +15,7 @@ const Step: React.FC<StepProps> = React.memo(({ step, title, description, icon, 
     {/* Step circle */}
     <div className="relative flex items-center justify-center">
       <div className="w-24 h-24 rounded-full glass-panel flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-        <img src={icon} alt={iconAlt} loading="lazy" decoding="async" className="w-12 h-12 object-contain" />
+        <img src={icon} alt={iconAlt} width={48} height={48} loading="lazy" decoding="async" className="w-12 h-12 object-contain" />
       </div>
       <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-gradient-to-br from-[#360C9F] to-[#FFA28D] flex items-center justify-center shadow-[0_0_12px_rgba(255,162,141,0.5)]">
         <span className="font-gilroyBold text-white text-xs">{step}</span>
@@ -49,7 +49,7 @@ const steps: StepProps[] = [
     step: 3,
     title: 'Collect Rares',
     description: 'Use your coins to spin, collect, and upgrade rare passes and NFTs.',
-    icon: '/Spin.svg',
+    icon: '/optimized/spin.webp',
     iconAlt: 'Collect Rares',
   },
   {
@@ -74,7 +74,7 @@ export const HowItWorksSection: React.FC = () => {
         {/* Section Header */}
         <div className="flex flex-col items-center gap-4 text-center">
           <div className="glass-pill px-5 py-2 inline-flex items-center gap-2">
-            <img src="/Coin.svg" alt="JLT Coin" className="w-5 h-5 object-contain animate-sparkle" />
+            <img src="/optimized/coin.webp" alt="JLT Coin" width={20} height={20} loading="lazy" decoding="async" className="w-5 h-5 object-contain animate-sparkle" />
             <span className="font-gilroyMedium text-sm text-white/90 tracking-wider uppercase">Simple Steps</span>
           </div>
           <h2 className="font-gilroyBold text-5xl text-white tracking-tight leading-tight">

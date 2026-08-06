@@ -25,8 +25,12 @@ export const CollectRaresCard: React.FC = () => {
           style={{ boxShadow: '2px 6px 4.5px 0px rgba(0, 0, 0, 0.7)' }}
         >
           <img
-            src="/Collect3.svg"
+            src="/optimized/collect-3.webp"
             alt="Collect Rare 3"
+            width={121}
+            height={166}
+            loading="lazy"
+            decoding="async"
             className="absolute inset-0 w-full h-full object-cover -z-10"
           />
           <div className="w-full bg-[#7B2CBF] rounded-b-[40%] py-0.5 sm:py-1 px-1 text-center shadow-sm border-b border-purple-300/30 z-10">
@@ -42,8 +46,12 @@ export const CollectRaresCard: React.FC = () => {
           style={{ boxShadow: '2px 6px 4.5px 0px rgba(0, 0, 0, 0.7)' }}
         >
           <img
-            src="/Collect2.svg"
+            src="/optimized/collect-2.webp"
             alt="Collect Rare 2"
+            width={121}
+            height={166}
+            loading="lazy"
+            decoding="async"
             className="absolute inset-0 w-full h-full object-cover -z-10"
           />
           <div className="w-full bg-[#059669] rounded-b-[40%] py-0.5 sm:py-1 px-1 text-center shadow-sm border-b border-emerald-300/30 z-10">
@@ -59,8 +67,12 @@ export const CollectRaresCard: React.FC = () => {
           style={{ boxShadow: '2px 6px 4.5px 0px rgba(0, 0, 0, 0.7)' }}
         >
           <img
-            src="/Collect1.svg"
+            src="/optimized/collect-1.webp"
             alt="Collect Rare 1"
+            width={121}
+            height={166}
+            loading="lazy"
+            decoding="async"
             className="absolute inset-0 w-full h-full object-cover -z-10"
           />
           <div className="w-full bg-[#3B82F6] rounded-b-[40%] py-0.5 sm:py-1 px-1 text-center shadow-sm border-b border-blue-200/40 z-10">

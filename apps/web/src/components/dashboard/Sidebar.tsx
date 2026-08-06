@@ -9,6 +9,13 @@ interface SidebarProps {
   onMobileClose?: () => void;
 }
 
+const NAV_ITEMS = [
+  { id: 'Discover', label: 'Discover', iconSrc: '/Discover.svg' },
+  { id: 'Push Pass', label: 'Push Pass', iconSrc: '/Push Pass.svg' },
+  { id: 'Invites/Squads', label: 'Invites/Squads', iconSrc: '/InviteSqaud.svg' },
+  { id: 'Leaderboards', label: 'Leaderboards', iconSrc: '/LeaderBoard.svg' },
+];
+
 export const Sidebar: React.FC<SidebarProps> = ({
   activeTab = 'Discover',
   onSelectTab,
@@ -17,18 +24,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const [selected, setSelected] = useState(activeTab);
 
-  const navItems = [
-    { id: 'Discover', label: 'Discover', iconSrc: '/Discover.svg' },
-    { id: 'Push Pass', label: 'Push Pass', iconSrc: '/Push Pass.svg' },
-    { id: 'Invites/Squads', label: 'Invites/Squads', iconSrc: '/InviteSqaud.svg' },
-    { id: 'Leaderboards', label: 'Leaderboards', iconSrc: '/LeaderBoard.svg' },
-  ];
-
-  const handleTabClick = (id: string) => {
+  const handleTabClick = React.useCallback((id: string) => {
     setSelected(id);
     if (onSelectTab) onSelectTab(id);
     if (onMobileClose) onMobileClose();
-  };
+  }, [onMobileClose, onSelectTab]);
 
   const navContent = (
     <>
@@ -36,7 +36,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <div className="flex flex-col gap-6">
         {/* JLT Official Vector SVG Logo */}
         <div className="flex items-center justify-between pl-3 pt-2 h-[60px] mb-2">
-          <img src="/jlt.svg" alt="JLT Logo" className="w-[65px] h-[61px] object-contain drop-shadow-[0_0_12px_rgba(255,255,255,0.3)]" />
+          <img src="/jlt.svg" alt="JLT Logo" width={65} height={61} className="w-[65px] h-[61px] object-contain drop-shadow-[0_0_12px_rgba(255,255,255,0.3)]" />
           {isMobileOpen && (
             <button
               onClick={onMobileClose}
@@ -51,7 +51,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         {/* Navigation List */}
         <nav className="flex flex-col gap-4">
-          {navItems.map((item) => {
+          {NAV_ITEMS.map((item) => {
             const isActive = selected === item.id;
             return (
               <button
@@ -67,6 +67,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   <img
                     src={item.iconSrc}
                     alt={item.label}
+                    width={28}
+                    height={28}
                     className="w-7 h-7 object-contain"
                   />
                 </div>
@@ -88,8 +90,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="absolute inset-0 bg-gradient-to-tr from-[#340073]/40 via-[#7B2CBF]/30 to-transparent blur-2xl rounded-full scale-125 -z-10 group-hover:scale-150 transition-transform duration-500" />
         <div className="relative w-full h-[180px] sm:h-[240px] xl:h-[280px] flex items-center justify-center animate-float">
           <img
-            src="/Mascot.svg"
+            src="/optimized/mascot.webp"
             alt="JLT Mascot"
+            width={280}
+            height={280}
+            loading="lazy"
+            decoding="async"
             className="w-[180px] sm:w-[240px] xl:w-[280px] h-[180px] sm:h-[240px] xl:h-[280px] object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.5)]"
           />
         </div>

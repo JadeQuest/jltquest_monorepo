@@ -21,8 +21,10 @@ export const StreakCard: React.FC = () => {
       {/* South-East Flame graphic - Slightly larger (w-[215px] h-[260px]) */}
       <div className="absolute -right-5 -bottom-7 w-[215px] h-[260px] flex items-center justify-center animate-flame z-10 pointer-events-none">
         <img
-          src="/Flame.svg"
+          src="/optimized/flame.webp"
           alt="Flame Badge"
+          width={215}
+          height={260}
           className="w-full h-full object-contain drop-shadow-[0_10px_20px_rgba(234,88,12,0.7)]"
         />
 

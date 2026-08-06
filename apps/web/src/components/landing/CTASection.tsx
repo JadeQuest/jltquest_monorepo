@@ -20,8 +20,10 @@ export const CTASection: React.FC = () => {
         <div className="relative w-40 h-40 flex items-center justify-center">
           <div className="absolute inset-0 rounded-full bg-radial from-[#360C9F]/60 via-[#7B2CBF]/30 to-transparent blur-2xl scale-150" />
           <img
-            src="/Mascot.svg"
+            src="/optimized/mascot.webp"
             alt="JLT Quest Mascot"
+            width={144}
+            height={144}
             loading="lazy"
             decoding="async"
             className="relative w-36 h-36 object-contain drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)] animate-float"
@@ -52,7 +54,7 @@ export const CTASection: React.FC = () => {
               className="glass-pill px-5 py-2.5 flex items-center gap-2.5 animate-float"
               style={{ animationDelay: `${i * 0.4}s` }}
             >
-              <img src="/Coin.svg" alt="JLT Coin" loading="lazy" decoding="async" className="w-6 h-6 object-contain animate-sparkle" style={{ animationDelay: `${i * 0.3}s` }} />
+              <img src="/optimized/coin.webp" alt="JLT Coin" width={24} height={24} loading="lazy" decoding="async" className="w-6 h-6 object-contain animate-sparkle" style={{ animationDelay: `${i * 0.3}s` }} />
               <span className="font-gilroyBold text-white text-sm">
                 {i === 1 ? '+250 Coins' : i === 2 ? 'Rare Drop' : '2× Bonus'}
               </span>

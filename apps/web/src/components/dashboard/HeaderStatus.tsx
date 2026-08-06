@@ -1,13 +1,14 @@
 'use client';
 
 import React from 'react';
-import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { useAccount } from 'wagmi';
 
 interface HeaderStatusProps {
   level?: number;
   multiplier?: string;
   coins?: number;
   onToggleMobileMenu?: () => void;
+  onConnectClick?: () => void;
 }
 
 export const HeaderStatus: React.FC<HeaderStatusProps> = ({
@@ -15,7 +16,14 @@ export const HeaderStatus: React.FC<HeaderStatusProps> = ({
   multiplier = '2X',
   coins = 500,
   onToggleMobileMenu,
+  onConnectClick,
 }) => {
+  const { address, isConnected, chain } = useAccount();
+
+  const formatAddress = React.useCallback((addr: string) => {
+    return `${addr.substring(0, 6)}...${addr.substring(addr.length - 4)}`;
+  }, []);
+
   return (
     <header className="w-full flex items-center justify-between lg:justify-end gap-4 px-3 sm:px-6 py-2 z-20 select-none">
       {/* Mobile Left Brand & Hamburger Menu */}
@@ -30,7 +38,7 @@ export const HeaderStatus: React.FC<HeaderStatusProps> = ({
             <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
-        <img src="/jltcolor.svg" alt="JLT Logo" className="w-9 h-9 object-contain" />
+        <img src="/jltcolor.svg" alt="JLT Logo" width={36} height={36} className="w-9 h-9 object-contain" />
       </div>
 
       <div className="flex flex-wrap items-center justify-end gap-3 sm:gap-6">
@@ -38,8 +46,10 @@ export const HeaderStatus: React.FC<HeaderStatusProps> = ({
         <div className="flex items-center gap-1.5 sm:gap-2.5">
           <div className="w-7 h-7 sm:w-9 sm:h-9 relative flex items-center justify-center shrink-0">
             <img
-              src="/Level.svg"
+              src="/optimized/level.webp"
               alt="Lv. 1 Badge"
+              width={36}
+              height={36}
               className="w-full h-full object-contain"
             />
           </div>
@@ -52,8 +62,10 @@ export const HeaderStatus: React.FC<HeaderStatusProps> = ({
         <div className="flex items-center gap-1.5 sm:gap-2.5">
           <div className="w-7 h-7 sm:w-9 sm:h-9 relative flex items-center justify-center shrink-0">
             <img
-              src="/TopLevel.svg"
+              src="/optimized/top-level.webp"
               alt="2X Multiplier Badge"
+              width={36}
+              height={36}
               className="w-full h-full object-contain"
             />
           </div>
@@ -66,8 +78,10 @@ export const HeaderStatus: React.FC<HeaderStatusProps> = ({
         <div className="flex items-center gap-1.5 sm:gap-2.5">
           <div className="w-7 h-7 sm:w-9 sm:h-9 relative flex items-center justify-center shrink-0">
             <img
-              src="/Coin.svg"
+              src="/optimized/coin.webp"
               alt="500 Gold Coins Badge"
+              width={36}
+              height={36}
               className="w-full h-full object-contain"
             />
           </div>
@@ -76,111 +90,48 @@ export const HeaderStatus: React.FC<HeaderStatusProps> = ({
           </span>
         </div>
 
-        {/* Item 4: RainbowKit Connect Wallet Button */}
-        <ConnectButton.Custom>
-          {({
-            account,
-            chain,
-            openAccountModal,
-            openChainModal,
-            openConnectModal,
-            authenticationStatus,
-            mounted,
-          }) => {
-            const ready = mounted && authenticationStatus !== 'loading';
-            const connected =
-              ready &&
-              account &&
-              chain &&
-              (!authenticationStatus || authenticationStatus === 'authenticated');
-
-            return (
-              <div
-                {...(!ready && {
-                  'aria-hidden': true,
-                  style: {
-                    opacity: 0,
-                    pointerEvents: 'none',
-                    userSelect: 'none',
-                  },
-                })}
-              >
-                {(() => {
-                  if (!connected) {
-                    return (
-                      <button
-                        onClick={openConnectModal}
-                        type="button"
-                        className="glass-pill px-3 py-1.5 sm:px-5 sm:py-2.5 flex items-center gap-2 sm:gap-3 cursor-pointer hover:border-purple-400/50 hover:bg-white/10 transition-all shadow-lg"
-                      >
-                        <img
-                          src="/Rectangle 11989.svg"
-                          alt="Wallet Icon"
-                          className="w-5 h-5 sm:w-7 sm:h-7 rounded-md object-cover"
-                        />
-                        <span className="text-white font-gilroyMedium text-xs sm:text-base font-medium tracking-wide">
-                          Connect Wallet
-                        </span>
-                      </button>
-                    );
-                  }
-
-                  if (chain.unsupported) {
-                    return (
-                      <button
-                        onClick={openChainModal}
-                        type="button"
-                        className="px-3 py-1.5 sm:px-5 sm:py-2.5 rounded-xl bg-red-500/20 border border-red-500/50 hover:bg-red-500/30 transition-all text-red-300 font-gilroyMedium text-xs sm:text-base font-medium tracking-wide"
-                      >
-                        Wrong Network
-                      </button>
-                    );
-                  }
-
-                  return (
-                    <div className="flex items-center gap-2 sm:gap-3">
-                      {chain.hasIcon && chain.iconUrl && (
-                        <button
-                          onClick={openChainModal}
-                          type="button"
-                          className="glass-pill p-1.5 sm:p-2.5 flex items-center justify-center cursor-pointer hover:border-purple-400/50 transition-all shadow-lg"
-                          title={chain.name}
-                        >
-                          <img
-                            src={chain.iconUrl}
-                            alt={chain.name ?? 'Chain icon'}
-                            className="w-5 h-5 sm:w-6 sm:h-6 object-contain"
-                          />
-                        </button>
-                      )}
-                      <button
-                        onClick={openAccountModal}
-                        type="button"
-                        className="glass-pill px-3 py-1.5 sm:px-5 sm:py-2.5 flex items-center gap-2 sm:gap-3 cursor-pointer hover:border-purple-400/50 transition-all shadow-lg"
-                      >
-                        <img
-                          src={account.ensAvatar || '/Rectangle 11989.svg'}
-                          alt="Wallet Avatar"
-                          className="w-5 h-5 sm:w-7 sm:h-7 rounded-md object-cover"
-                        />
-                        <span className="text-white font-gilroyMedium text-xs sm:text-base font-medium tracking-wide">
-                          {account.displayName}
-                        </span>
-                        {account.displayBalance ? (
-                          <span className="hidden md:inline text-white/70 font-gilroyRegular text-xs sm:text-sm">
-                            ({account.displayBalance})
-                          </span>
-                        ) : null}
-                      </button>
-                    </div>
-                  );
-                })()}
-              </div>
-            );
-          }}
-        </ConnectButton.Custom>
+        {/* Item 4: Custom Centered Connect Wallet Trigger */}
+        {!isConnected || !address ? (
+          <button
+            onClick={onConnectClick}
+            type="button"
+            className="glass-pill px-3 py-1.5 sm:px-5 sm:py-2.5 flex items-center gap-2 sm:gap-3 cursor-pointer hover:border-purple-400/50 hover:bg-white/10 transition-all shadow-lg"
+          >
+            <img
+              src="/Rectangle 11989.svg"
+              alt="Wallet Icon"
+              width={28}
+              height={28}
+              className="w-5 h-5 sm:w-7 sm:h-7 rounded-md object-cover"
+            />
+            <span className="text-white font-gilroyMedium text-xs sm:text-base font-medium tracking-wide">
+              Connect Wallet
+            </span>
+          </button>
+        ) : (
+          <button
+            onClick={onConnectClick}
+            type="button"
+            className="glass-pill px-3 py-1.5 sm:px-5 sm:py-2.5 flex items-center gap-2 sm:gap-3 cursor-pointer hover:border-purple-400/50 transition-all shadow-lg"
+          >
+            <img
+              src="/Rectangle 11989.svg"
+              alt="Wallet Avatar"
+              width={28}
+              height={28}
+              className="w-5 h-5 sm:w-7 sm:h-7 rounded-md object-cover"
+            />
+            <span className="text-white font-gilroyMedium text-xs sm:text-base font-medium tracking-wide">
+              {formatAddress(address)}
+            </span>
+            {chain && (
+              <span className="hidden md:inline text-purple-300 font-gilroyRegular text-xs sm:text-sm">
+                ({chain.name})
+              </span>
+            )}
+          </button>
+        )}
       </div>
     </header>
   );
 };
-

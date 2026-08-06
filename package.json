@@ -5,6 +5,8 @@
   "packageManager": "pnpm@10.0.0",
   "scripts": {
     "dev": "turbo dev",
+    "dev:web": "turbo dev --filter=web",
+    "dev:no-mobile": "turbo dev --filter=!mobile",
     "build": "turbo build",
     "lint": "turbo lint",
     "test": "turbo test",

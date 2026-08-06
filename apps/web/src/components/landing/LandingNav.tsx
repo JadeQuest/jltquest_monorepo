@@ -1,28 +1,11 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { Menu, X, ArrowRight, Sparkles } from 'lucide-react';
 
 export const LandingNav: React.FC = () => {
-  const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  useEffect(() => {
-    let ticking = false;
-    const handleScroll = () => {
-      if (!ticking) {
-        window.requestAnimationFrame(() => {
-          setScrolled(window.scrollY > 20);
-          ticking = false;
-        });
-        ticking = true;
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   const scrollToSection = React.useCallback((id: string) => {
     setMobileMenuOpen(false);
@@ -33,13 +16,7 @@ export const LandingNav: React.FC = () => {
   }, []);
 
   return (
-    <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        scrolled
-          ? 'bg-[#080411]/85 backdrop-blur-xl animated-border-b shadow-2xl py-3.5'
-          : 'bg-transparent py-5'
-      }`}
-    >
+    <header className="fixed top-0 left-0 right-0 z-50 py-5 bg-transparent">
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
         
         {/* Brand Logo */}

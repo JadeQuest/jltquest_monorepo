@@ -4,7 +4,7 @@ import React from 'react';
 
 export const RarePassCard: React.FC = () => {
   return (
-    <div className="cosmic-space-card glass-panel p-6 flex flex-col justify-between h-[360px] relative overflow-hidden group select-none">
+    <div className="cosmic-space-card glass-panel p-5 sm:p-6 flex flex-col justify-between h-[320px] sm:h-[360px] relative overflow-hidden group select-none">
       {/* Base Dark Background */}
       <div className="absolute inset-0 bg-[#180C30] z-0" />
 
@@ -16,7 +16,7 @@ export const RarePassCard: React.FC = () => {
           className="w-full h-full object-cover object-center scale-100 group-hover:scale-105 transition-transform duration-700"
         />
         {/* Dark Vignette / Gradient Overlay to ensure text readability */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#180C30]/80 via-[#180C30]/30 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#180C30]/85 via-[#180C30]/40 to-transparent" />
       </div>
 
       {/* Floating Constellation Sparkle Accents */}
@@ -26,10 +26,10 @@ export const RarePassCard: React.FC = () => {
 
       {/* Card Text Content (Top Left Aligned) */}
       <div className="flex flex-col gap-2 z-20 max-w-[340px]">
-        <h2 className="text-white font-gilroyBold text-4xl font-extrabold tracking-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.9)]">
+        <h2 className="text-white font-gilroyBold text-2xl sm:text-4xl font-extrabold tracking-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.9)]">
           Rare Pass
         </h2>
-        <p className="text-purple-200 font-gilroyRegular text-base font-normal leading-relaxed opacity-95 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
+        <p className="text-purple-200 font-gilroyRegular text-sm sm:text-base font-normal leading-relaxed opacity-95 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
           Collect and Open Rare Passes for a special reveal on Mainnet
         </p>
 

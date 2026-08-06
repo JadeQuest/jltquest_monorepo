@@ -58,12 +58,12 @@ export const DailyCheckInCard: React.FC = () => {
 
       <div className="grid grid-cols-7 gap-1 sm:gap-3 mt-4 items-end overflow-x-auto pb-1">
         {daysData.map((item, idx) => (
-          <div key={idx} className="flex flex-col items-center gap-2 group cursor-pointer">
-            <span className="text-purple-200 font-gilroyBold text-sm font-bold tracking-wide group-hover:text-white transition-colors">
+          <div key={idx} className="flex flex-col items-center gap-2">
+            <span className="text-purple-200 font-gilroyBold text-sm font-bold tracking-wide">
               {item.day}
             </span>
 
-            <div className="relative w-full h-16 flex items-end justify-center transition-transform duration-300 group-hover:scale-110">
+            <div className="relative w-full h-16 flex items-end justify-center">
               <svg width="42" height="50" viewBox="0 0 42 50" fill="none">
                 <defs>
                   <linearGradient id={`coinTopGrad_${idx}`} x1="0" y1="0" x2="42" y2="0">

@@ -84,13 +84,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Mascot Section */}
-      <div className="relative mt-8 group cursor-pointer hidden sm:block">
+      <div className="relative mt-6 sm:mt-8 group cursor-pointer flex justify-center">
         <div className="absolute inset-0 bg-gradient-to-tr from-[#340073]/40 via-[#7B2CBF]/30 to-transparent blur-2xl rounded-full scale-125 -z-10 group-hover:scale-150 transition-transform duration-500" />
-        <div className="relative w-full h-[240px] xl:h-[280px] flex items-center justify-center animate-float">
+        <div className="relative w-full h-[180px] sm:h-[240px] xl:h-[280px] flex items-center justify-center animate-float">
           <img
             src="/Mascot.svg"
             alt="JLT Mascot"
-            className="w-[240px] xl:w-[280px] h-[240px] xl:h-[280px] object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.5)]"
+            className="w-[180px] sm:w-[240px] xl:w-[280px] h-[180px] sm:h-[240px] xl:h-[280px] object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.5)]"
           />
         </div>
       </div>

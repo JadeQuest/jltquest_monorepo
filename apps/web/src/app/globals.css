@@ -26,8 +26,12 @@
   }
 }
 
-/* Custom Glass & Glowing Utilities */
-/* Custom Glass, Glowing & Animated Border Utilities */
+/* ═══════════════════════════════════════════════════════════
+   120 FPS PERFORMANCE BOOSTERS & HARDWARE ACCELERATION
+   ═══════════════════════════════════════════════════════════ */
+
+/* Hardware Accelerated GPU Keyframes */
+/* Hardware Accelerated Keyframes */
 @keyframes borderGradientRotate {
   0% {
     background-position: 0% 50%;
@@ -40,180 +44,9 @@
   }
 }
 
-.glass-panel {
-  background: linear-gradient(180deg, rgba(35, 14, 68, 0.45) 0%, rgba(20, 8, 42, 0.75) 100%);
-  backdrop-filter: blur(25px);
-  box-shadow: inset 0px 2px 9px 0.25px rgba(255, 255, 255, 0.2), 0 10px 30px rgba(0, 0, 0, 0.5);
-  position: relative;
-  border-radius: 25px;
-}
-
-.glass-panel::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  padding: 1.5px;
-  border-radius: 25px;
-  background: linear-gradient(135deg, #FFA28D 0%, #FF007F 25%, #9D4EDD 50%, #360C9F 75%, #00F0FF 100%);
-  background-size: 300% 300%;
-  animation: borderGradientRotate 5s ease infinite;
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
-  z-index: 2;
-}
-
-.daily-card-panel {
-  background: linear-gradient(180deg, rgba(233, 146, 143, 0) 0%, rgba(73, 27, 130, 0.7) 100%);
-  backdrop-filter: blur(50px);
-  box-shadow: inset 0px 2px 9px 0.25px rgba(255, 255, 255, 0.5);
-  position: relative;
-  border-radius: 25px;
-}
-
-.daily-card-panel::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  padding: 1.5px;
-  border-radius: 25px;
-  background: linear-gradient(135deg, #00F0FF 0%, #360C9F 25%, #7B2CBF 50%, #FF007F 75%, #FFA28D 100%);
-  background-size: 300% 300%;
-  animation: borderGradientRotate 4s ease infinite;
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
-  z-index: 2;
-}
-
-.glass-pill {
-  background: linear-gradient(90deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.03) 100%);
-  backdrop-filter: blur(10px);
-  position: relative;
-  border-radius: 14px;
-}
-
-.glass-pill::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  padding: 1.5px;
-  border-radius: 14px;
-  background: linear-gradient(135deg, #FFA28D 0%, #7B2CBF 33%, #00F0FF 66%, #FF007F 100%);
-  background-size: 300% 300%;
-  animation: borderGradientRotate 4s ease infinite;
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
-  z-index: 2;
-}
-
-.glass-btn {
-  position: relative;
-  background: linear-gradient(235deg, rgba(52, 0, 115, 0.8) 0%, rgba(54, 12, 159, 0.9) 50%, rgba(255, 162, 141, 0.7) 100%);
-  backdrop-filter: blur(10px);
-  transition: all 0.25s ease;
-  z-index: 1;
-}
-
-.glass-btn::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  padding: 1.5px;
-  border-radius: inherit;
-  background: linear-gradient(135deg, #FFA28D 0%, #FF007F 25%, #9D4EDD 50%, #360C9F 75%, #00F0FF 100%);
-  background-size: 300% 300%;
-  animation: borderGradientRotate 4s ease infinite;
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
-  z-index: 2;
-}
-
-.glass-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 0 25px rgba(255, 162, 141, 0.5), 0 0 15px rgba(0, 240, 255, 0.5);
-}
-
-.glass-btn:hover::before {
-  animation-duration: 2s;
-}
-
-.animated-box-border {
-  position: relative;
-}
-
-.animated-box-border::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  padding: 1.5px;
-  border-radius: inherit;
-  background: linear-gradient(135deg, #FFA28D 0%, #FF007F 25%, #7B2CBF 50%, #360C9F 75%, #00F0FF 100%);
-  background-size: 300% 300%;
-  animation: borderGradientRotate 4s ease infinite;
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
-  z-index: 2;
-}
-
-.animated-border-b {
-  position: relative;
-}
-
-.animated-border-b::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, #FFA28D, #FF007F, #7B2CBF, #360C9F, #00F0FF, #FFA28D);
-  background-size: 300% 300%;
-  animation: borderGradientRotate 5s linear infinite;
-  pointer-events: none;
-}
-
-.animated-border-t {
-  position: relative;
-}
-
-.animated-border-t::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, #FFA28D, #FF007F, #7B2CBF, #360C9F, #00F0FF, #FFA28D);
-  background-size: 300% 300%;
-  animation: borderGradientRotate 5s linear infinite;
-  pointer-events: none;
-}
-
-.cosmic-space-card {
-  background: linear-gradient(135deg, #180C30 0%, #2A1352 40%, #15082C 100%);
-  position: relative;
-  overflow: hidden;
-  border-radius: 25px;
-}
-
-/* Animations — Hardware Accelerated 60 FPS GPU Keyframes */
 @keyframes float {
   0%, 100% { transform: translate3d(0, 0px, 0) rotate(0deg); }
-  50% { transform: translate3d(0, -8px, 0) rotate(2deg); }
+  50% { transform: translate3d(0, -8px, 0) rotate(1.5deg); }
 }
 
 @keyframes pulseGlow {
@@ -224,6 +57,16 @@
 @keyframes starSparkle {
   0%, 100% { opacity: 0.3; transform: scale3d(0.8, 0.8, 1); }
   50% { opacity: 1; transform: scale3d(1.2, 1.2, 1); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translate3d(0, -10px, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translate3d(0, 24px, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
 }
 
 .animate-float {
@@ -241,17 +84,6 @@
   animation: starSparkle 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
-/* Landing Page Entrance Animations with GPU Translate3d */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translate3d(0, -10px, 0); }
-  to { opacity: 1; transform: translate3d(0, 0, 0); }
-}
-
-@keyframes fadeUp {
-  from { opacity: 0; transform: translate3d(0, 24px, 0); }
-  to { opacity: 1; transform: translate3d(0, 0, 0); }
-}
-
 .animate-fade-in {
   will-change: opacity, transform;
   animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
@@ -262,7 +94,165 @@
   animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* Global Font & Performance Boosters */
+/* Glass Panels — Animated Rounded Gradient Borders & 120 FPS Composited Layers */
+.glass-panel {
+  background: linear-gradient(180deg, rgba(35, 14, 68, 0.45) 0%, rgba(20, 8, 42, 0.75) 100%);
+  backdrop-filter: blur(25px);
+  box-shadow: inset 0px 2px 9px 0.25px rgba(255, 255, 255, 0.2), 0 10px 30px rgba(0, 0, 0, 0.5);
+  position: relative;
+  border-radius: 25px;
+  contain: layout paint;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+.glass-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 1.5px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, #FFA28D 0%, #FF007F 25%, #9D4EDD 50%, #360C9F 75%, #00F0FF 100%);
+  background-size: 300% 300%;
+  animation: borderGradientRotate 5s ease infinite;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 2;
+  will-change: background-position;
+}
+
+.daily-card-panel {
+  background: linear-gradient(180deg, rgba(233, 146, 143, 0) 0%, rgba(73, 27, 130, 0.7) 100%);
+  backdrop-filter: blur(50px);
+  box-shadow: inset 0px 2px 9px 0.25px rgba(255, 255, 255, 0.5);
+  position: relative;
+  border-radius: 25px;
+  contain: layout paint;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+.daily-card-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 1.5px;
+  border-radius: 25px;
+  background: linear-gradient(135deg, #00F0FF 0%, #360C9F 25%, #7B2CBF 50%, #FF007F 75%, #FFA28D 100%);
+  background-size: 300% 300%;
+  animation: borderGradientRotate 4s ease infinite;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 2;
+  will-change: background-position;
+}
+
+.glass-pill {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.03) 100%);
+  backdrop-filter: blur(10px);
+  position: relative;
+  border-radius: 14px;
+  contain: layout paint;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+.glass-pill::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 1.5px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #FFA28D 0%, #7B2CBF 33%, #00F0FF 66%, #FF007F 100%);
+  background-size: 300% 300%;
+  animation: borderGradientRotate 4s ease infinite;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 2;
+  will-change: background-position;
+}
+
+.glass-btn {
+  position: relative;
+  background: linear-gradient(235deg, rgba(52, 0, 115, 0.8) 0%, rgba(54, 12, 159, 0.9) 50%, rgba(255, 162, 141, 0.7) 100%);
+  backdrop-filter: blur(10px);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease;
+  z-index: 1;
+  contain: layout paint;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+.glass-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 1.5px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, #FFA28D 0%, #FF007F 25%, #9D4EDD 50%, #360C9F 75%, #00F0FF 100%);
+  background-size: 300% 300%;
+  animation: borderGradientRotate 4s ease infinite;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 2;
+  will-change: background-position;
+}
+
+.glass-btn:hover {
+  transform: translate3d(0, -2px, 0);
+  box-shadow: 0 0 25px rgba(255, 162, 141, 0.5), 0 0 15px rgba(0, 240, 255, 0.5);
+}
+
+.animated-border-b {
+  position: relative;
+}
+
+.animated-border-b::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #FFA28D, #FF007F, #7B2CBF, #360C9F, #00F0FF, #FFA28D);
+  background-size: 300% 300%;
+  animation: borderGradientRotate 5s linear infinite;
+  pointer-events: none;
+  will-change: background-position;
+}
+
+.animated-border-t {
+  position: relative;
+}
+
+.animated-border-t::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #FFA28D, #FF007F, #7B2CBF, #360C9F, #00F0FF, #FFA28D);
+  background-size: 300% 300%;
+  animation: borderGradientRotate 5s linear infinite;
+  pointer-events: none;
+  will-change: background-position;
+}
+
+/* Global 120 Hz smooth scrolling & anti-aliasing */
 html {
   scroll-behavior: smooth;
   text-rendering: optimizeLegibility;
@@ -270,11 +260,9 @@ html {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Prevent layout shifts on GPU accelerated components */
-.glass-panel, .daily-card-panel, .glass-pill, .glass-btn {
-  contain: layout paint;
-  backface-visibility: hidden;
-  transform: translateZ(0);
+body {
+  overflow-x: hidden;
+  contain: layout style;
 }
 
 /* Custom Scrollbar */

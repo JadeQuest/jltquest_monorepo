@@ -6,8 +6,8 @@ import Link from 'next/link';
 export const CTASection: React.FC = () => {
   return (
     <section id="rewards" className="relative w-full py-24 px-6 overflow-hidden bg-[#080411]">
-      {/* Top separator line */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[70%] h-0.5 bg-gradient-to-r from-transparent via-[#FF007F] via-[#00F0FF] to-transparent bg-[length:200%_100%] animate-[borderGradientRotate_4s_ease_infinite]" />
+      {/* Section Separator Line */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[75%] max-w-5xl h-[1.5px] bg-gradient-to-r from-transparent via-[#FF007F] via-[#00F0FF] to-transparent bg-[size:200%_100%] animate-[borderGradientRotate_4s_ease_infinite] pointer-events-none" />
 
       {/* Ambient blurs */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">

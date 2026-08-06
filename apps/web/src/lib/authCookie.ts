@@ -114,7 +114,7 @@ export function validateCsrfToken(token: string): boolean {
 }
 
 /**
- * GDPR / CCPA Cookie Consent Management
+ * GDPR / CCPA Cookie Consent Management with IP Persistence
  */
 export function getCookieConsent(): boolean {
   return getCookie('jlt_cookie_consent') === 'accepted';
@@ -122,6 +122,44 @@ export function getCookieConsent(): boolean {
 
 export function setCookieConsent(accepted: boolean): void {
   setCookie('jlt_cookie_consent', accepted ? 'accepted' : 'declined', { days: 365 });
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('jlt_cookie_consent', accepted ? 'accepted' : 'declined');
+  }
+}
+
+export function hasConsentBeenGiven(): boolean {
+  if (typeof window === 'undefined') return false;
+
+  // Check direct cookie
+  const consentCookie = getCookie('jlt_cookie_consent');
+  if (consentCookie === 'accepted' || consentCookie === 'declined') return true;
+
+  // Check localStorage
+  const localConsent = localStorage.getItem('jlt_cookie_consent');
+  if (localConsent === 'accepted' || localConsent === 'declined') return true;
+
+  // Check stored IP consent record
+  const savedIp = localStorage.getItem('jlt_user_ip');
+  if (savedIp) {
+    const ipConsent = localStorage.getItem(`jlt_cookie_consent_${savedIp}`);
+    if (ipConsent === 'accepted' || ipConsent === 'declined') return true;
+  }
+
+  return false;
+}
+
+export function saveConsentForIp(accepted: boolean, ip?: string): void {
+  const status = accepted ? 'accepted' : 'declined';
+  setCookie('jlt_cookie_consent', status, { days: 365 });
+  
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('jlt_cookie_consent', status);
+    if (ip) {
+      localStorage.setItem('jlt_user_ip', ip);
+      localStorage.setItem(`jlt_cookie_consent_${ip}`, status);
+      setCookie(`jlt_cookie_consent_${ip}`, status, { days: 365 });
+    }
+  }
 }
 
 /**

@@ -1,125 +1,149 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="100%" height="100%">
-    <defs>
-        <!-- Gold Gradients for Outer Ring and Pointer -->
-        <linearGradient id="gold-ring" x1="10%" y1="0%" x2="90%" y2="100%">
-            <stop offset="0%" stop-color="#fff04d" />
-            <stop offset="20%" stop-color="#ffb800" />
-            <stop offset="50%" stop-color="#f57c00" />
-            <stop offset="80%" stop-color="#ffb800" />
-            <stop offset="100%" stop-color="#f57c00" />
-        </linearGradient>
+  <defs>
+    <!-- Outer Rim Gold Gradient -->
+    <linearGradient id="gold-ring" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFE066" />
+      <stop offset="30%" stop-color="#FFB800" />
+      <stop offset="70%" stop-color="#F57C00" />
+      <stop offset="100%" stop-color="#B45309" />
+    </linearGradient>
 
-        <linearGradient id="gold-center" x1="0%" y1="100%" x2="100%" y2="0%">
-            <stop offset="0%" stop-color="#f57c00" />
-            <stop offset="50%" stop-color="#ffb800" />
-            <stop offset="100%" stop-color="#fff04d" />
-        </linearGradient>
-        
-        <linearGradient id="gold-pointer" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stop-color="#ffdd00" />
-            <stop offset="100%" stop-color="#e67e00" />
-        </linearGradient>
+    <!-- Center Button Gradient -->
+    <radialGradient id="gold-center" cx="35%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#FFF5A0" />
+      <stop offset="50%" stop-color="#FFB800" />
+      <stop offset="100%" stop-color="#D97706" />
+    </radialGradient>
 
-        <!-- Vibrant Wedge Gradients (Bottom to Top shading) -->
-        <linearGradient id="wedge-blue" x1="0%" y1="100%" x2="0%" y2="0%">
-            <stop offset="0%" stop-color="#1ea0ff" />
-            <stop offset="100%" stop-color="#0066cc" />
-        </linearGradient>
-        
-        <linearGradient id="wedge-red" x1="0%" y1="100%" x2="0%" y2="0%">
-            <stop offset="0%" stop-color="#ff5252" />
-            <stop offset="100%" stop-color="#cc0000" />
-        </linearGradient>
+    <!-- Clip Path for Wheel Radius = 208 -->
+    <clipPath id="wheel-clip">
+      <circle cx="250" cy="250" r="208" />
+    </clipPath>
 
-        <linearGradient id="wedge-pink" x1="0%" y1="100%" x2="0%" y2="0%">
-            <stop offset="0%" stop-color="#ff4791" />
-            <stop offset="100%" stop-color="#c2005a" />
-        </linearGradient>
+    <!-- Drop Shadow Filter -->
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#000000" flood-opacity="0.4" />
+    </filter>
+  </defs>
 
-        <linearGradient id="wedge-green" x1="0%" y1="100%" x2="0%" y2="0%">
-            <stop offset="0%" stop-color="#3de33d" />
-            <stop offset="100%" stop-color="#008f00" />
-        </linearGradient>
+  <!-- Main Shadow -->
+  <circle cx="250" cy="255" r="235" fill="#000000" opacity="0.3" filter="url(#shadow)" />
 
-        <linearGradient id="wedge-purple" x1="0%" y1="100%" x2="0%" y2="0%">
-            <stop offset="0%" stop-color="#b05eff" />
-            <stop offset="100%" stop-color="#6b00d6" />
-        </linearGradient>
+  <!-- Base Outer Gold Ring -->
+  <circle cx="250" cy="250" r="235" fill="url(#gold-ring)" />
+  <circle cx="250" cy="250" r="218" fill="#1A0B2E" />
 
-        <linearGradient id="wedge-yellow" x1="0%" y1="100%" x2="0%" y2="0%">
-            <stop offset="0%" stop-color="#ffeb3b" />
-            <stop offset="100%" stop-color="#e68a00" />
-        </linearGradient>
+  <!-- 8 Wheel Wedges clipped to circle -->
+  <g clip-path="url(#wheel-clip)">
+    <!-- Base background -->
+    <circle cx="250" cy="250" r="208" fill="#F4F4F4" />
 
-        <!-- Global inner shadow to give the wheel depth at the edges -->
-        <radialGradient id="inner-shadow" cx="50%" cy="50%" r="50%">
-            <stop offset="75%" stop-color="#000" stop-opacity="0" />
-            <stop offset="95%" stop-color="#000" stop-opacity="0.08" />
-            <stop offset="100%" stop-color="#000" stop-opacity="0.3" />
-        </radialGradient>
+    <!-- 8 Exact 45-degree Wedges (-22.5 to +22.5 deg) -->
+    <!-- Path: M 250 250 L 170.402 57.833 A 208 208 0 0 1 329.598 57.833 Z -->
 
-        <clipPath id="wheel-clip">
-            <circle cx="250" cy="250" r="205" />
-        </clipPath>
-    </defs>
-
-    <!-- Main Drop Shadow for the entire wheel -->
-    <circle cx="250" cy="256" r="235" fill="rgba(0,0,0,0.2)" />
-
-    <!-- Solid Base to prevent transparency leaks -->
-    <circle cx="250" cy="250" r="235" fill="url(#gold-ring)" />
-
-    <!-- Clipped Wheel Segments -->
-    <g clip-path="url(#wheel-clip)">
-        <!-- Base White/Gray Background for the alternating wedges -->
-        <circle cx="250" cy="250" r="205" fill="#f4f4f4" />
-        
-        <!-- 6 Colored Wedges (Each is 30 degrees wide, centered dynamically) -->
-        <polygon points="250,250 169.6,-50 330.4,-50" fill="url(#wedge-blue)" transform="rotate(0 250 250)" />
-        <polygon points="250,250 169.6,-50 330.4,-50" fill="url(#wedge-red)" transform="rotate(60 250 250)" />
-        <polygon points="250,250 169.6,-50 330.4,-50" fill="url(#wedge-pink)" transform="rotate(120 250 250)" />
-        <polygon points="250,250 169.6,-50 330.4,-50" fill="url(#wedge-green)" transform="rotate(180 250 250)" />
-        <polygon points="250,250 169.6,-50 330.4,-50" fill="url(#wedge-purple)" transform="rotate(240 250 250)" />
-        <polygon points="250,250 169.6,-50 330.4,-50" fill="url(#wedge-yellow)" transform="rotate(300 250 250)" />
-
-        <!-- 3D Inner Shadow Overlay -->
-        <circle cx="250" cy="250" r="205" fill="url(#inner-shadow)" />
-    </g>
-
-    <!-- Outer Gold Ring (Hollow overlap) -->
-    <circle cx="250" cy="250" r="220" fill="none" stroke="url(#gold-ring)" stroke-width="30" />
+    <!-- Slice 0 (0 deg): 50 COINS -->
+    <path d="M 250 250 L 170.402 57.833 A 208 208 0 0 1 329.598 57.833 Z" fill="#FFB800" transform="rotate(0 250 250)"/>
     
-    <!-- Fine Ring Details (Inner & Outer borders for bevel effect) -->
-    <circle cx="250" cy="250" r="235" fill="none" stroke="#d35400" stroke-width="2" />
-    <circle cx="250" cy="250" r="205" fill="none" stroke="#ffc107" stroke-width="4" opacity="0.8" />
-    <circle cx="250" cy="250" r="203" fill="none" stroke="#000" stroke-width="1" opacity="0.1" />
+    <!-- Slice 1 (45 deg): RARE PASS -->
+    <path d="M 250 250 L 170.402 57.833 A 208 208 0 0 1 329.598 57.833 Z" fill="#FF006E" transform="rotate(45 250 250)"/>
 
-    <!-- Rivets / Dots along the Outer Ring -->
-    <g fill="#e67e22" stroke="#f1c40f" stroke-width="1.2">
-        <circle cx="250" cy="30" r="4.5" transform="rotate(0 250 250)" />
-        <circle cx="250" cy="30" r="4.5" transform="rotate(30 250 250)" />
-        <circle cx="250" cy="30" r="4.5" transform="rotate(60 250 250)" />
-        <circle cx="250" cy="30" r="4.5" transform="rotate(90 250 250)" />
-        <circle cx="250" cy="30" r="4.5" transform="rotate(120 250 250)" />
-        <circle cx="250" cy="30" r="4.5" transform="rotate(150 250 250)" />
-        <circle cx="250" cy="30" r="4.5" transform="rotate(180 250 250)" />
-        <circle cx="250" cy="30" r="4.5" transform="rotate(210 250 250)" />
-        <circle cx="250" cy="30" r="4.5" transform="rotate(240 250 250)" />
-        <circle cx="250" cy="30" r="4.5" transform="rotate(270 250 250)" />
-        <circle cx="250" cy="30" r="4.5" transform="rotate(300 250 250)" />
-        <circle cx="250" cy="30" r="4.5" transform="rotate(330 250 250)" />
+    <!-- Slice 2 (90 deg): 2X BOOST -->
+    <path d="M 250 250 L 170.402 57.833 A 208 208 0 0 1 329.598 57.833 Z" fill="#3A86FF" transform="rotate(90 250 250)"/>
+
+    <!-- Slice 3 (135 deg): 100 COINS -->
+    <path d="M 250 250 L 170.402 57.833 A 208 208 0 0 1 329.598 57.833 Z" fill="#FB5607" transform="rotate(135 250 250)"/>
+
+    <!-- Slice 4 (180 deg): 500 COINS -->
+    <path d="M 250 250 L 170.402 57.833 A 208 208 0 0 1 329.598 57.833 Z" fill="#FF0055" transform="rotate(180 250 250)"/>
+
+    <!-- Slice 5 (225 deg): FREE SPIN -->
+    <path d="M 250 250 L 170.402 57.833 A 208 208 0 0 1 329.598 57.833 Z" fill="#00F5D4" transform="rotate(225 250 250)"/>
+
+    <!-- Slice 6 (270 deg): MYSTERY -->
+    <path d="M 250 250 L 170.402 57.833 A 208 208 0 0 1 329.598 57.833 Z" fill="#8338EC" transform="rotate(270 250 250)"/>
+
+    <!-- Slice 7 (315 deg): LEGENDARY -->
+    <path d="M 250 250 L 170.402 57.833 A 208 208 0 0 1 329.598 57.833 Z" fill="#9D4EDD" transform="rotate(315 250 250)"/>
+
+    <!-- Crisp White Divider Lines -->
+    <g stroke="#FFFFFF" stroke-width="3" opacity="0.9">
+      <line x1="250" y1="250" x2="170.402" y2="57.833" transform="rotate(0 250 250)" />
+      <line x1="250" y1="250" x2="170.402" y2="57.833" transform="rotate(45 250 250)" />
+      <line x1="250" y1="250" x2="170.402" y2="57.833" transform="rotate(90 250 250)" />
+      <line x1="250" y1="250" x2="170.402" y2="57.833" transform="rotate(135 250 250)" />
+      <line x1="250" y1="250" x2="170.402" y2="57.833" transform="rotate(180 250 250)" />
+      <line x1="250" y1="250" x2="170.402" y2="57.833" transform="rotate(225 250 250)" />
+      <line x1="250" y1="250" x2="170.402" y2="57.833" transform="rotate(270 250 250)" />
+      <line x1="250" y1="250" x2="170.402" y2="57.833" transform="rotate(315 250 250)" />
     </g>
 
-    <!-- Center Button Shadow -->
-    <circle cx="250" cy="253" r="45" fill="rgba(0,0,0,0.3)" />
-
-    <!-- Center Button Base -->
-    <circle cx="250" cy="250" r="45" fill="url(#gold-ring)" />
-    <circle cx="250" cy="250" r="38" fill="url(#gold-center)" stroke="#e67e22" stroke-width="1.5" />
-    
-    <!-- Center Orange Star -->
-    <g transform="translate(0, 1)">
-        <path d="M 250 228 L 255.0 243.2 L 270.9 243.2 L 258.1 252.6 L 262.9 267.8 L 250 258.5 L 237.1 267.8 L 241.9 252.6 L 229.1 243.2 L 245.0 243.2 Z" fill="#ff8c00" stroke="#e65c00" stroke-width="1" />
+    <!-- Clean Readable Text for Each Slice -->
+    <!-- Slice 0: 50 COINS -->
+    <g transform="rotate(0 250 250) translate(250, 115)">
+      <text x="0" y="0" text-anchor="middle" font-family="'Gilroy-ExtraBold', sans-serif" font-weight="800" font-size="14" fill="#FFFFFF" stroke="#6B4600" stroke-width="2" paint-order="stroke fill">50 COINS</text>
     </g>
 
+    <!-- Slice 1: RARE PASS -->
+    <g transform="rotate(45 250 250) translate(250, 115)">
+      <text x="0" y="0" text-anchor="middle" font-family="'Gilroy-ExtraBold', sans-serif" font-weight="800" font-size="14" fill="#FFFFFF" stroke="#500022" stroke-width="2" paint-order="stroke fill">RARE PASS</text>
+    </g>
+
+    <!-- Slice 2: 2X BOOST -->
+    <g transform="rotate(90 250 250) translate(250, 115)">
+      <text x="0" y="0" text-anchor="middle" font-family="'Gilroy-ExtraBold', sans-serif" font-weight="800" font-size="14" fill="#FFFFFF" stroke="#002D72" stroke-width="2" paint-order="stroke fill">2X BOOST</text>
+    </g>
+
+    <!-- Slice 3: 100 COINS -->
+    <g transform="rotate(135 250 250) translate(250, 115)">
+      <text x="0" y="0" text-anchor="middle" font-family="'Gilroy-ExtraBold', sans-serif" font-weight="800" font-size="14" fill="#FFFFFF" stroke="#601A00" stroke-width="2" paint-order="stroke fill">100 COINS</text>
+    </g>
+
+    <!-- Slice 4: 500 COINS -->
+    <g transform="rotate(180 250 250) translate(250, 115)">
+      <text x="0" y="0" text-anchor="middle" font-family="'Gilroy-ExtraBold', sans-serif" font-weight="800" font-size="14" fill="#FFFFFF" stroke="#50001A" stroke-width="2" paint-order="stroke fill">500 COINS</text>
+    </g>
+
+    <!-- Slice 5: FREE SPIN -->
+    <g transform="rotate(225 250 250) translate(250, 115)">
+      <text x="0" y="0" text-anchor="middle" font-family="'Gilroy-ExtraBold', sans-serif" font-weight="800" font-size="14" fill="#004D40" stroke="#FFFFFF" stroke-width="1.5" paint-order="stroke fill">FREE SPIN</text>
+    </g>
+
+    <!-- Slice 6: MYSTERY -->
+    <g transform="rotate(270 250 250) translate(250, 115)">
+      <text x="0" y="0" text-anchor="middle" font-family="'Gilroy-ExtraBold', sans-serif" font-weight="800" font-size="14" fill="#FFFFFF" stroke="#2E0066" stroke-width="2" paint-order="stroke fill">MYSTERY</text>
+    </g>
+
+    <!-- Slice 7: LEGENDARY -->
+    <g transform="rotate(315 250 250) translate(250, 115)">
+      <text x="0" y="0" text-anchor="middle" font-family="'Gilroy-ExtraBold', sans-serif" font-weight="800" font-size="13" fill="#FFFFFF" stroke="#3A0066" stroke-width="2" paint-order="stroke fill">LEGENDARY</text>
+    </g>
+  </g>
+
+  <!-- Golden Rivets / Studs on Outer Ring -->
+  <g fill="#FFE066" stroke="#996515" stroke-width="1">
+    <circle cx="250" cy="27" r="4" transform="rotate(0 250 250)" />
+    <circle cx="250" cy="27" r="4" transform="rotate(30 250 250)" />
+    <circle cx="250" cy="27" r="4" transform="rotate(60 250 250)" />
+    <circle cx="250" cy="27" r="4" transform="rotate(90 250 250)" />
+    <circle cx="250" cy="27" r="4" transform="rotate(120 250 250)" />
+    <circle cx="250" cy="27" r="4" transform="rotate(150 250 250)" />
+    <circle cx="250" cy="27" r="4" transform="rotate(180 250 250)" />
+    <circle cx="250" cy="27" r="4" transform="rotate(210 250 250)" />
+    <circle cx="250" cy="27" r="4" transform="rotate(240 250 250)" />
+    <circle cx="250" cy="27" r="4" transform="rotate(270 250 250)" />
+    <circle cx="250" cy="27" r="4" transform="rotate(300 250 250)" />
+    <circle cx="250" cy="27" r="4" transform="rotate(330 250 250)" />
+  </g>
+
+  <!-- Center Gold Hub / Cap -->
+  <circle cx="250" cy="254" r="45" fill="#000000" opacity="0.35" />
+  <circle cx="250" cy="250" r="45" fill="url(#gold-ring)" stroke="#593000" stroke-width="2" />
+  <circle cx="250" cy="250" r="38" fill="url(#gold-center)" stroke="#D97706" stroke-width="1.5" />
+  <circle cx="250" cy="250" r="28" fill="#1F0A38" stroke="#FFD700" stroke-width="1" />
+  
+  <!-- Mathematically Perfect Symmetrical Golden Star Emblem -->
+  <path d="M 250 230 L 254.996 243.123 L 269.021 243.820 L 258.084 252.627 L 261.756 266.180 L 250 258.5 L 238.244 266.180 L 241.916 252.627 L 230.979 243.820 L 245.004 243.123 Z" 
+        fill="url(#gold-ring)" stroke="#FFFFFF" stroke-width="1.2" stroke-linejoin="round" />
+        
+  <circle cx="250" cy="250" r="3" fill="#FFFFFF" />
 </svg>

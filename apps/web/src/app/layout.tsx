@@ -1,5 +1,8 @@
+import '@rainbow-me/rainbowkit/styles.css';
 import './globals.css';
 import type { Metadata, Viewport } from 'next';
+import CookieConsentModal from '@/components/common/CookieConsent';
+import { Web3Provider } from '@/providers/Web3Provider';
 
 export const metadata: Metadata = {
   title: 'JLTQuest — Play Daily, Earn Real Perks & Collect Rares',
@@ -29,8 +32,6 @@ export const viewport: Viewport = {
   viewportFit: 'cover',
 };
 
-import CookieConsentModal from '@/components/common/CookieConsent';
-
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className="font-gilroyRegular dark" style={{ margin: 0, padding: 0, background: '#080411', width: '100%' }}>
@@ -57,8 +58,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         className="font-gilroyRegular bg-[#080411] text-white antialiased selection:bg-[#FFA28D]/30 selection:text-white"
         style={{ margin: 0, padding: 0, background: '#080411', width: '100%', fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif" }}
       >
-        {children}
-        <CookieConsentModal />
+        <Web3Provider>
+          {children}
+          <CookieConsentModal />
+        </Web3Provider>
       </body>
     </html>
   );

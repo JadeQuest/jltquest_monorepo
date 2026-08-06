@@ -16,10 +16,16 @@ export const Dashboard: React.FC = () => {
 
   return (
     <div className="w-full min-h-screen lg:h-screen bg-[#080411] text-white flex flex-col lg:flex-row overflow-x-hidden lg:overflow-hidden relative font-gilroyRegular select-none">
+      {/* Main Dashboard Background Image */}
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat pointer-events-none z-0"
+        style={{ backgroundImage: "url('/Dashboard.png')" }}
+      />
+
       {/* Background Ambient Radial Blurs */}
-      <div className="absolute top-[-100px] left-[-100px] w-[650px] h-[650px] rounded-full bg-radial from-[#360C9F]/50 via-[#340073]/30 to-transparent blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-150px] right-[-100px] w-[800px] h-[800px] rounded-full bg-radial from-[#7B2CBF]/40 via-[#340073]/25 to-transparent blur-[140px] pointer-events-none" />
-      <div className="absolute top-[20%] right-[15%] w-[500px] h-[500px] rounded-full bg-radial from-[#FFA28D]/15 via-transparent to-transparent blur-[100px] pointer-events-none" />
+      <div className="absolute top-[-100px] left-[-100px] w-[650px] h-[650px] rounded-full bg-radial from-[#360C9F]/40 via-[#340073]/20 to-transparent blur-[120px] pointer-events-none z-0" />
+      <div className="absolute bottom-[-150px] right-[-100px] w-[800px] h-[800px] rounded-full bg-radial from-[#7B2CBF]/30 via-[#340073]/15 to-transparent blur-[140px] pointer-events-none z-0" />
+      <div className="absolute top-[20%] right-[15%] w-[500px] h-[500px] rounded-full bg-radial from-[#FFA28D]/10 via-transparent to-transparent blur-[100px] pointer-events-none z-0" />
 
       {/* Left Sidebar */}
       <Sidebar isMobileOpen={mobileMenuOpen} onMobileClose={() => setMobileMenuOpen(false)} />

@@ -50,7 +50,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="font-gilroyRegular dark" style={{ margin: 0, padding: 0, background: '#080411', width: '100%' }}>
+    <html lang="en" className="font-gilroyRegular dark" style={{ margin: 0, padding: 0, background: '#080411', width: '100%' }} suppressHydrationWarning>
       <head>
         <link rel="icon" type="image/svg+xml" href="/jlt.svg" />
         <link rel="shortcut icon" href="/jlt.svg" />

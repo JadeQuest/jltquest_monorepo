@@ -6,17 +6,15 @@ import { useAuth } from '@/hooks/useAuth';
 import { useDashboard } from '@/hooks/useDashboard';
 
 interface HeaderStatusProps {
-  level?: number;
-  multiplier?: string;
   coins?: number;
+  tokens?: number;
   onToggleMobileMenu?: () => void;
   onConnectClick?: () => void;
 }
 
 export const HeaderStatus: React.FC<HeaderStatusProps> = ({
-  level = 1,
-  multiplier = '2X',
   coins = 500,
+  tokens = 50,
   onToggleMobileMenu,
   onConnectClick,
 }) => {
@@ -30,9 +28,8 @@ export const HeaderStatus: React.FC<HeaderStatusProps> = ({
     }
   }, [isConnected, address]);
 
-  const displayLevel = (!isConnected || !address) ? '-' : (dashboardData?.user?.level ?? level);
   const displayCoins = (!isConnected || !address) ? '-' : (dashboardData?.user?.gp ?? coins);
-  const displayMultiplier = (!isConnected || !address) ? '-' : multiplier;
+  const displayTokens = (!isConnected || !address) ? '-' : (dashboardData?.user?.xp ?? tokens);
 
   const formatAddress = React.useCallback((addr: string) => {
     return `${addr.substring(0, 6)}...${addr.substring(addr.length - 4)}`;
@@ -56,53 +53,41 @@ export const HeaderStatus: React.FC<HeaderStatusProps> = ({
       </div>
 
       <div className="flex flex-wrap items-center justify-end gap-3 sm:gap-6">
-        {/* Item 1: Level */}
-        <div className="flex items-center gap-1.5 sm:gap-2.5">
-          <div className="w-7 h-7 sm:w-9 sm:h-9 relative flex items-center justify-center shrink-0">
-            <img
-              src="/optimized/level.webp"
-              alt="Lv. 1 Badge"
-              width={36}
-              height={36}
-              className="w-full h-full object-contain"
-            />
-          </div>
-          <span className="text-white font-gilroyBold text-sm sm:text-lg font-bold tracking-wide">
-            Lv. {displayLevel}
-          </span>
-        </div>
+        {isConnected && address && (
+          <>
+            {/* Item 3: Coins */}
+            <div className="flex items-center gap-1.5 sm:gap-2.5">
+              <div className="w-7 h-7 sm:w-9 sm:h-9 relative flex items-center justify-center shrink-0">
+                <img
+                  src="/optimized/coin.webp"
+                  alt="500 Gold Coins Badge"
+                  width={36}
+                  height={36}
+                  className="w-full h-full object-contain"
+                />
+              </div>
+              <span className="text-white font-gilroyBold text-sm sm:text-lg font-bold tracking-wide">
+                {displayCoins}
+              </span>
+            </div>
 
-        {/* Item 2: Multiplier */}
-        <div className="flex items-center gap-1.5 sm:gap-2.5">
-          <div className="w-7 h-7 sm:w-9 sm:h-9 relative flex items-center justify-center shrink-0">
-            <img
-              src="/optimized/top-level.webp"
-              alt="2X Multiplier Badge"
-              width={36}
-              height={36}
-              className="w-full h-full object-contain"
-            />
-          </div>
-          <span className="text-white font-gilroyBold text-sm sm:text-lg font-bold tracking-wide">
-            {displayMultiplier}
-          </span>
-        </div>
-
-        {/* Item 3: Coins */}
-        <div className="flex items-center gap-1.5 sm:gap-2.5">
-          <div className="w-7 h-7 sm:w-9 sm:h-9 relative flex items-center justify-center shrink-0">
-            <img
-              src="/optimized/coin.webp"
-              alt="500 Gold Coins Badge"
-              width={36}
-              height={36}
-              className="w-full h-full object-contain"
-            />
-          </div>
-          <span className="text-white font-gilroyBold text-sm sm:text-lg font-bold tracking-wide">
-            {displayCoins}
-          </span>
-        </div>
+            {/* Item 3.5: Tokens */}
+            <div className="flex items-center gap-1.5 sm:gap-2.5">
+              <div className="w-7 h-7 sm:w-9 sm:h-9 relative flex items-center justify-center shrink-0">
+                <img
+                  src="/jltcolor.svg"
+                  alt="50 JLT Badge"
+                  width={36}
+                  height={36}
+                  className="w-full h-full object-contain"
+                />
+              </div>
+              <span className="text-white font-gilroyBold text-sm sm:text-lg font-bold tracking-wide">
+                {displayTokens}
+              </span>
+            </div>
+          </>
+        )}
 
         {/* Item 4: Custom Centered Connect Wallet Trigger */}
         {(!isConnected && !address) ? (

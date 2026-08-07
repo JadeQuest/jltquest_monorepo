@@ -22,6 +22,7 @@ const ConnectWalletModal = dynamic(
 );
 
 export const Dashboard: React.FC = () => {
+  const { isConnected } = useAccount();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isConnectModalOpen, setIsConnectModalOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -29,6 +30,13 @@ export const Dashboard: React.FC = () => {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Force modal open if not connected
+  useEffect(() => {
+    if (mounted && !isConnected) {
+      setIsConnectModalOpen(true);
+    }
+  }, [mounted, isConnected]);
 
   const openMobileMenu = React.useCallback(() => setMobileMenuOpen(true), []);
   const closeMobileMenu = React.useCallback(() => setMobileMenuOpen(false), []);
@@ -99,8 +107,8 @@ export const Dashboard: React.FC = () => {
       {/* Main Dashboard Layout */}
       <main className="flex-1 flex flex-col h-full overflow-y-auto p-3 sm:p-6 lg:pl-2 z-10 gap-4 sm:gap-6">
         {/* Top Header Status Bar */}
-        <HeaderStatus 
-          onToggleMobileMenu={openMobileMenu} 
+        <HeaderStatus
+          onToggleMobileMenu={openMobileMenu}
           onConnectClick={openConnectModal}
         />
 

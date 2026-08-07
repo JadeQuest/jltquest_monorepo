@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useAccount } from 'wagmi';
 
 const PRIZES = [
   '50 Coins',
@@ -14,6 +15,7 @@ const PRIZES = [
 ];
 
 export const SpinToWinCard: React.FC = () => {
+  const { isConnected, address } = useAccount();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [rotation, setRotation] = useState(0);
   const [isSpinning, setIsSpinning] = useState(false);
@@ -45,8 +47,10 @@ export const SpinToWinCard: React.FC = () => {
   }, [isSpinning, rotation]);
 
   const handleCardClick = React.useCallback(() => {
-    setIsModalOpen(true);
-  }, []);
+    if (isConnected && address) {
+      setIsModalOpen(true);
+    }
+  }, [isConnected, address]);
 
   const closeModal = React.useCallback(() => {
     if (!isSpinning) {
@@ -60,16 +64,16 @@ export const SpinToWinCard: React.FC = () => {
   return (
     <>
       <div
-        className="daily-card-panel p-6 flex flex-col items-center justify-between h-[360px] relative overflow-hidden select-none cursor-pointer group"
+        className={`daily-card-panel p-6 flex flex-col items-start justify-between h-[360px] relative overflow-hidden select-none group ${isConnected && address ? 'cursor-pointer' : 'cursor-not-allowed'}`}
         onClick={handleCardClick}
       >
-        <div className="flex flex-col items-center gap-1.5 z-10 group-hover:scale-105 transition-transform duration-300">
-          <h2 className="text-white font-gilroyBold text-3xl font-extrabold tracking-tight">
+        <div className="flex flex-col items-start gap-1.5 z-10 group-hover:scale-105 transition-transform duration-300">
+          <h2 className="text-white font-gilroyBold text-2xl font-bold tracking-tight">
             Spin to Win
           </h2>
           <div className="glass-pill px-4 py-1 rounded-full border border-purple-400/40 bg-purple-900/30 shadow-[0_0_15px_rgba(168,85,247,0.4)]">
             <span className="text-purple-200 font-gilroyMedium text-xs font-semibold tracking-wide">
-              1 FREE Spin/Day
+              1 FREE Spin Per Day
             </span>
           </div>
           <div className="mt-4 px-4 py-2 rounded-lg bg-white/10 text-white font-gilroyBold text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 backdrop-blur-sm border border-white/20">
@@ -144,8 +148,8 @@ export const SpinToWinCard: React.FC = () => {
                   <circle cx="20" cy="20" r="5" fill="#d35400" />
                   <defs>
                     <linearGradient id="gold-pointer-grad" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stopColor="#ffdd00" />
-                        <stop offset="100%" stopColor="#e67e00" />
+                      <stop offset="0%" stopColor="#ffdd00" />
+                      <stop offset="100%" stopColor="#e67e00" />
                     </linearGradient>
                   </defs>
                 </svg>

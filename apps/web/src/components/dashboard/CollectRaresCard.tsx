@@ -8,12 +8,11 @@ export const CollectRaresCard: React.FC = () => {
       <div className="absolute inset-0 bg-gradient-to-t from-[#7B2CBF]/20 via-transparent to-transparent pointer-events-none" />
 
       <div className="flex flex-col gap-2 z-10">
-        <h2 className="text-white font-gilroyBold text-2xl font-bold tracking-tight leading-tight">
-          Collect Rares,<br />
-          Burn & Mint Legendary Shiny
+        <h2 className="text-white font-gilroyBold text-2xl font-bold tracking-tight">
+          Rare Collection
         </h2>
         <p className="text-purple-200 font-gilroyRegular text-sm font-normal opacity-90">
-          Collect rare passes by lvling, spins, and quests
+          Build your collection and discover rare creatures by spins and quests.
         </p>
       </div>
 

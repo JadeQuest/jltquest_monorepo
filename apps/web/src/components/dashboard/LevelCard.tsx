@@ -7,7 +7,7 @@ import { useDashboard } from '@/hooks/useDashboard';
 export const LevelCard: React.FC = () => {
   const { data: dashboardData } = useDashboard();
   const { isConnected, address } = useAccount();
-  
+
   const level = (!isConnected || !address) ? '-' : (dashboardData?.user?.level ?? 1);
   const progress = (!isConnected || !address) ? 0 : (dashboardData?.leveling?.progress ?? 0);
 
@@ -26,23 +26,31 @@ export const LevelCard: React.FC = () => {
           />
         </div>
 
-        <div className="flex flex-col gap-1">
-          <div className="text-white font-gilroyBold text-4xl font-extrabold tracking-tight">
-            Lv. {level}
-          </div>
-          <div className="text-purple-300 font-gilroyMedium text-lg font-medium tracking-wide">
-            Starter
-          </div>
+        <div className="flex flex-col gap-1 justify-center">
+          {level !== '-' ? (
+            <>
+              <div className="text-white font-gilroyBold text-4xl font-extrabold tracking-tight">
+                Lv. {level}
+              </div>
+              <div className="text-purple-300 font-gilroyMedium text-lg font-medium tracking-wide">
+                Starter
+              </div>
+            </>
+          ) : (
+            <div className="text-white font-gilroyBold text-2xl font-bold tracking-tight">
+              Starter
+            </div>
+          )}
         </div>
       </div>
 
       <div className="w-full flex flex-col gap-2 mt-auto">
         <div className="w-full h-3.5 bg-black/40 rounded-full p-0.5 relative overflow-visible border border-white/10">
-          <div 
-            className="h-full bg-gradient-to-r from-[#360C9F] via-[#7B2CBF] to-[#FFA28D] rounded-full shadow-[0_0_10px_#FFA28D]" 
+          <div
+            className="h-full bg-gradient-to-r from-[#360C9F] via-[#7B2CBF] to-[#FFA28D] rounded-full shadow-[0_0_10px_#FFA28D]"
             style={{ width: `${progress}%` }}
           />
-          <div 
+          <div
             className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center transition-transform hover:scale-110"
             style={{ left: `${progress}%` }}
           >

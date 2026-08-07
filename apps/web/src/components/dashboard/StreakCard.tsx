@@ -7,7 +7,7 @@ import { useCheckIn } from '@/hooks/useCheckIn';
 export const StreakCard: React.FC = () => {
   const { status } = useCheckIn();
   const { isConnected, address } = useAccount();
-  const streak = (!isConnected || !address) ? '-' : (status?.streak ?? 1);
+  const streak = (!isConnected || !address) ? 0 : (status?.streak ?? 0);
   return (
     <div className="daily-card-panel p-6 flex items-center justify-between h-[260px] relative overflow-hidden group">
       {/* Background glow effect */}
@@ -16,10 +16,10 @@ export const StreakCard: React.FC = () => {
       {/* Left text block */}
       <div className="flex flex-col gap-1 z-10 pl-2">
         <div className="text-white font-gilroyBold text-5xl font-extrabold tracking-tight">
-          {streak}X
+          {streak}
         </div>
         <div className="text-purple-200 font-gilroyBold text-xl font-bold tracking-wide">
-          {streak === '-' ? 'Days' : `${streak} Day${streak !== 1 ? 's' : ''}`}
+          {streak === 1 ? 'Day' : 'Days'}
         </div>
       </div>
 

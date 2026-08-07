@@ -1,14 +1,12 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { fetchWithRetry } from '@/lib/apiClient';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
+import { fetchWithRetry, getApiUrl } from '@/lib/apiClient';
 
 export function useSocial() {
   const queryClient = useQueryClient();
 
   const connectMutation = useMutation({
     mutationFn: async ({ platform, payload }: { platform: string; payload?: any }) => {
-      const response = await fetchWithRetry<{ success: boolean; data: any; error: any }>(`${API_URL}/social/callback/${platform}`, {
+      const response = await fetchWithRetry<{ success: boolean; data: any; error: any }>(`${getApiUrl()}/social/callback/${platform}`, {
         method: 'POST',
         body: JSON.stringify(payload || {}),
       });
@@ -24,7 +22,7 @@ export function useSocial() {
 
   const disconnectMutation = useMutation({
     mutationFn: async (platform: string) => {
-      const response = await fetchWithRetry<{ success: boolean; data: any; error: any }>(`${API_URL}/social/disconnect/${platform}`, {
+      const response = await fetchWithRetry<{ success: boolean; data: any; error: any }>(`${getApiUrl()}/social/disconnect/${platform}`, {
         method: 'POST',
       });
       if (!response.success) {
@@ -38,7 +36,7 @@ export function useSocial() {
   });
 
   const getOAuthUrl = async (platform: string) => {
-    const response = await fetchWithRetry<{ success: boolean; data: { oauthUrl: string; type?: string; url?: string; webUrl?: string }; error: any }>(`${API_URL}/social/oauth/${platform}`);
+    const response = await fetchWithRetry<{ success: boolean; data: { oauthUrl: string; type?: string; url?: string; webUrl?: string }; error: any }>(`${getApiUrl()}/social/oauth/${platform}`);
     if (!response.success) {
       throw new Error(response.error?.message || 'Failed to get link');
     }

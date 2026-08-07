@@ -6,7 +6,7 @@ import { APP_NAME, API_VERSION } from '@jlt/constants';
 import type { ApiResponse } from '@jlt/types';
 
 const app = express();
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.API_PORT || 4000;
 const allowedOrigins = process.env.CORS_ORIGIN?.split(',').map((origin) => origin.trim()).filter(Boolean);
 
 app.disable('x-powered-by');

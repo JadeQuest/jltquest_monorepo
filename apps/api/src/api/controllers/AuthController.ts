@@ -32,6 +32,8 @@ export class AuthController {
             level: user.level,
             xp: user.xp,
             gp: user.gp,
+            streak: user.streak,
+            spinState: user.spinState,
           }
         },
         error: null

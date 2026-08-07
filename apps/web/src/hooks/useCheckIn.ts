@@ -1,8 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { fetchWithRetry } from '@/lib/apiClient';
+import { useAccount } from 'wagmi';
+import { fetchWithRetry, getApiUrl } from '@/lib/apiClient';
 import { getCookie } from '@/lib/authCookie';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
 
 export interface CheckInStatus {
   streak: number;
@@ -13,20 +12,21 @@ export interface CheckInStatus {
 
 export function useCheckIn() {
   const queryClient = useQueryClient();
+  const { isConnected, address } = useAccount();
   const token = getCookie('jlt_auth_token');
 
   const statusQuery = useQuery({
-    queryKey: ['checkInStatus'],
+    queryKey: ['checkInStatus', address],
     queryFn: async () => {
-      const response = await fetchWithRetry<{ success: boolean; data: CheckInStatus }>(`${API_URL}/checkin/status`);
+      const response = await fetchWithRetry<{ success: boolean; data: CheckInStatus }>(`${getApiUrl()}/checkin/status`);
       return response.data;
     },
-    enabled: !!token,
+    enabled: isConnected && !!address && !!token,
   });
 
   const claimMutation = useMutation({
     mutationFn: async () => {
-      const response = await fetchWithRetry<{ success: boolean; data: any; error?: string }>(`${API_URL}/checkin/claim`, {
+      const response = await fetchWithRetry<{ success: boolean; data: any; error?: string }>(`${getApiUrl()}/checkin/claim`, {
         method: 'POST',
       });
       if (!response.success) {

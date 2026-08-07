@@ -1,8 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
-import { fetchWithRetry } from '@/lib/apiClient';
+import { useAccount } from 'wagmi';
+import { fetchWithRetry, getApiUrl } from '@/lib/apiClient';
 import { getCookie } from '@/lib/authCookie';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
 
 export interface DashboardData {
   user: {
@@ -22,17 +21,19 @@ export interface DashboardData {
 }
 
 export function useDashboard() {
+  const { isConnected, address } = useAccount();
   const token = getCookie('jlt_auth_token');
   
   return useQuery({
-    queryKey: ['dashboard'],
+    queryKey: ['dashboard', address],
     queryFn: async () => {
-      const response = await fetchWithRetry<{ success: boolean; data: DashboardData; error: string | null }>(`${API_URL}/users/me`);
+      const response = await fetchWithRetry<{ success: boolean; data: DashboardData; error: string | null }>(`${getApiUrl()}/users/me`);
       if (!response.success) {
         throw new Error(response.error || 'Failed to fetch dashboard');
       }
       return response.data;
     },
-    enabled: !!token,
+    enabled: isConnected && !!address && !!token,
   });
 }
+

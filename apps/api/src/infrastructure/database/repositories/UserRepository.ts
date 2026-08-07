@@ -1,50 +1,66 @@
-import { PrismaClient } from '@jlt/database';
+import { prisma } from '../prisma';
 
 export class UserRepository {
   async findById(tx: any, userId: string) {
-    return tx.user.findUnique({ where: { id: userId } });
+    const db = tx || prisma;
+    return db.user.findUnique({ where: { id: userId } });
   }
 
   async findByWallet(tx: any, walletAddress: string) {
-    return tx.user.findUnique({ where: { walletAddress } });
+    const db = tx || prisma;
+    return db.user.findUnique({ where: { walletAddress } });
   }
 
   async findWithConnections(tx: any, userId: string) {
-    return tx.user.findUnique({ 
+    const db = tx || prisma;
+    return db.user.findUnique({ 
       where: { id: userId },
       include: { socialConnections: true, streak: true }
     });
   }
 
-  async upsertByWallet(tx: any, walletAddress: string) {
-    const existing = await tx.user.findUnique({ where: { walletAddress } });
+  async upsertByWallet(tx: any, rawWalletAddress: string) {
+    const db = tx || prisma;
+    const normalizedAddress = rawWalletAddress.toLowerCase();
+    const existing = await db.user.findUnique({ where: { walletAddress: normalizedAddress } });
     if (existing) {
-      return tx.user.update({
+      return db.user.update({
         where: { id: existing.id },
-        data: { walletConnected: true },
-        include: { streak: true }
+        data: { walletConnected: true, updatedBy: normalizedAddress },
+        include: { streak: true, spinState: true }
       });
     }
 
-    return tx.user.create({
+    return db.user.create({
       data: {
-        walletAddress,
+        walletAddress: normalizedAddress,
         walletConnected: true,
+        createdBy: normalizedAddress,
+        updatedBy: normalizedAddress,
         streak: {
           create: {
-            currentDay: 0
+            currentDay: 0,
+            createdBy: normalizedAddress
+          }
+        },
+        spinState: {
+          create: {
+            purchasedSpinsAvailable: 0,
+            createdBy: normalizedAddress
           }
         }
       },
-      include: { streak: true }
+      include: { streak: true, spinState: true }
     });
   }
 
   async update(tx: any, userId: string, data: any) {
-    return tx.user.update({
+    const db = tx || prisma;
+    return db.user.update({
       where: { id: userId },
       data
     });
   }
 }
+
 

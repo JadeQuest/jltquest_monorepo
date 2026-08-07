@@ -1,28 +1,36 @@
+import { prisma } from '../prisma';
+
 export class SocialConnectionRepository {
   async findManyByUserId(tx: any, userId: string) {
-    return tx.socialConnection.findMany({ where: { userId } });
+    const db = tx || prisma;
+    return db.socialConnection.findMany({ where: { userId } });
   }
 
   async findByPlatformAndUserId(tx: any, platform: any, platformUserId: string) {
-    return tx.socialConnection.findUnique({
+    const db = tx || prisma;
+    return db.socialConnection.findUnique({
       where: { platform_platformUserId: { platform, platformUserId } }
     });
   }
 
   async findByUserAndPlatform(tx: any, userId: string, platform: any) {
-    return tx.socialConnection.findUnique({
+    const db = tx || prisma;
+    return db.socialConnection.findUnique({
       where: { userId_platform: { userId, platform } }
     });
   }
 
   async update(tx: any, id: string, data: any) {
-    return tx.socialConnection.update({
+    const db = tx || prisma;
+    return db.socialConnection.update({
       where: { id },
       data
     });
   }
 
   async create(tx: any, data: any) {
-    return tx.socialConnection.create({ data });
+    const db = tx || prisma;
+    return db.socialConnection.create({ data });
   }
 }
+

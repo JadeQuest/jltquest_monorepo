@@ -90,7 +90,7 @@ export const config = createConfig({
           metadata: {
             name: 'JLTQuest',
             description: 'Complete daily quests, earn JLT coins, and collect rare passes.',
-            url: 'https://jltquest.io',
+            url: typeof window !== 'undefined' ? window.location.origin : 'https://jltquest.io',
             icons: ['https://jltquest.io/jlt.svg'],
           },
           showQrModal: true,

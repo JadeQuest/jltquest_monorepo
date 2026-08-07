@@ -55,11 +55,14 @@ export async function fetchWithRetry<T = any>(url: string, options: FetchOptions
       }
 
       return (await response.json()) as T;
-    } catch (error) {
+    } catch (error: unknown) {
       if (attempt < retries) {
         const delay = backoffMs * Math.pow(2, attempt);
         await new Promise((resolve) => setTimeout(resolve, delay));
         return executeFetch(attempt + 1);
+      }
+      if (error instanceof TypeError && error.message === 'Failed to fetch') {
+        throw new Error(`Unable to connect to API backend at ${getApiUrl()}. Please check if the API server is running.`);
       }
       throw error;
     }

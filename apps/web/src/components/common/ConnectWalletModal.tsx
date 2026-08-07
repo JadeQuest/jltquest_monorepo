@@ -20,7 +20,7 @@ const WALLET_ICONS: Record<string, string> = {
 
 export const ConnectWalletModal: React.FC<ConnectWalletModalProps> = ({ isOpen, onClose }) => {
   const { address, isConnected, chain } = useAccount();
-  const { connectors, connect, error: connectError } = useConnect();
+  const { connectors, connectAsync, error: connectError } = useConnect();
   const { disconnect } = useDisconnect();
 
   const [copied, setCopied] = useState(false);
@@ -62,10 +62,14 @@ export const ConnectWalletModal: React.FC<ConnectWalletModalProps> = ({ isOpen, 
   const handleConnect = async (connector: Connector) => {
     try {
       setConnectingId(connector.id);
-      await connect({ connector });
+      await connectAsync({ connector });
       onClose();
-    } catch (err) {
-      if (process.env.NODE_ENV !== 'production') {
+    } catch (err: unknown) {
+      // Gracefully handle user rejection (RPC Error code 4001) or extension disconnect
+      const errorObj = err as { code?: number; message?: string };
+      if (errorObj?.code === 4001 || errorObj?.message?.includes('rejected')) {
+        console.log('User rejected wallet connection prompt.');
+      } else if (process.env.NODE_ENV !== 'production') {
         console.error('Wallet connection error:', err);
       }
     } finally {

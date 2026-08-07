@@ -51,6 +51,14 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   });
 });
 
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('[API Server] Unhandled Promise Rejection at:', promise, 'reason:', reason);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('[API Server] Uncaught Exception:', err);
+});
+
 app.listen(PORT, () => {
   if (process.env.NODE_ENV !== 'production') {
     console.log(`Server listening on http://localhost:${PORT}`);

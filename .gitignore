@@ -27,13 +27,7 @@ yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
 
-# Environment Files (Keep .env.example)
-.env
-.env*.local
-.env.development
-.env.test
-.env.production
-!.env.example
+
 
 # IDE & Editor Settings
 .idea/

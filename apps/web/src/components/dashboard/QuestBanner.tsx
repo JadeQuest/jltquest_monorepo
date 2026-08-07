@@ -1,8 +1,13 @@
 'use client';
 
 import React from 'react';
+import { useAccount } from 'wagmi';
 
 export const QuestBanner: React.FC = () => {
+  const { isConnected } = useAccount();
+
+  if (isConnected) return null;
+
   return (
     <div className="glass-panel w-full py-5 px-8 flex items-center justify-center relative overflow-hidden select-none cursor-pointer group">
       <div className="absolute inset-0 bg-gradient-to-r from-[#340073]/30 via-[#7B2CBF]/40 to-[#FFA28D]/30 opacity-60 group-hover:opacity-100 transition-opacity duration-500" />

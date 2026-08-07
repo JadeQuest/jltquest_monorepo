@@ -44,6 +44,7 @@ export function useCheckIn() {
     status: statusQuery.data,
     isLoading: statusQuery.isLoading,
     claim: claimMutation.mutate,
+    claimAsync: claimMutation.mutateAsync,
     isClaiming: claimMutation.isPending,
   };
 }

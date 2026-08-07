@@ -11,6 +11,9 @@ export const LevelCard: React.FC = () => {
   const level = (!isConnected || !address) ? '-' : (dashboardData?.user?.level ?? 1);
   const progress = (!isConnected || !address) ? 0 : (dashboardData?.leveling?.progress ?? 0);
 
+  const currentXp = (!isConnected || !address) ? 0 : (dashboardData?.leveling?.currentXp ?? 0);
+  const nextLevelXp = (!isConnected || !address) ? 0 : (dashboardData?.leveling?.nextLevelXp ?? 0);
+
   return (
     <div className="daily-card-panel p-6 flex flex-col justify-between h-[260px] relative overflow-hidden group">
       <div className="absolute top-0 right-0 w-36 h-36 bg-blue-600/10 rounded-full blur-2xl group-hover:bg-blue-600/20 transition-all duration-500" />
@@ -45,6 +48,11 @@ export const LevelCard: React.FC = () => {
       </div>
 
       <div className="w-full flex flex-col gap-2 mt-auto">
+        <div className="flex justify-between items-center px-1 text-xs sm:text-sm text-gray-400 font-gilroyMedium tracking-wide">
+          <span>0 XP</span>
+          <span className="text-white/80">{currentXp} XP</span>
+          <span>{nextLevelXp} XP</span>
+        </div>
         <div className="w-full h-3.5 bg-black/40 rounded-full p-0.5 relative overflow-visible border border-white/10">
           <div
             className="h-full bg-gradient-to-r from-[#360C9F] via-[#7B2CBF] to-[#FFA28D] rounded-full shadow-[0_0_10px_#FFA28D]"

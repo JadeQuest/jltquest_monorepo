@@ -38,6 +38,7 @@ export class UserService {
         level: user.level,
         xp: user.xp,
         gp: user.gp,
+        jlt: Number(user.jlt),
         streak: user.streak
       },
       leveling: {

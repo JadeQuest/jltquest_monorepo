@@ -17,12 +17,13 @@ export class CheckInService {
     }
 
     const now = new Date();
-    const lastClaimUTC = new Date(Date.UTC(streak.lastClaimedAt.getUTCFullYear(), streak.lastClaimedAt.getUTCMonth(), streak.lastClaimedAt.getUTCDate()));
+    const lastDate = streak.lastCheckInAt || new Date(0);
+    const lastClaimUTC = new Date(Date.UTC(lastDate.getUTCFullYear(), lastDate.getUTCMonth(), lastDate.getUTCDate()));
     const todayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
     const diffDays = Math.floor((todayUTC.getTime() - lastClaimUTC.getTime()) / (1000 * 60 * 60 * 24));
     
     const canClaim = diffDays >= 1;
-    let nextStreak = streak.currentStreak;
+    let nextStreak = streak.currentDay;
     if (diffDays > 1) {
       nextStreak = 0; // streak broken
     } else if (canClaim) {
@@ -33,7 +34,7 @@ export class CheckInService {
     const nextRewardXp = 50;
 
     return {
-      streak: streak.currentStreak,
+      streak: streak.currentDay,
       canClaim,
       nextRewardGp,
       nextRewardXp
@@ -49,23 +50,24 @@ export class CheckInService {
 
     return await this.prisma.$transaction(async (tx: any) => {
       let streak = await this.streakRepository.findByUserId(tx, userId);
-      let newStreakValue = streak ? (streak.currentStreak + 1) : 1;
+      let newStreakValue = streak ? (streak.currentDay + 1) : 1;
       
       const now = new Date();
       if (streak) {
-        const lastClaimUTC = new Date(Date.UTC(streak.lastClaimedAt.getUTCFullYear(), streak.lastClaimedAt.getUTCMonth(), streak.lastClaimedAt.getUTCDate()));
+        const lastDate = streak.lastCheckInAt || new Date(0);
+        const lastClaimUTC = new Date(Date.UTC(lastDate.getUTCFullYear(), lastDate.getUTCMonth(), lastDate.getUTCDate()));
         const todayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
         const diffDays = Math.floor((todayUTC.getTime() - lastClaimUTC.getTime()) / (1000 * 60 * 60 * 24));
         if (diffDays > 1) newStreakValue = 1;
 
         await this.streakRepository.update(tx, userId, {
-          currentStreak: newStreakValue,
-          highestStreak: Math.max(streak.highestStreak, newStreakValue),
-          lastClaimedAt: new Date()
+          currentDay: newStreakValue,
+          lastCheckInDate: now,
+          lastCheckInAt: now
         });
       } else {
         await tx.streak.create({
-          data: { userId, currentStreak: 1, highestStreak: 1, lastClaimedAt: new Date() }
+          data: { userId, currentDay: 1, lastCheckInDate: now, lastCheckInAt: now }
         });
       }
 

@@ -13,8 +13,8 @@ interface HeaderStatusProps {
 }
 
 export const HeaderStatus: React.FC<HeaderStatusProps> = ({
-  coins = 500,
-  tokens = 50,
+  coins = 0,
+  tokens = 0,
   onToggleMobileMenu,
   onConnectClick,
 }) => {
@@ -29,7 +29,7 @@ export const HeaderStatus: React.FC<HeaderStatusProps> = ({
   }, [isConnected, address]);
 
   const displayCoins = (!isConnected || !address) ? '-' : (dashboardData?.user?.gp ?? coins);
-  const displayTokens = (!isConnected || !address) ? '-' : (dashboardData?.user?.xp ?? tokens);
+  const displayTokens = (!isConnected || !address) ? '-' : (dashboardData?.user?.jlt ?? tokens);
 
   const formatAddress = React.useCallback((addr: string) => {
     return `${addr.substring(0, 6)}...${addr.substring(addr.length - 4)}`;

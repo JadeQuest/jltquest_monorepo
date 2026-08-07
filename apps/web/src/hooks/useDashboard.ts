@@ -10,6 +10,7 @@ export interface DashboardData {
     level: number;
     xp: number;
     gp: number;
+    jlt: number;
     streak: number;
   };
   leveling: {

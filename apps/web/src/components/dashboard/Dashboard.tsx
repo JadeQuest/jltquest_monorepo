@@ -13,6 +13,8 @@ import { CollectRaresCard } from './CollectRaresCard';
 import { RarePassCard } from './RarePassCard';
 import { QuestBanner } from './QuestBanner';
 
+import { SocialConnectionsCard } from './SocialConnectionsCard';
+
 const ConnectWalletModal = dynamic(
   () => import('@/components/common/ConnectWalletModal').then((mod) => mod.ConnectWalletModal),
   {
@@ -74,6 +76,11 @@ export const Dashboard: React.FC = () => {
           <div className="col-span-12 lg:col-span-6">
             <RarePassCard />
           </div>
+        </div>
+
+        {/* Social Connections Section */}
+        <div className="w-full">
+          <SocialConnectionsCard />
         </div>
 
         {/* Bottom Row Banner: Quests Unlock Banner */}

@@ -12,7 +12,31 @@ export class UserRepository {
   async findWithConnections(tx: any, userId: string) {
     return tx.user.findUnique({ 
       where: { id: userId },
-      include: { socialConnections: true }
+      include: { socialConnections: true, streak: true }
+    });
+  }
+
+  async upsertByWallet(tx: any, walletAddress: string) {
+    const existing = await tx.user.findUnique({ where: { walletAddress } });
+    if (existing) {
+      return tx.user.update({
+        where: { id: existing.id },
+        data: { walletConnected: true },
+        include: { streak: true }
+      });
+    }
+
+    return tx.user.create({
+      data: {
+        walletAddress,
+        walletConnected: true,
+        streak: {
+          create: {
+            currentDay: 0
+          }
+        }
+      },
+      include: { streak: true }
     });
   }
 
@@ -23,3 +47,4 @@ export class UserRepository {
     });
   }
 }
+

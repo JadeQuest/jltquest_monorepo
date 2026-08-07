@@ -15,6 +15,9 @@ enum SocialPlatform {
   X
   DISCORD
   TELEGRAM
+  LINKEDIN
+  WHATSAPP
+  EMAIL
 }
 
 enum QuestFrequency {
@@ -267,6 +270,11 @@ model SocialConnection {
   platform             SocialPlatform
   platformUserId       String         // provider's account id — unique per platform, enforces 1 wallet per account
   handle               String?
+  email                String?
+  accessToken          String?
+  refreshToken         String?
+  tokenExpiresAt       DateTime?
+  metadata             String?        // JSON string for extra details like profile pic, deep link payload, etc.
 
   connected            Boolean        @default(true)
   connectionBonusPaid  Boolean        @default(false)

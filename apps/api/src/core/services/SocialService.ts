@@ -9,20 +9,67 @@ export class SocialService {
     private prisma: any
   ) {}
 
-  async getOAuthUrl(platform: string, userId: string) {
-    return `mock_oauth_url_for_${platform}?state=${userId}`;
+  private parsePlatform(platformString: string): SocialPlatform {
+    const p = platformString.toLowerCase();
+    if (p === 'x' || p === 'twitter') return SocialPlatform.X;
+    if (p === 'discord') return SocialPlatform.DISCORD;
+    if (p === 'telegram') return SocialPlatform.TELEGRAM;
+    if (p === 'linkedin') return (SocialPlatform as any).LINKEDIN || 'LINKEDIN';
+    if (p === 'whatsapp') return (SocialPlatform as any).WHATSAPP || 'WHATSAPP';
+    if (p === 'email') return (SocialPlatform as any).EMAIL || 'EMAIL';
+    throw { code: 'INVALID_PLATFORM', message: `Invalid social platform: ${platformString}` };
   }
 
-  async handleCallback(userId: string, platformString: string, code: string) {
-    let platform: SocialPlatform;
-    if (platformString === 'x') platform = SocialPlatform.X;
-    else if (platformString === 'discord') platform = SocialPlatform.DISCORD;
-    else if (platformString === 'telegram') platform = SocialPlatform.TELEGRAM;
-    else throw { code: 'INVALID_PLATFORM', message: 'Invalid social platform.' };
+  async getOAuthUrl(platformString: string, userId: string) {
+    const platform = this.parsePlatform(platformString);
+
+    switch (platform) {
+      case SocialPlatform.TELEGRAM:
+        return {
+          type: 'deeplink',
+          url: `tg://resolve?domain=JLTQuestBot&start=${userId}`,
+          webUrl: `https://t.me/JLTQuestBot?start=${userId}`
+        };
+      case (SocialPlatform as any).WHATSAPP || 'WHATSAPP':
+        return {
+          type: 'deeplink',
+          url: `whatsapp://send?text=Verify%20JLTQuest%20User%20${userId}`,
+          webUrl: `https://wa.me/?text=Verify%20JLTQuest%20User%20${userId}`
+        };
+      case (SocialPlatform as any).EMAIL || 'EMAIL':
+        return {
+          type: 'deeplink',
+          url: `mailto:verify@jltquest.io?subject=JLTQuest%20Verification&body=Verification%20Code:%20${userId}`,
+          webUrl: `mailto:verify@jltquest.io?subject=JLTQuest%20Verification&body=Verification%20Code:%20${userId}`
+        };
+      case (SocialPlatform as any).LINKEDIN || 'LINKEDIN':
+        return {
+          type: 'oauth',
+          url: `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=jltquest&redirect_uri=https://jltquest.io/callback/linkedin&state=${userId}`
+        };
+      case SocialPlatform.DISCORD:
+        return {
+          type: 'oauth',
+          url: `https://discord.com/api/oauth2/authorize?client_id=jltquest&redirect_uri=https://jltquest.io/callback/discord&response_type=code&scope=identify%20email&state=${userId}`
+        };
+      case SocialPlatform.X:
+      default:
+        return {
+          type: 'oauth',
+          url: `https://twitter.com/i/oauth2/authorize?response_type=code&client_id=jltquest&redirect_uri=https://jltquest.io/callback/x&scope=users.read%20tweet.read&state=${userId}`
+        };
+    }
+  }
+
+  async handleCallback(userId: string, platformString: string, payload: any) {
+    const platform = this.parsePlatform(platformString);
+    const code = typeof payload === 'string' ? payload : (payload?.code || payload?.handle || 'verified');
+    const handle = payload?.handle || `@${platformString}_${userId.substring(0, 6)}`;
+    const email = payload?.email || (platform === ((SocialPlatform as any).EMAIL || 'EMAIL') ? payload?.handle : undefined);
+    const accessToken = payload?.accessToken || `mock_access_token_${platformString}_${Date.now()}`;
 
     return await this.prisma.$transaction(async (tx: any) => {
-      const platformUserId = `mock_${platform}_${userId}`;
-      const handle = `@mock_${platform}`;
+      const platformUserId = payload?.platformUserId || `${platformString.toLowerCase()}_${userId}`;
 
       const existingConnection = await this.socialRepo.findByPlatformAndUserId(tx, platform, platformUserId);
 
@@ -42,7 +89,11 @@ export class SocialService {
 
       if (connection) {
         connection = await this.socialRepo.update(tx, connection.id, {
-          connected: true, unlinkedAt: null
+          connected: true,
+          handle,
+          email,
+          accessToken,
+          unlinkedAt: null
         });
       } else {
         connection = await this.socialRepo.create(tx, {
@@ -50,6 +101,9 @@ export class SocialService {
           platform,
           platformUserId,
           handle,
+          email,
+          accessToken,
+          metadata: JSON.stringify({ code, linkedAt: new Date().toISOString() }),
           connected: true,
           connectionBonusPaid: true
         });
@@ -67,17 +121,14 @@ export class SocialService {
         connected: true,
         connectionBonusAwarded,
         gpAwarded,
-        xpAwarded
+        xpAwarded,
+        connection
       };
     });
   }
 
   async disconnect(userId: string, platformString: string) {
-    let platform: SocialPlatform;
-    if (platformString === 'x') platform = SocialPlatform.X;
-    else if (platformString === 'discord') platform = SocialPlatform.DISCORD;
-    else if (platformString === 'telegram') platform = SocialPlatform.TELEGRAM;
-    else throw { code: 'INVALID_PLATFORM', message: 'Invalid social platform.' };
+    const platform = this.parsePlatform(platformString);
 
     return await this.prisma.$transaction(async (tx: any) => {
       const connection = await this.socialRepo.findByUserAndPlatform(tx, userId, platform);
@@ -118,3 +169,4 @@ export class SocialService {
     });
   }
 }
+

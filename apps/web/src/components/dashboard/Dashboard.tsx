@@ -1,7 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
+import { useAccount } from 'wagmi';
 import { Sidebar } from './Sidebar';
 import { HeaderStatus } from './HeaderStatus';
 import { LevelCard } from './LevelCard';
@@ -21,8 +22,14 @@ const ConnectWalletModal = dynamic(
 );
 
 export const Dashboard: React.FC = () => {
-  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
-  const [isConnectModalOpen, setIsConnectModalOpen] = React.useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isConnectModalOpen, setIsConnectModalOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const openMobileMenu = React.useCallback(() => setMobileMenuOpen(true), []);
   const closeMobileMenu = React.useCallback(() => setMobileMenuOpen(false), []);
   const openConnectModal = React.useCallback(() => setIsConnectModalOpen(true), []);
@@ -98,7 +105,7 @@ export const Dashboard: React.FC = () => {
         />
 
         {/* Dashboard Cards Grid Container */}
-        {dashboardCards}
+        {mounted && dashboardCards}
       </main>
 
       {/* Centered Glassmorphic Connect Wallet Modal Popup covering entire viewport including Sidebar */}

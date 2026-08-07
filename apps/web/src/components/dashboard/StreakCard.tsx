@@ -1,11 +1,13 @@
 'use client';
 
 import React from 'react';
+import { useAccount } from 'wagmi';
 import { useCheckIn } from '@/hooks/useCheckIn';
 
 export const StreakCard: React.FC = () => {
   const { status } = useCheckIn();
-  const streak = status?.streak ?? 1;
+  const { isConnected, address } = useAccount();
+  const streak = (!isConnected || !address) ? '-' : (status?.streak ?? 1);
   return (
     <div className="daily-card-panel p-6 flex items-center justify-between h-[260px] relative overflow-hidden group">
       {/* Background glow effect */}
@@ -17,7 +19,7 @@ export const StreakCard: React.FC = () => {
           {streak}X
         </div>
         <div className="text-purple-200 font-gilroyBold text-xl font-bold tracking-wide">
-          {streak} Day{streak !== 1 ? 's' : ''}
+          {streak === '-' ? 'Days' : `${streak} Day${streak !== 1 ? 's' : ''}`}
         </div>
       </div>
 

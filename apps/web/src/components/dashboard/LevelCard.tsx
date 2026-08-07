@@ -1,13 +1,15 @@
 'use client';
 
 import React from 'react';
+import { useAccount } from 'wagmi';
 import { useDashboard } from '@/hooks/useDashboard';
 
 export const LevelCard: React.FC = () => {
   const { data: dashboardData } = useDashboard();
+  const { isConnected, address } = useAccount();
   
-  const level = dashboardData?.user?.level ?? 1;
-  const progress = dashboardData?.leveling?.progress ?? 25;
+  const level = (!isConnected || !address) ? '-' : (dashboardData?.user?.level ?? 1);
+  const progress = (!isConnected || !address) ? 0 : (dashboardData?.leveling?.progress ?? 0);
 
   return (
     <div className="daily-card-panel p-6 flex flex-col justify-between h-[260px] relative overflow-hidden group">

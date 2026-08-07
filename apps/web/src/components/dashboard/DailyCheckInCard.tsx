@@ -1,13 +1,17 @@
 'use client';
 
 import React from 'react';
+import { useAccount } from 'wagmi';
 import { useCheckIn } from '@/hooks/useCheckIn';
 
 export const DailyCheckInCard: React.FC = () => {
   const { status, claim, isClaiming } = useCheckIn();
-  const streak = status?.streak ?? 0;
-  const nextRewardGp = status?.nextRewardGp ?? 50;
-  const nextRewardXp = status?.nextRewardXp ?? 50;
+  const { isConnected, address } = useAccount();
+  const isLoggedOut = !isConnected || !address;
+  
+  const streak = isLoggedOut ? 0 : (status?.streak ?? 0);
+  const nextRewardGp = isLoggedOut ? '-' : (status?.nextRewardGp ?? 50);
+  const nextRewardXp = isLoggedOut ? '-' : (status?.nextRewardXp ?? 50);
 
   const daysData = Array.from({ length: 7 }).map((_, i) => ({
     day: `Day ${i + 1}`,
@@ -58,10 +62,10 @@ export const DailyCheckInCard: React.FC = () => {
 
           <button 
             onClick={() => status?.canClaim && claim()}
-            disabled={!status?.canClaim || isClaiming}
-            className={`glass-btn px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-white font-gilroyMedium text-xs sm:text-sm font-semibold tracking-wide ${status?.canClaim ? 'hover:shadow-[0_0_15px_#7B2CBF] cursor-pointer' : 'opacity-50 cursor-not-allowed'}`}
+            disabled={isLoggedOut || !status?.canClaim || isClaiming}
+            className={`glass-btn px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-white font-gilroyMedium text-xs sm:text-sm font-semibold tracking-wide ${(status?.canClaim && !isLoggedOut) ? 'hover:shadow-[0_0_15px_#7B2CBF] cursor-pointer' : 'opacity-50 cursor-not-allowed'}`}
           >
-            {isClaiming ? 'Claiming...' : (status?.canClaim ? 'Claim Now' : 'Claimed')}
+            {isLoggedOut ? 'Connect Wallet' : (isClaiming ? 'Claiming...' : (status?.canClaim ? 'Claim Now' : 'Claimed'))}
           </button>
         </div>
       </div>

@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchWithRetry } from '@/lib/apiClient';
 import { setCookie, deleteCookie } from '@/lib/authCookie';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
 
 export function useAuth() {
   const queryClient = useQueryClient();

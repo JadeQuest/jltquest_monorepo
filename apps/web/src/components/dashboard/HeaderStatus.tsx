@@ -24,27 +24,15 @@ export const HeaderStatus: React.FC<HeaderStatusProps> = ({
   const { login, isLoggingIn } = useAuth();
   const { data: dashboardData } = useDashboard();
   
-  // Mock login state for testing
-  const [mockAddress, setMockAddress] = React.useState<string | null>(null);
-
   useEffect(() => {
     if (isConnected && address) {
       login(address).catch(console.error);
     }
   }, [isConnected, address]);
 
-  const handleMockLogin = async () => {
-    const testAddress = "0xMockTestWallet123456789";
-    try {
-      await login(testAddress);
-      setMockAddress(testAddress);
-    } catch (e) {
-      console.error('Mock login failed', e);
-    }
-  };
-
-  const displayLevel = dashboardData?.user?.level ?? level;
-  const displayCoins = dashboardData?.user?.gp ?? coins;
+  const displayLevel = (!isConnected || !address) ? '-' : (dashboardData?.user?.level ?? level);
+  const displayCoins = (!isConnected || !address) ? '-' : (dashboardData?.user?.gp ?? coins);
+  const displayMultiplier = (!isConnected || !address) ? '-' : multiplier;
 
   const formatAddress = React.useCallback((addr: string) => {
     return `${addr.substring(0, 6)}...${addr.substring(addr.length - 4)}`;
@@ -96,7 +84,7 @@ export const HeaderStatus: React.FC<HeaderStatusProps> = ({
             />
           </div>
           <span className="text-white font-gilroyBold text-sm sm:text-lg font-bold tracking-wide">
-            {multiplier}
+            {displayMultiplier}
           </span>
         </div>
 
@@ -117,10 +105,9 @@ export const HeaderStatus: React.FC<HeaderStatusProps> = ({
         </div>
 
         {/* Item 4: Custom Centered Connect Wallet Trigger */}
-        {(!isConnected && !address && !mockAddress) ? (
+        {(!isConnected && !address) ? (
           <button
-            onClick={handleMockLogin}
-            disabled={isLoggingIn}
+            onClick={onConnectClick}
             type="button"
             className="glass-pill px-3 py-1.5 sm:px-5 sm:py-2.5 flex items-center gap-2 sm:gap-3 cursor-pointer hover:border-purple-400/50 hover:bg-white/10 transition-all shadow-lg"
           >
@@ -132,7 +119,7 @@ export const HeaderStatus: React.FC<HeaderStatusProps> = ({
               className="w-5 h-5 sm:w-7 sm:h-7 rounded-md object-cover"
             />
             <span className="text-white font-gilroyMedium text-xs sm:text-base font-medium tracking-wide">
-              {isLoggingIn ? 'Connecting...' : 'Connect Wallet'}
+              Connect Wallet
             </span>
           </button>
         ) : (
@@ -149,7 +136,7 @@ export const HeaderStatus: React.FC<HeaderStatusProps> = ({
               className="w-5 h-5 sm:w-7 sm:h-7 rounded-md object-cover"
             />
             <span className="text-white font-gilroyMedium text-xs sm:text-base font-medium tracking-wide">
-              {formatAddress(mockAddress || address || '')}
+              {formatAddress(address || '')}
             </span>
             {chain && (
               <span className="hidden md:inline text-purple-300 font-gilroyRegular text-xs sm:text-sm">

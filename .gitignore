@@ -53,3 +53,6 @@ Thumbs.db
 .flutter-plugins-dependencies
 .pub-cache/
 .pub/
+
+# Documentation
+docs/

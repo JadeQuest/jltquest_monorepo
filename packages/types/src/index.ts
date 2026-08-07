@@ -1,12 +1,20 @@
-export interface User {
-  id: string;
-  email: string;
-  name: string;
-  createdAt: Date;
+export interface ApiResponse<T = any> {
+  success: boolean;
+  data: T | null;
+  error: {
+    code: string;
+    message: string;
+  } | null;
 }
 
-export interface ApiResponse<T> {
-  success: boolean;
-  data?: T;
-  error?: string;
+export interface UserAuthPayload {
+  userId: string;
+}
+
+declare global {
+  namespace Express {
+    interface Request {
+      user?: UserAuthPayload;
+    }
+  }
 }

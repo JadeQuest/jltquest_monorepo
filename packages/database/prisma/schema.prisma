@@ -7,10 +7,293 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// ─────────────────────────────────────────────
+// Enums
+// ─────────────────────────────────────────────
+
+enum SocialPlatform {
+  X
+  DISCORD
+  TELEGRAM
+}
+
+enum QuestFrequency {
+  ONE_TIME
+  DAILY
+  WEEKLY
+  REPEATABLE
+}
+
+enum SpinOutcome {
+  SMALL
+  MEDIUM
+  LARGE
+}
+
+enum LedgerSource {
+  CHECKIN
+  QUEST
+  SPIN
+  INVITE
+  SOCIAL
+  SOCIAL_CLAWBACK
+  CONVERSION
+  ADMIN_ADJUSTMENT
+}
+
+enum LedgerType {
+  CREDIT
+  DEBIT
+}
+
+// ─────────────────────────────────────────────
+// Core User & Progression
+// ─────────────────────────────────────────────
+
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
+  id            String   @id @default(cuid())
+  walletAddress String?  @unique
+  displayName   String?
+  email         String?  @unique
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Progression
+  level Int @default(1)
+  xp    Int @default(0) // XP within current level (resets on level-up)
+  gp    Int @default(0) // spendable Gold Points balance
+  jlt   Decimal @default(0) @db.Decimal(18, 6)
+
+  walletConnected     Boolean @default(false)
+  profileCompleted    Boolean @default(false)
+
+  // Relations
+  streak              Streak?
+  gpLedger            GpLedgerEntry[]
+  xpLedger            XpLedgerEntry[]
+  questCompletions    UserQuestCompletion[]
+  socialConnections   SocialConnection[]
+  spinState           SpinState?
+  spinHistory         SpinResult[]
+  invitesSent         Invite[]              @relation("Inviter")
+  inviteRedemption    InviteRedemption?     @relation("RedeemedByUser")
+
+  @@index([gp])
+  @@index([xp])
+  @@map("users")
+}
+
+// ─────────────────────────────────────────────
+// Daily Check-In / Streak
+// ─────────────────────────────────────────────
+
+model Streak {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  currentDay       Int      @default(0)     // 1-7, resets to 1 after a miss
+  lastCheckInDate  DateTime? @db.Date       // UTC calendar date of last successful claim
+  lastCheckInAt    DateTime?
+
+  @@map("streaks")
+}
+
+// ─────────────────────────────────────────────
+// Quests (onboarding + repeatable)
+// ─────────────────────────────────────────────
+
+model Quest {
+  id          String         @id // e.g. "quest_connect_wallet"
+  name        String
+  gpReward    Int
+  xpReward    Int
+  frequency   QuestFrequency
+  active      Boolean        @default(true)
+
+  completions UserQuestCompletion[]
+
+  @@map("quests")
+}
+
+model UserQuestCompletion {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  questId       String
+  quest         Quest    @relation(fields: [questId], references: [id], onDelete: Cascade)
+
+  completedAt   DateTime @default(now())
+  periodKey     String   // e.g. "2026-08-07" (daily) / "2026-W32" (weekly) / "ALL" (one_time/repeatable instance id)
+  gpAwarded     Int
+  xpAwarded     Int
+
+  // Prevents double-claiming the same quest within the same period
+  @@unique([userId, questId, periodKey])
+  @@index([userId, questId])
+  @@map("user_quest_completions")
+}
+
+// ─────────────────────────────────────────────
+// Spin to Win
+// ─────────────────────────────────────────────
+
+model SpinState {
+  id                       String   @id @default(cuid())
+  userId                   String   @unique
+  user                     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  freeSpinUsedDate         DateTime? @db.Date // UTC date the free spin was last used
+  purchasedSpinsAvailable  Int       @default(0)
+
+  @@map("spin_states")
+}
+
+model SpinResult {
+  id        String      @id @default(cuid())
+  userId    String
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  outcome   SpinOutcome
+  gpAwarded Int
+  usedFree  Boolean
+  createdAt DateTime    @default(now())
+
+  @@index([userId, createdAt])
+  @@map("spin_results")
+}
+
+// ─────────────────────────────────────────────
+// Invites / Squad
+// ─────────────────────────────────────────────
+
+model Invite {
+  id            String   @id @default(cuid())
+  code          String   @unique
+  inviterId     String
+  inviter       User     @relation("Inviter", fields: [inviterId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now())
+
+  redemptions   InviteRedemption[]
+
+  @@index([inviterId])
+  @@map("invites")
+}
+
+model InviteRedemption {
+  id             String   @id @default(cuid())
+  inviteId       String
+  invite         Invite   @relation(fields: [inviteId], references: [id], onDelete: Cascade)
+
+  // The NEW user who redeemed the code — one redemption per user, ever
+  redeemedByUserId String @unique
+  redeemedByUser   User   @relation("RedeemedByUser", fields: [redeemedByUserId], references: [id], onDelete: Cascade)
+
+  inviterGpAwarded Int
+  inviterXpAwarded Int
+  redeemedAt       DateTime @default(now())
+
+  @@map("invite_redemptions")
+}
+
+// ─────────────────────────────────────────────
+// Social Connections (X / Discord / Telegram)
+// ─────────────────────────────────────────────
+
+model SocialConnection {
+  id                   String         @id @default(cuid())
+  userId               String
+  user                 User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  platform             SocialPlatform
+  platformUserId       String         // provider's account id — unique per platform, enforces 1 wallet per account
+  handle               String?
+
+  connected            Boolean        @default(true)
+  connectionBonusPaid  Boolean        @default(false)
+  linkedAt             DateTime       @default(now())
+  unlinkedAt           DateTime?
+  clawbackApplied      Boolean        @default(false)
+
+  socialQuestClaims    SocialQuestClaim[]
+
+  @@unique([platform, platformUserId]) // prevents multi-accounting across wallets
+  @@unique([userId, platform])         // one connection per platform per user
+  @@map("social_connections")
+}
+
+model SocialQuest {
+  id          String         @id // e.g. "x_follow", "telegram_tapin"
+  platform    SocialPlatform
+  name        String
+  gpReward    Int
+  xpReward    Int
+  frequency   QuestFrequency
+  active      Boolean        @default(true)
+
+  claims      SocialQuestClaim[]
+
+  @@map("social_quests")
+}
+
+model SocialQuestClaim {
+  id                   String           @id @default(cuid())
+  socialConnectionId   String
+  socialConnection     SocialConnection @relation(fields: [socialConnectionId], references: [id], onDelete: Cascade)
+  socialQuestId        String
+  socialQuest          SocialQuest      @relation(fields: [socialQuestId], references: [id], onDelete: Cascade)
+
+  periodKey            String           // "2026-08-07" daily / "2026-W32" weekly / "ALL" one_time
+  gpAwarded            Int
+  xpAwarded            Int
+  claimedAt            DateTime         @default(now())
+
+  @@unique([socialConnectionId, socialQuestId, periodKey])
+  @@map("social_quest_claims")
+}
+
+// ─────────────────────────────────────────────
+// Ledgers (audit trail for GP / XP movement)
+// ─────────────────────────────────────────────
+
+model GpLedgerEntry {
+  id        String       @id @default(cuid())
+  userId    String
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type      LedgerType
+  amount    Int          // positive for credit, negative for debit
+  source    LedgerSource
+  refId     String?      // e.g. questId, platform, spinResultId, inviteId
+  createdAt DateTime     @default(now())
+
+  @@index([userId, createdAt])
+  @@index([userId, source])
+  @@map("gp_ledger_entries")
+}
+
+model XpLedgerEntry {
+  id        String       @id @default(cuid())
+  userId    String
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  amount    Int
+  source    LedgerSource
+  refId     String?
+  createdAt DateTime     @default(now())
+
+  @@index([userId, createdAt])
+  @@map("xp_ledger_entries")
+}
+
+// ─────────────────────────────────────────────
+// Server-side tunables (avoids hardcoding rates/curves in client)
+// ─────────────────────────────────────────────
+
+model SystemConfig {
+  key       String   @id // e.g. "gp_to_jlt_rate", "xp_level_base", "xp_level_growth"
+  value     String   // store as string, parse per key (e.g. "100", "500", "1.3")
   updatedAt DateTime @updatedAt
+
+  @@map("system_config")
 }

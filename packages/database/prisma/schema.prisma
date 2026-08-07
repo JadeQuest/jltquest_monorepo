@@ -51,12 +51,17 @@ enum LedgerType {
 // ─────────────────────────────────────────────
 
 model User {
-  id            String   @id @default(cuid())
-  walletAddress String?  @unique
-  displayName   String?
-  email         String?  @unique
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id              String   @id @default(uuid())
+  createdBy       String?
+  createdDate     DateTime @default(now())
+  updatedBy       String?
+  updatedDate     DateTime @updatedAt
+  isDelete        Boolean  @default(false)
+  isActive        Boolean  @default(true)
+
+  walletAddress   String?  @unique
+  displayName     String?
+  email           String?  @unique
 
   // Progression
   level Int @default(1)
@@ -88,7 +93,14 @@ model User {
 // ─────────────────────────────────────────────
 
 model Streak {
-  id               String   @id @default(cuid())
+  id               String   @id @default(uuid())
+  createdBy        String?
+  createdDate      DateTime @default(now())
+  updatedBy        String?
+  updatedDate      DateTime @updatedAt
+  isDelete         Boolean  @default(false)
+  isActive         Boolean  @default(true)
+
   userId           String   @unique
   user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -104,29 +116,43 @@ model Streak {
 // ─────────────────────────────────────────────
 
 model Quest {
-  id          String         @id // e.g. "quest_connect_wallet"
-  name        String
-  gpReward    Int
-  xpReward    Int
-  frequency   QuestFrequency
-  active      Boolean        @default(true)
+  id              String   @id @default(uuid())
+  createdBy       String?
+  createdDate     DateTime @default(now())
+  updatedBy       String?
+  updatedDate     DateTime @updatedAt
+  isDelete        Boolean  @default(false)
+  isActive        Boolean  @default(true)
 
-  completions UserQuestCompletion[]
+  code            String   @unique // e.g. "quest_connect_wallet"
+  name            String
+  gpReward        Int
+  xpReward        Int
+  frequency       QuestFrequency
+
+  completions     UserQuestCompletion[]
 
   @@map("quests")
 }
 
 model UserQuestCompletion {
-  id            String   @id @default(cuid())
-  userId        String
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  questId       String
-  quest         Quest    @relation(fields: [questId], references: [id], onDelete: Cascade)
+  id              String   @id @default(uuid())
+  createdBy       String?
+  createdDate     DateTime @default(now())
+  updatedBy       String?
+  updatedDate     DateTime @updatedAt
+  isDelete        Boolean  @default(false)
+  isActive        Boolean  @default(true)
 
-  completedAt   DateTime @default(now())
-  periodKey     String   // e.g. "2026-08-07" (daily) / "2026-W32" (weekly) / "ALL" (one_time/repeatable instance id)
-  gpAwarded     Int
-  xpAwarded     Int
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  questId         String
+  quest           Quest    @relation(fields: [questId], references: [id], onDelete: Cascade)
+
+  completedAt     DateTime @default(now())
+  periodKey       String   // e.g. "2026-08-07" (daily) / "2026-W32" (weekly) / "ALL" (one_time/repeatable instance id)
+  gpAwarded       Int
+  xpAwarded       Int
 
   // Prevents double-claiming the same quest within the same period
   @@unique([userId, questId, periodKey])
@@ -139,7 +165,14 @@ model UserQuestCompletion {
 // ─────────────────────────────────────────────
 
 model SpinState {
-  id                       String   @id @default(cuid())
+  id                       String   @id @default(uuid())
+  createdBy                String?
+  createdDate              DateTime @default(now())
+  updatedBy                String?
+  updatedDate              DateTime @updatedAt
+  isDelete                 Boolean  @default(false)
+  isActive                 Boolean  @default(true)
+
   userId                   String   @unique
   user                     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -150,16 +183,22 @@ model SpinState {
 }
 
 model SpinResult {
-  id        String      @id @default(cuid())
-  userId    String
-  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id              String   @id @default(uuid())
+  createdBy       String?
+  createdDate     DateTime @default(now())
+  updatedBy       String?
+  updatedDate     DateTime @updatedAt
+  isDelete        Boolean  @default(false)
+  isActive        Boolean  @default(true)
 
-  outcome   SpinOutcome
-  gpAwarded Int
-  usedFree  Boolean
-  createdAt DateTime    @default(now())
+  userId          String
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([userId, createdAt])
+  outcome         SpinOutcome
+  gpAwarded       Int
+  usedFree        Boolean
+
+  @@index([userId, createdDate])
   @@map("spin_results")
 }
 
@@ -168,22 +207,35 @@ model SpinResult {
 // ─────────────────────────────────────────────
 
 model Invite {
-  id            String   @id @default(cuid())
-  code          String   @unique
-  inviterId     String
-  inviter       User     @relation("Inviter", fields: [inviterId], references: [id], onDelete: Cascade)
-  createdAt     DateTime @default(now())
+  id              String   @id @default(uuid())
+  createdBy       String?
+  createdDate     DateTime @default(now())
+  updatedBy       String?
+  updatedDate     DateTime @updatedAt
+  isDelete        Boolean  @default(false)
+  isActive        Boolean  @default(true)
 
-  redemptions   InviteRedemption[]
+  code            String   @unique
+  inviterId       String
+  inviter         User     @relation("Inviter", fields: [inviterId], references: [id], onDelete: Cascade)
+
+  redemptions     InviteRedemption[]
 
   @@index([inviterId])
   @@map("invites")
 }
 
 model InviteRedemption {
-  id             String   @id @default(cuid())
-  inviteId       String
-  invite         Invite   @relation(fields: [inviteId], references: [id], onDelete: Cascade)
+  id               String   @id @default(uuid())
+  createdBy        String?
+  createdDate      DateTime @default(now())
+  updatedBy        String?
+  updatedDate      DateTime @updatedAt
+  isDelete         Boolean  @default(false)
+  isActive         Boolean  @default(true)
+
+  inviteId         String
+  invite           Invite   @relation(fields: [inviteId], references: [id], onDelete: Cascade)
 
   // The NEW user who redeemed the code — one redemption per user, ever
   redeemedByUserId String @unique
@@ -201,7 +253,14 @@ model InviteRedemption {
 // ─────────────────────────────────────────────
 
 model SocialConnection {
-  id                   String         @id @default(cuid())
+  id                   String   @id @default(uuid())
+  createdBy            String?
+  createdDate          DateTime @default(now())
+  updatedBy            String?
+  updatedDate          DateTime @updatedAt
+  isDelete             Boolean  @default(false)
+  isActive             Boolean  @default(true)
+
   userId               String
   user                 User           @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -223,21 +282,35 @@ model SocialConnection {
 }
 
 model SocialQuest {
-  id          String         @id // e.g. "x_follow", "telegram_tapin"
-  platform    SocialPlatform
-  name        String
-  gpReward    Int
-  xpReward    Int
-  frequency   QuestFrequency
-  active      Boolean        @default(true)
+  id              String   @id @default(uuid())
+  createdBy       String?
+  createdDate     DateTime @default(now())
+  updatedBy       String?
+  updatedDate     DateTime @updatedAt
+  isDelete        Boolean  @default(false)
+  isActive        Boolean  @default(true)
 
-  claims      SocialQuestClaim[]
+  code            String   @unique // e.g. "x_follow", "telegram_tapin"
+  platform        SocialPlatform
+  name            String
+  gpReward        Int
+  xpReward        Int
+  frequency       QuestFrequency
+
+  claims          SocialQuestClaim[]
 
   @@map("social_quests")
 }
 
 model SocialQuestClaim {
-  id                   String           @id @default(cuid())
+  id                   String   @id @default(uuid())
+  createdBy            String?
+  createdDate          DateTime @default(now())
+  updatedBy            String?
+  updatedDate          DateTime @updatedAt
+  isDelete             Boolean  @default(false)
+  isActive             Boolean  @default(true)
+
   socialConnectionId   String
   socialConnection     SocialConnection @relation(fields: [socialConnectionId], references: [id], onDelete: Cascade)
   socialQuestId        String
@@ -257,32 +330,44 @@ model SocialQuestClaim {
 // ─────────────────────────────────────────────
 
 model GpLedgerEntry {
-  id        String       @id @default(cuid())
-  userId    String
-  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id          String   @id @default(uuid())
+  createdBy   String?
+  createdDate DateTime @default(now())
+  updatedBy   String?
+  updatedDate DateTime @updatedAt
+  isDelete    Boolean  @default(false)
+  isActive    Boolean  @default(true)
 
-  type      LedgerType
-  amount    Int          // positive for credit, negative for debit
-  source    LedgerSource
-  refId     String?      // e.g. questId, platform, spinResultId, inviteId
-  createdAt DateTime     @default(now())
+  userId      String
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([userId, createdAt])
+  type        LedgerType
+  amount      Int          // positive for credit, negative for debit
+  source      LedgerSource
+  refId       String?      // e.g. questId, platform, spinResultId, inviteId
+
+  @@index([userId, createdDate])
   @@index([userId, source])
   @@map("gp_ledger_entries")
 }
 
 model XpLedgerEntry {
-  id        String       @id @default(cuid())
-  userId    String
-  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id          String   @id @default(uuid())
+  createdBy   String?
+  createdDate DateTime @default(now())
+  updatedBy   String?
+  updatedDate DateTime @updatedAt
+  isDelete    Boolean  @default(false)
+  isActive    Boolean  @default(true)
 
-  amount    Int
-  source    LedgerSource
-  refId     String?
-  createdAt DateTime     @default(now())
+  userId      String
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([userId, createdAt])
+  amount      Int
+  source      LedgerSource
+  refId       String?
+
+  @@index([userId, createdDate])
   @@map("xp_ledger_entries")
 }
 
@@ -291,9 +376,16 @@ model XpLedgerEntry {
 // ─────────────────────────────────────────────
 
 model SystemConfig {
-  key       String   @id // e.g. "gp_to_jlt_rate", "xp_level_base", "xp_level_growth"
-  value     String   // store as string, parse per key (e.g. "100", "500", "1.3")
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(uuid())
+  createdBy   String?
+  createdDate DateTime @default(now())
+  updatedBy   String?
+  updatedDate DateTime @updatedAt
+  isDelete    Boolean  @default(false)
+  isActive    Boolean  @default(true)
+
+  key         String   @unique // e.g. "gp_to_jlt_rate", "xp_level_base", "xp_level_growth"
+  value       String   // store as string, parse per key (e.g. "100", "500", "1.3")
 
   @@map("system_config")
 }

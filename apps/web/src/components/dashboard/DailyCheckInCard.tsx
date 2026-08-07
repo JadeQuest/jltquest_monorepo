@@ -1,17 +1,19 @@
 'use client';
 
 import React from 'react';
+import { useCheckIn } from '@/hooks/useCheckIn';
 
 export const DailyCheckInCard: React.FC = () => {
-  const daysData = [
-    { day: 'Day 1', coins: 1, active: true },
-    { day: 'Day 2', coins: 2, active: true },
-    { day: 'Day 3', coins: 3, active: true },
-    { day: 'Day 4', coins: 4, active: true },
-    { day: 'Day 5', coins: 5, active: true },
-    { day: 'Day 6', coins: 6, active: true },
-    { day: 'Day 7', coins: 7, active: true },
-  ];
+  const { status, claim, isClaiming } = useCheckIn();
+  const streak = status?.streak ?? 0;
+  const nextRewardGp = status?.nextRewardGp ?? 50;
+  const nextRewardXp = status?.nextRewardXp ?? 50;
+
+  const daysData = Array.from({ length: 7 }).map((_, i) => ({
+    day: `Day ${i + 1}`,
+    coins: i + 1,
+    active: i < streak,
+  }));
 
   return (
     <div className="daily-card-panel p-4 sm:p-6 flex flex-col justify-between min-h-[260px] relative overflow-hidden">
@@ -38,7 +40,7 @@ export const DailyCheckInCard: React.FC = () => {
                 className="w-full h-full object-contain"
               />
             </div>
-            <span className="text-white font-gilroyBold text-sm sm:text-base font-bold">500</span>
+            <span className="text-white font-gilroyBold text-sm sm:text-base font-bold">{nextRewardGp}</span>
           </div>
 
           <div className="flex items-center gap-2">
@@ -51,19 +53,23 @@ export const DailyCheckInCard: React.FC = () => {
                 className="w-full h-full object-contain"
               />
             </div>
-            <span className="text-white font-gilroyBold text-sm sm:text-base font-bold">50</span>
+            <span className="text-white font-gilroyBold text-sm sm:text-base font-bold">{nextRewardXp}</span>
           </div>
 
-          <button className="glass-btn px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-white font-gilroyMedium text-xs sm:text-sm font-semibold tracking-wide hover:shadow-[0_0_15px_#7B2CBF]">
-            View Coin
+          <button 
+            onClick={() => status?.canClaim && claim()}
+            disabled={!status?.canClaim || isClaiming}
+            className={`glass-btn px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-white font-gilroyMedium text-xs sm:text-sm font-semibold tracking-wide ${status?.canClaim ? 'hover:shadow-[0_0_15px_#7B2CBF] cursor-pointer' : 'opacity-50 cursor-not-allowed'}`}
+          >
+            {isClaiming ? 'Claiming...' : (status?.canClaim ? 'Claim Now' : 'Claimed')}
           </button>
         </div>
       </div>
 
       <div className="grid grid-cols-7 gap-1 sm:gap-3 mt-4 items-end overflow-x-auto pb-1">
         {daysData.map((item, idx) => (
-          <div key={idx} className="flex flex-col items-center gap-2">
-            <span className="text-purple-200 font-gilroyBold text-sm font-bold tracking-wide">
+          <div key={idx} className={`flex flex-col items-center gap-2 ${item.active ? '' : 'opacity-30'}`}>
+            <span className={`${item.active ? 'text-purple-200' : 'text-gray-400'} font-gilroyBold text-sm font-bold tracking-wide`}>
               {item.day}
             </span>
 

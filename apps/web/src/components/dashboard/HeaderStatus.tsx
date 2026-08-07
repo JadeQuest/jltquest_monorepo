@@ -1,7 +1,9 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useAccount } from 'wagmi';
+import { useAuth } from '@/hooks/useAuth';
+import { useDashboard } from '@/hooks/useDashboard';
 
 interface HeaderStatusProps {
   level?: number;
@@ -19,6 +21,30 @@ export const HeaderStatus: React.FC<HeaderStatusProps> = ({
   onConnectClick,
 }) => {
   const { address, isConnected, chain } = useAccount();
+  const { login, isLoggingIn } = useAuth();
+  const { data: dashboardData } = useDashboard();
+  
+  // Mock login state for testing
+  const [mockAddress, setMockAddress] = React.useState<string | null>(null);
+
+  useEffect(() => {
+    if (isConnected && address) {
+      login(address).catch(console.error);
+    }
+  }, [isConnected, address]);
+
+  const handleMockLogin = async () => {
+    const testAddress = "0xMockTestWallet123456789";
+    try {
+      await login(testAddress);
+      setMockAddress(testAddress);
+    } catch (e) {
+      console.error('Mock login failed', e);
+    }
+  };
+
+  const displayLevel = dashboardData?.user?.level ?? level;
+  const displayCoins = dashboardData?.user?.gp ?? coins;
 
   const formatAddress = React.useCallback((addr: string) => {
     return `${addr.substring(0, 6)}...${addr.substring(addr.length - 4)}`;
@@ -54,7 +80,7 @@ export const HeaderStatus: React.FC<HeaderStatusProps> = ({
             />
           </div>
           <span className="text-white font-gilroyBold text-sm sm:text-lg font-bold tracking-wide">
-            Lv. {level}
+            Lv. {displayLevel}
           </span>
         </div>
 
@@ -86,14 +112,15 @@ export const HeaderStatus: React.FC<HeaderStatusProps> = ({
             />
           </div>
           <span className="text-white font-gilroyBold text-sm sm:text-lg font-bold tracking-wide">
-            {coins}
+            {displayCoins}
           </span>
         </div>
 
         {/* Item 4: Custom Centered Connect Wallet Trigger */}
-        {!isConnected || !address ? (
+        {(!isConnected && !address && !mockAddress) ? (
           <button
-            onClick={onConnectClick}
+            onClick={handleMockLogin}
+            disabled={isLoggingIn}
             type="button"
             className="glass-pill px-3 py-1.5 sm:px-5 sm:py-2.5 flex items-center gap-2 sm:gap-3 cursor-pointer hover:border-purple-400/50 hover:bg-white/10 transition-all shadow-lg"
           >
@@ -105,7 +132,7 @@ export const HeaderStatus: React.FC<HeaderStatusProps> = ({
               className="w-5 h-5 sm:w-7 sm:h-7 rounded-md object-cover"
             />
             <span className="text-white font-gilroyMedium text-xs sm:text-base font-medium tracking-wide">
-              Connect Wallet
+              {isLoggingIn ? 'Connecting...' : 'Connect Wallet'}
             </span>
           </button>
         ) : (
@@ -122,7 +149,7 @@ export const HeaderStatus: React.FC<HeaderStatusProps> = ({
               className="w-5 h-5 sm:w-7 sm:h-7 rounded-md object-cover"
             />
             <span className="text-white font-gilroyMedium text-xs sm:text-base font-medium tracking-wide">
-              {formatAddress(address)}
+              {formatAddress(mockAddress || address || '')}
             </span>
             {chain && (
               <span className="hidden md:inline text-purple-300 font-gilroyRegular text-xs sm:text-sm">

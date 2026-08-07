@@ -2,12 +2,16 @@ export class QuestRepository {
   async findActiveQuests(tx: any) {
     return tx.quest.findMany({
       where: { isActive: true },
-      orderBy: { order: 'asc' }
+      orderBy: { createdDate: 'asc' }
     });
   }
 
   async findById(tx: any, questId: string) {
     return tx.quest.findUnique({ where: { id: questId } });
+  }
+
+  async findByCode(tx: any, code: string) {
+    return tx.quest.findUnique({ where: { code } });
   }
 
   async findCompletions(tx: any, userId: string) {

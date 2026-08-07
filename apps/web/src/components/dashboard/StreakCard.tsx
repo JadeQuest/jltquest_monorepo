@@ -1,8 +1,11 @@
 'use client';
 
 import React from 'react';
+import { useCheckIn } from '@/hooks/useCheckIn';
 
 export const StreakCard: React.FC = () => {
+  const { status } = useCheckIn();
+  const streak = status?.streak ?? 1;
   return (
     <div className="daily-card-panel p-6 flex items-center justify-between h-[260px] relative overflow-hidden group">
       {/* Background glow effect */}
@@ -11,10 +14,10 @@ export const StreakCard: React.FC = () => {
       {/* Left text block */}
       <div className="flex flex-col gap-1 z-10 pl-2">
         <div className="text-white font-gilroyBold text-5xl font-extrabold tracking-tight">
-          5X
+          {streak}X
         </div>
         <div className="text-purple-200 font-gilroyBold text-xl font-bold tracking-wide">
-          5 Days
+          {streak} Day{streak !== 1 ? 's' : ''}
         </div>
       </div>
 

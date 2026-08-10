@@ -1,35 +1,46 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 
 interface SidebarProps {
-  activeTab?: string;
-  onSelectTab?: (tab: string) => void;
   isMobileOpen?: boolean;
   onMobileClose?: () => void;
 }
 
 const NAV_ITEMS = [
-  { id: 'Discover', label: 'Discover', iconSrc: '/Discover.svg' },
-  { id: 'Push Pass', label: 'Push Pass', iconSrc: '/Push Pass.svg' },
-  { id: 'Quests', label: 'Quests', iconSrc: '/Quests.svg' },
-  { id: 'Invites/Squads', label: 'Invites/Squads', iconSrc: '/InviteSqaud.svg' },
-  { id: 'Leaderboards', label: 'Leaderboards', iconSrc: '/LeaderBoard.svg' },
+  { id: 'Discover', label: 'Discover', iconSrc: '/Discover.svg', path: '/dashboard' },
+  { id: 'Push Pass', label: 'Push Pass', iconSrc: '/Push Pass.svg', path: '/dashboard/push-pass' },
+  { id: 'Quests', label: 'Quests', iconSrc: '/Quests.svg', path: '/dashboard/quests' },
+  { id: 'Invites/Squads', label: 'Invites/Squads', iconSrc: '/InviteSqaud.svg', path: '/dashboard/invites' },
+  { id: 'Leaderboards', label: 'Leaderboards', iconSrc: '/LeaderBoard.svg', path: '/dashboard/leaderboards' },
 ];
 
 export const Sidebar: React.FC<SidebarProps> = ({
-  activeTab = 'Discover',
-  onSelectTab,
   isMobileOpen = false,
   onMobileClose,
 }) => {
-  const [selected, setSelected] = useState(activeTab);
+  const router = useRouter();
+  const pathname = usePathname();
+  const [selected, setSelected] = useState('Discover');
 
-  const handleTabClick = React.useCallback((id: string) => {
-    setSelected(id);
-    if (onSelectTab) onSelectTab(id);
+  useEffect(() => {
+    const currentItem = NAV_ITEMS.find(item => item.path === pathname);
+    if (currentItem) {
+      setSelected(currentItem.id);
+    } else if (pathname.startsWith('/dashboard/collection')) {
+      // If we are in some other sub-route that doesn't have a direct nav item
+      setSelected('');
+    } else {
+      setSelected('Discover');
+    }
+  }, [pathname]);
+
+  const handleTabClick = React.useCallback((item: typeof NAV_ITEMS[0]) => {
+    setSelected(item.id);
+    router.push(item.path);
     if (onMobileClose) onMobileClose();
-  }, [onMobileClose, onSelectTab]);
+  }, [onMobileClose, router]);
 
   const navContent = (
     <>
@@ -57,7 +68,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             return (
               <button
                 key={item.id}
-                onClick={() => handleTabClick(item.id)}
+                onClick={() => handleTabClick(item)}
                 className={`w-full flex items-center gap-4 px-5 py-3.5 rounded-2xl text-left transition-all duration-300 relative group ${
                   isActive
                     ? 'glass-pill text-white shadow-[0_0_20px_rgba(82,10,165,0.4)]'

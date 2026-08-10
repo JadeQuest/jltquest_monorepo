@@ -17,6 +17,7 @@ import { QuestService } from '../core/services/QuestService';
 import { SpinService } from '../core/services/SpinService';
 import { InviteService } from '../core/services/InviteService';
 import { SocialService } from '../core/services/SocialService';
+import { CollectionService } from '../core/services/CollectionService';
 
 // Controllers
 import { AuthController } from '../api/controllers/AuthController';
@@ -27,6 +28,7 @@ import { SpinController } from '../api/controllers/SpinController';
 import { InviteController } from '../api/controllers/InviteController';
 import { SocialController } from '../api/controllers/SocialController';
 import { LevelController } from '../api/controllers/LevelController';
+import { CollectionController } from '../api/controllers/CollectionController';
 
 // 1. Initialize Repositories
 const userRepository = new UserRepository();
@@ -45,6 +47,7 @@ const questService = new QuestService(questRepository, ledgerService, prisma);
 const spinService = new SpinService(spinRepository, ledgerService, prisma);
 const inviteService = new InviteService(inviteRepository, ledgerService, prisma);
 const socialService = new SocialService(socialConnectionRepository, ledgerService, prisma);
+const collectionService = new CollectionService(prisma);
 
 // 3. Initialize Controllers
 export const authController = new AuthController();
@@ -55,3 +58,4 @@ export const spinController = new SpinController(spinService);
 export const inviteController = new InviteController(inviteService);
 export const socialController = new SocialController(socialService);
 export const levelController = new LevelController();
+export const collectionController = new CollectionController(collectionService);

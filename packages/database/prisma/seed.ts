@@ -6,10 +6,10 @@ async function main() {
   // ── Quests ──────────────────────────
   await prisma.quest.createMany({
     data: [
-      { code: 'quest_connect_wallet', name: 'Connect Wallet', gpReward: 100, xpReward: 50, frequency: QuestFrequency.ONE_TIME },
-      { code: 'quest_complete_profile', name: 'Complete Profile', gpReward: 100, xpReward: 50, frequency: QuestFrequency.ONE_TIME },
-      { code: 'quest_invite_friend', name: 'Invite 1 Friend', gpReward: 150, xpReward: 75, frequency: QuestFrequency.REPEATABLE },
-      { code: 'quest_3_daily_spins', name: 'Complete 3 Daily Spins', gpReward: 100, xpReward: 40, frequency: QuestFrequency.DAILY },
+      { code: 'quest_connect_wallet', name: 'Connect Wallet', gpReward: 100, xpReward: 50, fragmentReward: 1, frequency: QuestFrequency.ONE_TIME },
+      { code: 'quest_complete_profile', name: 'Complete Profile', gpReward: 100, xpReward: 50, fragmentReward: 1, frequency: QuestFrequency.ONE_TIME },
+      { code: 'quest_invite_friend', name: 'Invite 1 Friend', gpReward: 150, xpReward: 75, fragmentReward: 2, frequency: QuestFrequency.REPEATABLE },
+      { code: 'quest_3_daily_spins', name: 'Complete 3 Daily Spins', gpReward: 100, xpReward: 40, fragmentReward: 1, frequency: QuestFrequency.DAILY },
     ],
     skipDuplicates: true,
   });
@@ -17,9 +17,9 @@ async function main() {
   // ── One-time social connection quests ─
   await prisma.quest.createMany({
     data: [
-      { code: 'quest_connect_x', name: 'Connect X (Twitter)', gpReward: 100, xpReward: 50, frequency: QuestFrequency.ONE_TIME },
-      { code: 'quest_connect_discord', name: 'Join Discord + Link Account', gpReward: 100, xpReward: 50, frequency: QuestFrequency.ONE_TIME },
-      { code: 'quest_connect_telegram', name: 'Join Telegram + Link Account', gpReward: 100, xpReward: 50, frequency: QuestFrequency.ONE_TIME },
+      { code: 'quest_connect_x', name: 'Connect X (Twitter)', gpReward: 100, xpReward: 50, fragmentReward: 1, frequency: QuestFrequency.ONE_TIME },
+      { code: 'quest_connect_discord', name: 'Join Discord + Link Account', gpReward: 100, xpReward: 50, fragmentReward: 1, frequency: QuestFrequency.ONE_TIME },
+      { code: 'quest_connect_telegram', name: 'Join Telegram + Link Account', gpReward: 100, xpReward: 50, fragmentReward: 1, frequency: QuestFrequency.ONE_TIME },
     ],
     skipDuplicates: true,
   });
@@ -52,6 +52,21 @@ async function main() {
     ],
     skipDuplicates: true,
   });
+
+  // ── Rare Cards ──────────────
+  const rareCardsData = Array.from({ length: 16 }).map((_, i) => ({
+    name: `Card ${i + 1}`,
+    imageUrl: `/optimized/collect-${i + 1}.webp`,
+  }));
+
+  // We loop and upsert so we don't duplicate if they exist, but skipDuplicates is not available on createMany sometimes or we just createMany since we skipDuplicates
+  // Wait, RareCard doesn't have a unique field except ID. We can add a unique on name or imageUrl, but for now we'll just check if they exist.
+  const existingCardsCount = await prisma.rareCard.count();
+  if (existingCardsCount === 0) {
+    await prisma.rareCard.createMany({
+      data: rareCardsData,
+    });
+  }
 
   console.log('Seed complete.');
 }

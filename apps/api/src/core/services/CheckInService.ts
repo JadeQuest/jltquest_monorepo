@@ -18,9 +18,9 @@ export class CheckInService {
 
     const now = new Date();
     const lastDate = streak.lastCheckInAt || new Date(0);
-    const lastClaimUTC = new Date(Date.UTC(lastDate.getUTCFullYear(), lastDate.getUTCMonth(), lastDate.getUTCDate()));
-    const todayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-    const diffDays = Math.floor((todayUTC.getTime() - lastClaimUTC.getTime()) / (1000 * 60 * 60 * 24));
+    const lastClaim = new Date(lastDate.getFullYear(), lastDate.getMonth(), lastDate.getDate());
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const diffDays = Math.floor((today.getTime() - lastClaim.getTime()) / (1000 * 60 * 60 * 24));
     
     const canClaim = diffDays >= 1;
     let nextStreak = streak.currentDay;
@@ -33,8 +33,13 @@ export class CheckInService {
     const nextRewardGp = 50;
     const nextRewardXp = 50;
 
+    let currentStreak = streak.currentDay;
+    if (diffDays > 1) {
+      currentStreak = 0; // streak broken
+    }
+
     return {
-      streak: streak.currentDay,
+      streak: currentStreak,
       canClaim,
       nextRewardGp,
       nextRewardXp
@@ -55,9 +60,9 @@ export class CheckInService {
       const now = new Date();
       if (streak) {
         const lastDate = streak.lastCheckInAt || new Date(0);
-        const lastClaimUTC = new Date(Date.UTC(lastDate.getUTCFullYear(), lastDate.getUTCMonth(), lastDate.getUTCDate()));
-        const todayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-        const diffDays = Math.floor((todayUTC.getTime() - lastClaimUTC.getTime()) / (1000 * 60 * 60 * 24));
+        const lastClaim = new Date(lastDate.getFullYear(), lastDate.getMonth(), lastDate.getDate());
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const diffDays = Math.floor((today.getTime() - lastClaim.getTime()) / (1000 * 60 * 60 * 24));
         if (diffDays > 1) newStreakValue = 1;
 
         await this.streakRepository.update(tx, userId, {

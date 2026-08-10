@@ -28,9 +28,13 @@ enum QuestFrequency {
 }
 
 enum SpinOutcome {
-  SMALL
-  MEDIUM
-  LARGE
+  GP_20
+  GP_50
+  GP_100
+  XP_20
+  FRAGMENT_1
+  FREE_SPIN_1
+  NOTHING
 }
 
 enum LedgerSource {
@@ -71,6 +75,7 @@ model User {
   xp    Int @default(0) // XP within current level (resets on level-up)
   gp    Int @default(0) // spendable Gold Points balance
   jlt   Decimal @default(0) @db.Decimal(18, 6)
+  fragments Int @default(0) // collected fragments for rare cards
 
   walletConnected     Boolean @default(false)
   profileCompleted    Boolean @default(false)
@@ -85,6 +90,7 @@ model User {
   spinHistory         SpinResult[]
   invitesSent         Invite[]              @relation("Inviter")
   inviteRedemption    InviteRedemption?     @relation("RedeemedByUser")
+  cards               UserCard[]
 
   @@index([gp])
   @@index([xp])
@@ -131,6 +137,7 @@ model Quest {
   name            String
   gpReward        Int
   xpReward        Int
+  fragmentReward  Int @default(0)
   frequency       QuestFrequency
 
   completions     UserQuestCompletion[]
@@ -179,8 +186,12 @@ model SpinState {
   userId                   String   @unique
   user                     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  freeSpinUsedDate         DateTime? @db.Date // UTC date the free spin was last used
-  purchasedSpinsAvailable  Int       @default(0)
+  freeSpinUsedDate         DateTime? @db.Date // Legacy field
+  purchasedSpinsAvailable  Int       @default(0) // Legacy field
+  
+  availableFreeSpins       Int       @default(1)
+  lastFreeSpinAt           DateTime?
+  totalSpins               Int       @default(0)
 
   @@map("spin_states")
 }
@@ -396,4 +407,36 @@ model SystemConfig {
   value       String   // store as string, parse per key (e.g. "100", "500", "1.3")
 
   @@map("system_config")
+}
+
+// ─────────────────────────────────────────────
+// Collections & Fragments
+// ─────────────────────────────────────────────
+
+model RareCard {
+  id        String   @id @default(uuid())
+  name      String
+  imageUrl  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userCards UserCard[]
+
+  @@map("rare_cards")
+}
+
+model UserCard {
+  id        String   @id @default(uuid())
+  userId    String
+  cardId    String
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User     @relation(fields: [userId], references: [id])
+  card      RareCard @relation(fields: [cardId], references: [id])
+
+  @@unique([userId, cardId])
+  @@index([userId])
+  @@map("user_cards")
 }

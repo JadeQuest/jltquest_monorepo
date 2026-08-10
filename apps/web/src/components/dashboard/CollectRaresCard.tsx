@@ -1,20 +1,23 @@
 'use client';
 
-import React from 'react';
+import Link from 'next/link';
 
 export const CollectRaresCard: React.FC = () => {
   return (
-    <div className="daily-card-panel p-6 flex flex-col justify-between h-[360px] relative overflow-hidden group select-none">
-      <div className="absolute inset-0 bg-gradient-to-t from-[#7B2CBF]/20 via-transparent to-transparent pointer-events-none" />
+    <Link href="/dashboard/collection" className="block h-full">
+      <div className="daily-card-panel p-6 flex flex-col justify-between h-[360px] relative overflow-hidden group select-none cursor-pointer transition-transform hover:scale-[1.02]">
+        <div className="absolute inset-0 bg-gradient-to-t from-[#7B2CBF]/20 via-transparent to-transparent pointer-events-none" />
 
-      <div className="flex flex-col gap-2 z-10">
-        <h2 className="text-white font-gilroyBold text-2xl font-bold tracking-tight">
-          Rare Collection
-        </h2>
-        <p className="text-purple-200 font-gilroyRegular text-sm font-normal opacity-90">
-          Build your collection and discover rare creatures by spins and quests.
-        </p>
-      </div>
+        <div className="flex flex-col gap-2 z-10">
+          <div className="flex justify-between items-start">
+            <h2 className="text-white font-gilroyBold text-2xl font-bold tracking-tight">
+              Rare Collection
+            </h2>
+          </div>
+          <p className="text-purple-200 font-gilroyRegular text-sm font-normal opacity-90">
+            Build your collection and discover rare creatures by spins and quests.
+          </p>
+        </div>
 
       {/* Fan of Official Collect Rare Cards */}
       <div className="relative w-full h-36 sm:h-44 mt-2 flex items-center justify-center">
@@ -81,6 +84,7 @@ export const CollectRaresCard: React.FC = () => {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </Link>
   );
 };

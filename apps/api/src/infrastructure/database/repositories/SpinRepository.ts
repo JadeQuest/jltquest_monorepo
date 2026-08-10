@@ -11,6 +11,6 @@ export class SpinRepository {
   }
 
   async createHistory(tx: any, data: any) {
-    return tx.spinHistory.create({ data });
+    return tx.spinResult.create({ data });
   }
 }

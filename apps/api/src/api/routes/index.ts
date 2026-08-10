@@ -8,7 +8,8 @@ import {
   spinController,
   inviteController,
   socialController,
-  levelController
+  levelController,
+  collectionController
 } from '../../di/container';
 
 const router = Router();
@@ -48,5 +49,9 @@ router.delete('/social/:platform', socialController.disconnect.bind(socialContro
 
 // Levels
 router.get('/levels/:level/requirement', levelController.getRequirement.bind(levelController));
+
+// Collections
+router.get('/collection', collectionController.getCollection.bind(collectionController));
+router.post('/collection/merge', collectionController.mergeFragments.bind(collectionController));
 
 export default router;

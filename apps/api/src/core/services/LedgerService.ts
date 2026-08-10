@@ -21,10 +21,35 @@ export class LedgerService {
 
   async awardXp(tx: any, userId: string, amount: number, source: LedgerSource, refId?: string) {
     if (amount <= 0) return;
+
+    // We need to fetch the user to check their current level and xp
+    const user = await tx.user.findUnique({ where: { id: userId } });
+    if (!user) return;
+
+    const { calculateXpRequiredForLevel } = require('../utils/leveling');
+    
+    let currentXp = user.xp + amount;
+    let currentLevel = user.level;
+    let fragmentsAwarded = 0;
+
+    let xpRequired = calculateXpRequiredForLevel(currentLevel);
+
+    while (currentXp >= xpRequired) {
+      currentXp -= xpRequired;
+      currentLevel += 1;
+      fragmentsAwarded += 1;
+      xpRequired = calculateXpRequiredForLevel(currentLevel);
+    }
+
     await tx.user.update({
       where: { id: userId },
-      data: { xp: { increment: amount } }
+      data: { 
+        xp: currentXp,
+        level: currentLevel,
+        fragments: { increment: fragmentsAwarded }
+      }
     });
+
     await this.ledgerRepository.createXpLedger(tx, {
       userId,
       amount,

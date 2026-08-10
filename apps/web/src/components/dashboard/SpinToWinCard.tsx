@@ -2,20 +2,33 @@
 
 import React, { useState } from 'react';
 import { useAccount } from 'wagmi';
+import { useSpin } from '@/hooks/useSpin';
 
 const PRIZES = [
-  '50 Coins',
-  'Rare Pass',
-  '2X Boost',
-  '100 Coins',
-  '500 Coins',
+  '50 GP',
+  '20 GP',
+  '20 XP',
+  '100 GP',
+  'Nothing',
   'Free Spin',
-  'Mystery Box',
-  'Legendary Shiny',
+  '1 Fragment',
+  'Nothing',
 ];
+
+const OUTCOME_TO_INDEX: Record<string, number> = {
+  'GP_50': 0,
+  'GP_20': 1,
+  'XP_20': 2,
+  'GP_100': 3,
+  'NOTHING': 4, 
+  'FREE_SPIN_1': 5,
+  'FRAGMENT_1': 6
+};
 
 export const SpinToWinCard: React.FC = () => {
   const { isConnected, address } = useAccount();
+  const { spinStatus, spin, isSpinning: isSpinMutating } = useSpin();
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [rotation, setRotation] = useState(0);
   const [isSpinning, setIsSpinning] = useState(false);
@@ -29,22 +42,42 @@ export const SpinToWinCard: React.FC = () => {
     };
   }, []);
 
-  const handleSpin = React.useCallback(() => {
-    if (isSpinning) return;
+  const handleSpin = React.useCallback(async () => {
+    if (isSpinning || isSpinMutating) return;
+    if (!spinStatus || spinStatus.availableFreeSpins <= 0) return;
+
     setIsSpinning(true);
     setPrize(null);
 
-    const extraDegrees = Math.floor(Math.random() * 360);
-    const newRotation = rotation + 1440 + extraDegrees;
-    setRotation(newRotation);
+    try {
+      // 1. Call backend to get outcome
+      const result = await spin(true);
+      
+      // 2. Map outcome to wheel index
+      let prizeIndex = OUTCOME_TO_INDEX[result.outcome];
+      if (result.outcome === 'NOTHING' && Math.random() > 0.5) {
+        prizeIndex = 7;
+      }
+      
+      // 3. Calculate target rotation
+      const targetDegree = ((8 - prizeIndex) % 8) * 45;
+      const randomOffset = Math.floor(Math.random() * 20) - 10; // -10 to +10 degrees
+      const newRotation = rotation + (360 * 4) - (rotation % 360) + targetDegree + randomOffset;
+      
+      setRotation(newRotation);
 
-    if (spinTimeoutRef.current) clearTimeout(spinTimeoutRef.current);
-    spinTimeoutRef.current = setTimeout(() => {
+      if (spinTimeoutRef.current) clearTimeout(spinTimeoutRef.current);
+      spinTimeoutRef.current = setTimeout(() => {
+        setIsSpinning(false);
+        setPrize(PRIZES[prizeIndex]);
+      }, 3500);
+
+    } catch (error) {
+      console.error('Spin failed', error);
       setIsSpinning(false);
-      const prizeIndex = Math.floor(((newRotation % 360) / 360) * PRIZES.length);
-      setPrize(PRIZES[prizeIndex] || '50 Coins');
-    }, 3500);
-  }, [isSpinning, rotation]);
+      alert('Failed to spin. Please try again.');
+    }
+  }, [isSpinning, isSpinMutating, spinStatus, spin, rotation]);
 
   const handleCardClick = React.useCallback(() => {
     if (isConnected && address) {
@@ -55,11 +88,10 @@ export const SpinToWinCard: React.FC = () => {
   const closeModal = React.useCallback(() => {
     if (!isSpinning) {
       setIsModalOpen(false);
-      // Optional: reset state on close if desired
-      // setRotation(0);
-      // setPrize(null);
     }
   }, [isSpinning]);
+
+  const canSpin = spinStatus && spinStatus.availableFreeSpins > 0;
 
   return (
     <>
@@ -73,7 +105,7 @@ export const SpinToWinCard: React.FC = () => {
           </h2>
           <div className="glass-pill px-4 py-1 rounded-full border border-purple-400/40 bg-purple-900/30 shadow-[0_0_15px_rgba(168,85,247,0.4)]">
             <span className="text-purple-200 font-gilroyMedium text-xs font-semibold tracking-wide">
-              1 FREE Spin Per Day
+              {spinStatus ? `${spinStatus.availableFreeSpins} Free Spin(s)` : 'Loading...'}
             </span>
           </div>
           <div className="mt-4 px-4 py-2 rounded-lg bg-white/10 text-white font-gilroyBold text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 backdrop-blur-sm border border-white/20">
@@ -113,13 +145,13 @@ export const SpinToWinCard: React.FC = () => {
               Spin to Win
             </h2>
             <p className="text-purple-300 font-gilroyMedium text-sm sm:text-base mb-6 z-10 text-center">
-              Tap the wheel or click SPIN below to try your luck!
+              {canSpin ? 'Tap the wheel or click SPIN below to try your luck!' : 'You have no free spins left today.'}
             </p>
 
             {/* Wheel Container - Big SVG */}
             <div
-              className="relative w-[260px] h-[260px] sm:w-[420px] sm:h-[420px] flex items-center justify-center cursor-pointer group z-20 mb-4 sm:mb-6"
-              onClick={handleSpin}
+              className={`relative w-[260px] h-[260px] sm:w-[420px] sm:h-[420px] flex items-center justify-center group z-20 mb-4 sm:mb-6 ${canSpin ? 'cursor-pointer' : ''}`}
+              onClick={canSpin ? handleSpin : undefined}
             >
               <div className="absolute inset-0 bg-gradient-to-tr from-[#FFD166] via-[#EF476F] to-[#118AB2] rounded-full blur-3xl opacity-25 group-hover:opacity-45 transition-opacity" />
 
@@ -159,29 +191,31 @@ export const SpinToWinCard: React.FC = () => {
             {/* Action Spin Button */}
             <button
               onClick={handleSpin}
-              disabled={isSpinning}
+              disabled={isSpinning || !canSpin || isSpinMutating}
               className="glass-btn px-10 py-3.5 rounded-2xl text-white font-gilroyBold text-lg sm:text-xl font-bold bg-gradient-to-r from-amber-500 via-purple-600 to-indigo-600 hover:from-amber-400 hover:to-indigo-500 active:scale-95 transition-all duration-300 shadow-[0_0_30px_rgba(168,85,247,0.5)] cursor-pointer disabled:opacity-50 z-20"
             >
-              {isSpinning ? 'Spinning...' : 'SPIN NOW'}
+              {isSpinning || isSpinMutating ? 'Spinning...' : 'SPIN NOW'}
             </button>
 
             {/* Reward Overlay */}
             {prize && (
               <div className="absolute inset-0 bg-black/90 backdrop-blur-md z-40 flex flex-col items-center justify-center p-6 animate-fade-in">
                 <div className="text-yellow-400 font-gilroyBold text-4xl sm:text-5xl font-extrabold animate-bounce text-center drop-shadow-[0_0_20px_rgba(250,204,21,0.6)]">
-                  🎉 YOU WON! 🎉
+                  {prize === 'Nothing' ? 'Oh No!' : '🎉 YOU WON! 🎉'}
                 </div>
                 <div className="text-white font-gilroyBold text-3xl sm:text-4xl font-bold mt-6 text-center tracking-wide">
-                  {prize}
+                  {prize === 'Nothing' ? 'Better luck next time!' : prize}
                 </div>
                 <button
                   onClick={() => {
                     setPrize(null);
-                    setIsModalOpen(false);
+                    if (spinStatus?.availableFreeSpins === 0) {
+                      setIsModalOpen(false);
+                    }
                   }}
                   className="glass-btn mt-10 px-10 py-3.5 rounded-2xl text-white font-gilroyBold text-lg sm:text-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 transition-all shadow-[0_0_25px_rgba(124,58,237,0.5)]"
                 >
-                  Claim Reward
+                  {prize === 'Nothing' ? 'Close' : 'Claim Reward'}
                 </button>
               </div>
             )}

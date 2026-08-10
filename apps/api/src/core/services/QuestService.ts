@@ -37,9 +37,17 @@ export class QuestService {
         await this.ledgerService.awardGp(tx, userId, quest.gpReward, LedgerSource.QUEST, questId);
         await this.ledgerService.awardXp(tx, userId, quest.xpReward, LedgerSource.QUEST, questId);
 
+        if (quest.fragmentReward > 0) {
+          await tx.user.update({
+            where: { id: userId },
+            data: { fragments: { increment: quest.fragmentReward } }
+          });
+        }
+
         return {
           gpAwarded: quest.gpReward,
-          xpAwarded: quest.xpReward
+          xpAwarded: quest.xpReward,
+          fragmentsAwarded: quest.fragmentReward
         };
       });
     } catch (err: any) {

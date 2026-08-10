@@ -17,12 +17,19 @@ export class SpinService {
     }
 
     const now = new Date();
-    const lastSpinUTC = new Date(Date.UTC(spinState.lastFreeSpinAt.getUTCFullYear(), spinState.lastFreeSpinAt.getUTCMonth(), spinState.lastFreeSpinAt.getUTCDate()));
-    const todayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-    const diffDays = Math.floor((todayUTC.getTime() - lastSpinUTC.getTime()) / (1000 * 60 * 60 * 24));
+    let freeSpins = spinState.availableFreeSpins ?? 1;
+    
+    if (spinState.lastFreeSpinAt) {
+      const lastSpinUTC = new Date(Date.UTC(spinState.lastFreeSpinAt.getUTCFullYear(), spinState.lastFreeSpinAt.getUTCMonth(), spinState.lastFreeSpinAt.getUTCDate()));
+      const todayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+      const diffDays = Math.floor((todayUTC.getTime() - lastSpinUTC.getTime()) / (1000 * 60 * 60 * 24));
 
-    let freeSpins = spinState.availableFreeSpins;
-    if (diffDays >= 1) freeSpins = Math.max(freeSpins, 1);
+      if (diffDays >= 1) {
+        freeSpins = 1; // Reset to 1 at midnight UTC
+      }
+    } else {
+       freeSpins = 1;
+    }
 
     return {
       availableFreeSpins: freeSpins,
@@ -35,51 +42,99 @@ export class SpinService {
     return await this.prisma.$transaction(async (tx: any) => {
       let spinState = await this.spinRepository.findStateByUserId(tx, userId);
       
+      const now = new Date();
       if (!spinState) {
         spinState = await tx.spinState.create({
           data: { userId, availableFreeSpins: 1 }
         });
       }
 
-      if (useFreeSpin) {
-        if (spinState.availableFreeSpins <= 0) {
-          throw { code: 'INSUFFICIENT_SPINS', message: 'No free spins available.' };
+      let freeSpins = spinState.availableFreeSpins ?? 1;
+      if (spinState.lastFreeSpinAt) {
+        const lastSpinUTC = new Date(Date.UTC(spinState.lastFreeSpinAt.getUTCFullYear(), spinState.lastFreeSpinAt.getUTCMonth(), spinState.lastFreeSpinAt.getUTCDate()));
+        const todayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+        const diffDays = Math.floor((todayUTC.getTime() - lastSpinUTC.getTime()) / (1000 * 60 * 60 * 24));
+
+        if (diffDays >= 1) {
+          freeSpins = 1;
         }
-        await this.spinRepository.updateState(tx, userId, {
-          availableFreeSpins: { decrement: 1 },
-          lastFreeSpinAt: new Date(),
-          totalSpins: { increment: 1 }
-        });
       } else {
-        await this.spinRepository.updateState(tx, userId, {
-          totalSpins: { increment: 1 }
-        });
+         freeSpins = 1;
+      }
+
+      if (useFreeSpin && freeSpins <= 0) {
+        throw { code: 'INSUFFICIENT_SPINS', message: 'No free spins available.' };
       }
 
       const rand = Math.random();
-      let outcome: SpinOutcome = SpinOutcome.SMALL;
-      let gpAwarded = 20;
+      let outcome: SpinOutcome;
+      let gpAwarded = 0;
+      let fragmentsAwarded = 0;
+      let xpAwarded = 0;
+      let freeSpinAwarded = 0;
 
-      if (rand > 0.9) {
-        outcome = SpinOutcome.LARGE;
-        gpAwarded = 1000;
-      } else if (rand > 0.6) {
-        outcome = SpinOutcome.MEDIUM;
+      if (rand < 0.20) {
+        outcome = SpinOutcome.NOTHING;
+      } else if (rand < 0.45) {
+        outcome = SpinOutcome.GP_20;
+        gpAwarded = 20;
+      } else if (rand < 0.60) {
+        outcome = SpinOutcome.GP_50;
+        gpAwarded = 50;
+      } else if (rand < 0.70) {
+        outcome = SpinOutcome.GP_100;
         gpAwarded = 100;
+      } else if (rand < 0.80) {
+        outcome = SpinOutcome.XP_20;
+        xpAwarded = 20;
+      } else if (rand < 0.90) {
+        outcome = SpinOutcome.FRAGMENT_1;
+        fragmentsAwarded = 1;
+      } else {
+        outcome = SpinOutcome.FREE_SPIN_1;
+        freeSpinAwarded = 1;
+      }
+
+      if (useFreeSpin) {
+        await this.spinRepository.updateState(tx, userId, {
+          availableFreeSpins: (freeSpins ?? 1) - 1 + freeSpinAwarded,
+          lastFreeSpinAt: now,
+          totalSpins: (spinState.totalSpins || 0) + 1
+        });
+      } else {
+        await this.spinRepository.updateState(tx, userId, {
+          totalSpins: (spinState.totalSpins || 0) + 1
+        });
       }
 
       await this.spinRepository.createHistory(tx, {
         userId,
         outcome,
         gpAwarded,
-        usedFreeSpin: useFreeSpin
+        usedFree: useFreeSpin
       });
 
-      await this.ledgerService.awardGp(tx, userId, gpAwarded, LedgerSource.SPIN);
+      if (gpAwarded > 0) {
+        await this.ledgerService.awardGp(tx, userId, gpAwarded, LedgerSource.SPIN);
+      }
+
+      if (xpAwarded > 0) {
+        await this.ledgerService.awardXp(tx, userId, xpAwarded, LedgerSource.SPIN);
+      }
+
+      if (fragmentsAwarded > 0) {
+        await tx.user.update({
+          where: { id: userId },
+          data: { fragments: { increment: fragmentsAwarded } }
+        });
+      }
 
       return {
         outcome,
-        gpAwarded
+        gpAwarded,
+        xpAwarded,
+        fragmentsAwarded,
+        freeSpinAwarded
       };
     });
   }

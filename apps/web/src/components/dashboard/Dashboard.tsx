@@ -7,8 +7,6 @@ import { DailyCheckInCard } from './DailyCheckInCard';
 import { SpinToWinCard } from './SpinToWinCard';
 import { CollectRaresCard } from './CollectRaresCard';
 import { RarePassCard } from './RarePassCard';
-import { QuestBanner } from './QuestBanner';
-import { SocialConnectionsCard } from './SocialConnectionsCard';
 
 export const Dashboard: React.FC = () => {
   return (
@@ -43,15 +41,6 @@ export const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Social Connections Section */}
-      <div className="w-full">
-        <SocialConnectionsCard />
-      </div>
-
-      {/* Bottom Row Banner: Quests Unlock Banner */}
-      <div className="w-full mt-1 mb-4">
-        <QuestBanner />
-      </div>
     </div>
   );
 };

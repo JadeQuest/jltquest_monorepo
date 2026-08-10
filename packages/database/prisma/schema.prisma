@@ -24,7 +24,20 @@ enum QuestFrequency {
   ONE_TIME
   DAILY
   WEEKLY
+  MONTHLY
   REPEATABLE
+  ACHIEVEMENT
+}
+
+enum QuestCategory {
+  DAILY
+  WEEKLY
+  REFERRAL
+  SOCIAL
+  EARNING
+  MILESTONE
+  ACHIEVEMENT
+  GENERAL
 }
 
 enum SpinOutcome {
@@ -135,10 +148,13 @@ model Quest {
 
   code            String   @unique // e.g. "quest_connect_wallet"
   name            String
+  description     String?
   gpReward        Int
   xpReward        Int
   fragmentReward  Int @default(0)
   frequency       QuestFrequency
+  category        QuestCategory @default(GENERAL)
+  isHidden        Boolean       @default(false)
 
   completions     UserQuestCompletion[]
 
@@ -312,9 +328,12 @@ model SocialQuest {
   code            String   @unique // e.g. "x_follow", "telegram_tapin"
   platform        SocialPlatform
   name            String
+  description     String?
   gpReward        Int
   xpReward        Int
   frequency       QuestFrequency
+  category        QuestCategory @default(SOCIAL)
+  isHidden        Boolean       @default(false)
 
   claims          SocialQuestClaim[]
 

@@ -91,6 +91,9 @@ export class CollectionService {
           quantity: result.quantity
         }
       };
+    }, {
+      maxWait: 15000,
+      timeout: 30000
     });
   }
 }

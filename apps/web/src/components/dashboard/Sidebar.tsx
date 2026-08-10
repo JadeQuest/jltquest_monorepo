@@ -10,9 +10,9 @@ interface SidebarProps {
 
 const NAV_ITEMS = [
   { id: 'Discover', label: 'Discover', iconSrc: '/Discover.svg', path: '/dashboard' },
-  { id: 'Push Pass', label: 'Push Pass', iconSrc: '/Push Pass.svg', path: '/dashboard/push-pass' },
+  { id: 'Jade Pass', label: 'Rare Pass', iconSrc: '/Push Pass.svg', path: '/dashboard/push-pass' },
   { id: 'Quests', label: 'Quests', iconSrc: '/Quests.svg', path: '/dashboard/quests' },
-  { id: 'Invites/Squads', label: 'Invites/Squads', iconSrc: '/InviteSqaud.svg', path: '/dashboard/invites' },
+  { id: 'Invites/Squads', label: 'Invites', iconSrc: '/InviteSqaud.svg', path: '/dashboard/invites' },
   { id: 'Leaderboards', label: 'Leaderboards', iconSrc: '/LeaderBoard.svg', path: '/dashboard/leaderboards' },
 ];
 
@@ -69,11 +69,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <button
                 key={item.id}
                 onClick={() => handleTabClick(item)}
-                className={`w-full flex items-center gap-4 px-5 py-3.5 rounded-2xl text-left transition-all duration-300 relative group ${
-                  isActive
-                    ? 'glass-pill text-white shadow-[0_0_20px_rgba(82,10,165,0.4)]'
-                    : 'text-gray-300 hover:text-white hover:bg-white/5'
-                }`}
+                className={`w-full flex items-center gap-4 px-5 py-3.5 rounded-2xl text-left transition-all duration-300 relative group ${isActive
+                  ? 'glass-pill text-white shadow-[0_0_20px_rgba(82,10,165,0.4)]'
+                  : 'text-gray-300 hover:text-white hover:bg-white/5'
+                  }`}
               >
                 <div className="w-8 h-8 flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-110">
                   <img

@@ -5,13 +5,17 @@ import { getCookie } from '@/lib/authCookie';
 
 export interface Quest {
   id: string;
+  code: string;
   name: string;
   description: string;
   gpReward: number;
   xpReward: number;
   completed: boolean;
+  canClaim: boolean;
   completedCount: number;
   frequency: string;
+  category: string;
+  isHidden: boolean;
 }
 
 export function useQuests() {
@@ -47,7 +51,7 @@ export function useQuests() {
   return {
     quests: questsQuery.data,
     isLoading: questsQuery.isLoading,
-    claim: claimMutation.mutate,
+    claim: claimMutation.mutateAsync,
     isClaiming: claimMutation.isPending,
   };
 }

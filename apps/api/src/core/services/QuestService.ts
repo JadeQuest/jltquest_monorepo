@@ -3,6 +3,8 @@ import { LedgerService } from './LedgerService';
 import { LedgerSource } from '@jlt/database';
 import { getQuestPeriodKey } from '../utils/questPeriod';
 import { QuestValidator } from './QuestValidator';
+import { BadRequestError, ConflictError, NotFoundError } from '../errors/AppError';
+import { ErrorCode, ErrorMessages } from '@jlt/constants';
 
 export class QuestService {
   private validator: QuestValidator;
@@ -16,8 +18,11 @@ export class QuestService {
   }
 
   async listQuests(userId: string) {
-    const quests = await this.questRepository.findActiveQuests(this.prisma);
-    const completions = await this.questRepository.findCompletions(this.prisma, userId);
+    const [quests, completions] = await Promise.all([
+      this.questRepository.findActiveQuests(this.prisma),
+      this.questRepository.findCompletions(this.prisma, userId)
+    ]);
+    
     const canClaimMap = await this.validator.validateQuestConditions(userId, quests);
 
     return quests.map((quest: any) => {
@@ -38,11 +43,19 @@ export class QuestService {
 
   async claim(userId: string, questId: string) {
     const quest = await this.questRepository.findById(this.prisma, questId);
-    if (!quest) throw { code: 'NOT_FOUND', message: 'Quest not found.' };
+    if (!quest) {
+      throw new NotFoundError(
+        ErrorMessages[ErrorCode.QUEST_NOT_FOUND],
+        ErrorCode.QUEST_NOT_FOUND
+      );
+    }
 
     const canClaimMap = await this.validator.validateQuestConditions(userId, [quest]);
     if (!canClaimMap[quest.id]) {
-      throw { code: 'REQUIREMENTS_NOT_MET', message: 'Quest requirements are not met yet.' };
+      throw new BadRequestError(
+        ErrorMessages[ErrorCode.REQUIREMENTS_NOT_MET],
+        ErrorCode.REQUIREMENTS_NOT_MET
+      );
     }
 
     try {
@@ -75,7 +88,10 @@ export class QuestService {
       });
     } catch (err: any) {
       if (err.code === 'P2002') {
-        throw { code: 'ALREADY_CLAIMED', message: 'Quest already claimed.' };
+        throw new ConflictError(
+          ErrorMessages[ErrorCode.ALREADY_CLAIMED],
+          ErrorCode.ALREADY_CLAIMED
+        );
       }
       throw err;
     }

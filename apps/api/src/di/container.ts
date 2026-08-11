@@ -10,6 +10,7 @@ import { SocialConnectionRepository } from '../infrastructure/database/repositor
 import { LedgerRepository } from '../infrastructure/database/repositories/LedgerRepository';
 
 // Services
+import { AuthService } from '../core/services/AuthService';
 import { LedgerService } from '../core/services/LedgerService';
 import { UserService } from '../core/services/UserService';
 import { CheckInService } from '../core/services/CheckInService';
@@ -18,6 +19,7 @@ import { SpinService } from '../core/services/SpinService';
 import { InviteService } from '../core/services/InviteService';
 import { SocialService } from '../core/services/SocialService';
 import { CollectionService } from '../core/services/CollectionService';
+import { LevelService } from '../core/services/LevelService';
 
 // Controllers
 import { AuthController } from '../api/controllers/AuthController';
@@ -40,6 +42,7 @@ const socialConnectionRepository = new SocialConnectionRepository();
 const ledgerRepository = new LedgerRepository();
 
 // 2. Initialize Services
+const authService = new AuthService(userRepository);
 const ledgerService = new LedgerService(ledgerRepository);
 const userService = new UserService(userRepository);
 const checkInService = new CheckInService(streakRepository, ledgerService, prisma);
@@ -48,14 +51,15 @@ const spinService = new SpinService(spinRepository, ledgerService, prisma);
 const inviteService = new InviteService(inviteRepository, ledgerService, prisma);
 const socialService = new SocialService(socialConnectionRepository, ledgerService, prisma);
 const collectionService = new CollectionService(prisma);
+const levelService = new LevelService();
 
 // 3. Initialize Controllers
-export const authController = new AuthController();
+export const authController = new AuthController(authService);
 export const userController = new UserController(userService);
 export const checkInController = new CheckInController(checkInService);
 export const questController = new QuestController(questService);
 export const spinController = new SpinController(spinService);
 export const inviteController = new InviteController(inviteService);
 export const socialController = new SocialController(socialService);
-export const levelController = new LevelController();
+export const levelController = new LevelController(levelService);
 export const collectionController = new CollectionController(collectionService);

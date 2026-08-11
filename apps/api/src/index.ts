@@ -1,9 +1,10 @@
+import 'express-async-errors';
 import express from 'express';
 import cors from 'cors';
 import router from './api/routes';
-import { Request, Response, NextFunction } from 'express';
 import { APP_NAME, API_VERSION } from '@jlt/constants';
 import type { ApiResponse } from '@jlt/types';
+import { errorHandler } from './api/middlewares/errorHandler';
 
 const app = express();
 const PORT = process.env.API_PORT || 4000;
@@ -33,23 +34,8 @@ app.get(`/api/${API_VERSION}/health`, (_req, res) => {
 // API Routes
 app.use(`/api/${API_VERSION}`, router);
 
-// Error Handler Middleware
-app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-  console.error(err);
-  
-  const code = err.code || 'INTERNAL_ERROR';
-  const message = err.message || 'An unexpected error occurred.';
-  const status = err.status || (code === 'UNAUTHORIZED' ? 401 : code.includes('NOT_FOUND') ? 404 : 400);
-
-  res.status(status).json({
-    success: false,
-    data: null,
-    error: {
-      code,
-      message
-    }
-  });
-});
+// Central Error Handler Middleware
+app.use(errorHandler);
 
 process.on('unhandledRejection', (reason, promise) => {
   console.error('[API Server] Unhandled Promise Rejection at:', promise, 'reason:', reason);

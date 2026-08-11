@@ -1,19 +1,24 @@
 import { StreakRepository } from '../../infrastructure/database/repositories/StreakRepository';
 import { LedgerService } from './LedgerService';
 import { LedgerSource } from '@jlt/database';
+import { ConflictError } from '../errors/AppError';
+import { ErrorCode, ErrorMessages, APP_CONFIG } from '@jlt/constants';
 
 export class CheckInService {
   constructor(
     private streakRepository: StreakRepository,
     private ledgerService: LedgerService,
-    private prisma: any // passing prisma instance directly to initiate transactions
+    private prisma: any
   ) {}
 
   async getStatus(userId: string) {
     const streak = await this.streakRepository.findByUserId(this.prisma, userId);
     
+    const nextRewardGp = APP_CONFIG.CHECKIN.DAILY_REWARD_GP;
+    const nextRewardXp = APP_CONFIG.CHECKIN.DAILY_REWARD_XP;
+
     if (!streak) {
-      return { streak: 0, canClaim: true, nextRewardGp: 50, nextRewardXp: 50 };
+      return { streak: 0, canClaim: true, nextRewardGp, nextRewardXp };
     }
 
     const now = new Date();
@@ -23,19 +28,9 @@ export class CheckInService {
     const diffDays = Math.floor((today.getTime() - lastClaim.getTime()) / (1000 * 60 * 60 * 24));
     
     const canClaim = diffDays >= 1;
-    let nextStreak = streak.currentDay;
-    if (diffDays > 1) {
-      nextStreak = 0; // streak broken
-    } else if (canClaim) {
-      nextStreak++;
-    }
-
-    const nextRewardGp = 50;
-    const nextRewardXp = 50;
-
     let currentStreak = streak.currentDay;
     if (diffDays > 1) {
-      currentStreak = 0; // streak broken
+      currentStreak = 0;
     }
 
     return {
@@ -48,7 +43,12 @@ export class CheckInService {
 
   async claim(userId: string) {
     const status = await this.getStatus(userId);
-    if (!status.canClaim) throw { code: 'ALREADY_CLAIMED', message: 'You have already checked in today.' };
+    if (!status.canClaim) {
+      throw new ConflictError(
+        ErrorMessages[ErrorCode.ALREADY_CLAIMED],
+        ErrorCode.ALREADY_CLAIMED
+      );
+    }
 
     const gpAwarded = status.nextRewardGp;
     const xpAwarded = status.nextRewardXp;

@@ -1,9 +1,9 @@
 import { QuestFrequency } from '@jlt/database';
 
-export function getQuestPeriodKey(frequency: QuestFrequency): string {
+export function getQuestPeriodKey(frequency: QuestFrequency | string): string {
   const now = new Date();
   
-  if (frequency === QuestFrequency.ONE_TIME || frequency === QuestFrequency.ACHIEVEMENT) {
+  if (frequency === QuestFrequency.ONE_TIME || frequency === (QuestFrequency as any).ACHIEVEMENT || frequency === 'ACHIEVEMENT') {
     return 'ALL';
   }
   
@@ -27,7 +27,7 @@ export function getQuestPeriodKey(frequency: QuestFrequency): string {
     return `${d.getUTCFullYear()}-W${String(weekNo).padStart(2, '0')}`;
   }
   
-  if (frequency === QuestFrequency.MONTHLY) {
+  if (frequency === (QuestFrequency as any).MONTHLY || frequency === 'MONTHLY') {
     const y = now.getUTCFullYear();
     const m = String(now.getUTCMonth() + 1).padStart(2, '0');
     return `${y}-${m}`;

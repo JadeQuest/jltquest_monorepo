@@ -1,20 +1,26 @@
+import { BadRequestError, NotFoundError } from '../errors/AppError';
+import { ErrorCode, ErrorMessages, APP_CONFIG } from '@jlt/constants';
+
 export class CollectionService {
   constructor(private prisma: any) {}
 
   async getCollection(userId: string) {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-      select: { fragments: true }
-    });
+    const [user, cards] = await Promise.all([
+      this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { fragments: true }
+      }),
+      this.prisma.userCard.findMany({
+        where: { userId },
+        include: {
+          card: true
+        }
+      })
+    ]);
 
-    if (!user) throw { code: 'NOT_FOUND', message: 'User not found' };
-
-    const cards = await this.prisma.userCard.findMany({
-      where: { userId },
-      include: {
-        card: true
-      }
-    });
+    if (!user) {
+      throw new NotFoundError(ErrorMessages[ErrorCode.USER_NOT_FOUND], ErrorCode.USER_NOT_FOUND);
+    }
 
     return {
       fragments: user.fragments,
@@ -29,24 +35,34 @@ export class CollectionService {
   }
 
   async mergeFragments(userId: string) {
+    const requiredFragments = APP_CONFIG.COLLECTION.MERGE_FRAGMENTS_REQUIRED;
+
     return await this.prisma.$transaction(async (tx: any) => {
       const user = await tx.user.findUnique({ where: { id: userId } });
-      if (!user) throw { code: 'NOT_FOUND', message: 'User not found' };
-
-      if (user.fragments < 10) {
-        throw { code: 'INSUFFICIENT_FRAGMENTS', message: 'Not enough fragments. 10 required.' };
+      if (!user) {
+        throw new NotFoundError(ErrorMessages[ErrorCode.USER_NOT_FOUND], ErrorCode.USER_NOT_FOUND);
       }
 
-      // Deduct 10 fragments
+      if (user.fragments < requiredFragments) {
+        throw new BadRequestError(
+          ErrorMessages[ErrorCode.INSUFFICIENT_FRAGMENTS],
+          ErrorCode.INSUFFICIENT_FRAGMENTS
+        );
+      }
+
+      // Deduct fragments
       await tx.user.update({
         where: { id: userId },
-        data: { fragments: { decrement: 10 } }
+        data: { fragments: { decrement: requiredFragments } }
       });
 
       // Get all available rare cards
       const allCards = await tx.rareCard.findMany();
       if (allCards.length === 0) {
-         throw { code: 'NO_CARDS_AVAILABLE', message: 'No rare cards exist in the system.' };
+        throw new NotFoundError(
+          ErrorMessages[ErrorCode.NO_CARDS_AVAILABLE],
+          ErrorCode.NO_CARDS_AVAILABLE
+        );
       }
 
       // Pick a random card
@@ -83,7 +99,7 @@ export class CollectionService {
 
       return {
         success: true,
-        fragmentsRemaining: user.fragments - 10,
+        fragmentsRemaining: user.fragments - requiredFragments,
         cardAwarded: {
           id: result.card.id,
           name: result.card.name,

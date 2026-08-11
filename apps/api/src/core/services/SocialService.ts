@@ -1,6 +1,8 @@
 import { SocialConnectionRepository } from '../../infrastructure/database/repositories/SocialConnectionRepository';
 import { LedgerService } from './LedgerService';
 import { SocialPlatform, LedgerSource } from '@jlt/database';
+import { BadRequestError, ConflictError, NotFoundError } from '../errors/AppError';
+import { ErrorCode, ErrorMessages, APP_CONFIG } from '@jlt/constants';
 
 export class SocialService {
   constructor(
@@ -17,7 +19,10 @@ export class SocialService {
     if (p === 'linkedin') return (SocialPlatform as any).LINKEDIN || 'LINKEDIN';
     if (p === 'whatsapp') return (SocialPlatform as any).WHATSAPP || 'WHATSAPP';
     if (p === 'email') return (SocialPlatform as any).EMAIL || 'EMAIL';
-    throw { code: 'INVALID_PLATFORM', message: `Invalid social platform: ${platformString}` };
+    throw new BadRequestError(
+      `${ErrorMessages[ErrorCode.INVALID_PLATFORM]}: ${platformString}`,
+      ErrorCode.INVALID_PLATFORM
+    );
   }
 
   async getOAuthUrl(platformString: string, userId: string) {
@@ -74,13 +79,19 @@ export class SocialService {
       const existingConnection = await this.socialRepo.findByPlatformAndUserId(tx, platform, platformUserId);
 
       if (existingConnection && existingConnection.userId !== userId) {
-        throw { code: 'ACCOUNT_ALREADY_LINKED', message: 'Social account linked to another wallet.' };
+        throw new ConflictError(
+          ErrorMessages[ErrorCode.ACCOUNT_ALREADY_LINKED],
+          ErrorCode.ACCOUNT_ALREADY_LINKED
+        );
       }
 
       let connection = await this.socialRepo.findByUserAndPlatform(tx, userId, platform);
 
       if (connection && connection.connected) {
-        throw { code: 'ALREADY_CLAIMED', message: 'Platform already connected.' };
+        throw new ConflictError(
+          ErrorMessages[ErrorCode.ALREADY_CLAIMED],
+          ErrorCode.ALREADY_CLAIMED
+        );
       }
 
       let gpAwarded = 0;
@@ -109,8 +120,8 @@ export class SocialService {
         });
         
         connectionBonusAwarded = true;
-        gpAwarded = 100;
-        xpAwarded = 50;
+        gpAwarded = APP_CONFIG.SOCIAL.CONNECTION_GP_REWARD;
+        xpAwarded = APP_CONFIG.SOCIAL.CONNECTION_XP_REWARD;
 
         await this.ledgerService.awardGp(tx, userId, gpAwarded, LedgerSource.SOCIAL, platform);
         await this.ledgerService.awardXp(tx, userId, xpAwarded, LedgerSource.SOCIAL, platform);
@@ -134,7 +145,10 @@ export class SocialService {
       const connection = await this.socialRepo.findByUserAndPlatform(tx, userId, platform);
 
       if (!connection || !connection.connected) {
-        throw { code: 'NOT_CONNECTED', message: 'Platform not connected.' };
+        throw new NotFoundError(
+          ErrorMessages[ErrorCode.NOT_CONNECTED],
+          ErrorCode.NOT_CONNECTED
+        );
       }
 
       let clawbackApplied = false;
@@ -142,7 +156,7 @@ export class SocialService {
 
       if (connection.connectionBonusPaid && !connection.clawbackApplied) {
         clawbackApplied = true;
-        gpClawedBack = 100;
+        gpClawedBack = APP_CONFIG.SOCIAL.CLAWBACK_GP_AMOUNT;
         
         await tx.user.update({
           where: { id: userId },
@@ -168,5 +182,14 @@ export class SocialService {
       };
     });
   }
-}
 
+  async listQuests(_userId: string) {
+    return [
+      { questId: 'x_follow', platform: 'x', name: 'Follow official account', gpReward: 50, xpReward: 25, frequency: 'one_time', completed: false }
+    ];
+  }
+
+  async claimQuest(_userId: string, _questId?: string) {
+    return { gpAwarded: 50, xpAwarded: 25 };
+  }
+}

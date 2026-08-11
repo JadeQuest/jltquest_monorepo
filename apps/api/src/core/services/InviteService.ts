@@ -1,6 +1,8 @@
 import { InviteRepository } from '../../infrastructure/database/repositories/InviteRepository';
 import { LedgerService } from './LedgerService';
 import { LedgerSource } from '@jlt/database';
+import { BadRequestError, ConflictError } from '../errors/AppError';
+import { ErrorCode, ErrorMessages, APP_CONFIG } from '@jlt/constants';
 
 export class InviteService {
   constructor(
@@ -27,13 +29,26 @@ export class InviteService {
 
   async redeem(inviteCode: string, newUserId: string) {
     return await this.prisma.$transaction(async (tx: any) => {
-      if (!inviteCode) throw { code: 'INVITE_CODE_INVALID', message: 'Invalid invite code.' };
+      if (!inviteCode) {
+        throw new BadRequestError(
+          ErrorMessages[ErrorCode.INVITE_CODE_INVALID],
+          ErrorCode.INVITE_CODE_INVALID
+        );
+      }
 
       const invite = await this.inviteRepository.findByCode(tx, inviteCode);
-      if (!invite) throw { code: 'INVITE_CODE_INVALID', message: 'Invalid invite code.' };
+      if (!invite) {
+        throw new BadRequestError(
+          ErrorMessages[ErrorCode.INVITE_CODE_INVALID],
+          ErrorCode.INVITE_CODE_INVALID
+        );
+      }
 
       if (invite.userId === newUserId) {
-        throw { code: 'INVALID_SELF_INVITE', message: 'Cannot use your own invite code.' };
+        throw new BadRequestError(
+          ErrorMessages[ErrorCode.INVALID_SELF_INVITE],
+          ErrorCode.INVALID_SELF_INVITE
+        );
       }
 
       const existingRedemption = await tx.inviteRedemption.findUnique({
@@ -41,11 +56,14 @@ export class InviteService {
       });
 
       if (existingRedemption) {
-        throw { code: 'ALREADY_REDEEMED', message: 'You have already redeemed an invite code.' };
+        throw new ConflictError(
+          ErrorMessages[ErrorCode.ALREADY_REDEEMED],
+          ErrorCode.ALREADY_REDEEMED
+        );
       }
 
-      const inviterGp = 100;
-      const inviteeGp = 50;
+      const inviterGp = APP_CONFIG.INVITE.INVITER_GP_REWARD;
+      const inviteeGp = APP_CONFIG.INVITE.INVITEE_GP_REWARD;
 
       await this.inviteRepository.createRedemption(tx, {
         inviteId: invite.id,

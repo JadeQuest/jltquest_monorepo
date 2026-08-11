@@ -1,6 +1,8 @@
 import { SpinRepository } from '../../infrastructure/database/repositories/SpinRepository';
 import { LedgerService } from './LedgerService';
 import { LedgerSource, SpinOutcome } from '@jlt/database';
+import { BadRequestError } from '../errors/AppError';
+import { ErrorCode, ErrorMessages, APP_CONFIG } from '@jlt/constants';
 
 export class SpinService {
   constructor(
@@ -13,11 +15,11 @@ export class SpinService {
     const spinState = await this.spinRepository.findStateByUserId(this.prisma, userId);
     
     if (!spinState) {
-      return { availableFreeSpins: 1, lastFreeSpinAt: null, totalSpins: 0 };
+      return { availableFreeSpins: APP_CONFIG.SPIN.FREE_SPINS_DEFAULT, lastFreeSpinAt: null, totalSpins: 0 };
     }
 
     const now = new Date();
-    let freeSpins = spinState.availableFreeSpins ?? 1;
+    let freeSpins = spinState.availableFreeSpins ?? APP_CONFIG.SPIN.FREE_SPINS_DEFAULT;
     
     if (spinState.lastFreeSpinAt) {
       const lastSpinUTC = new Date(Date.UTC(spinState.lastFreeSpinAt.getUTCFullYear(), spinState.lastFreeSpinAt.getUTCMonth(), spinState.lastFreeSpinAt.getUTCDate()));
@@ -25,10 +27,10 @@ export class SpinService {
       const diffDays = Math.floor((todayUTC.getTime() - lastSpinUTC.getTime()) / (1000 * 60 * 60 * 24));
 
       if (diffDays >= 1) {
-        freeSpins = 1; // Reset to 1 at midnight UTC
+        freeSpins = APP_CONFIG.SPIN.FREE_SPINS_DEFAULT; // Reset to default at midnight UTC
       }
     } else {
-       freeSpins = 1;
+       freeSpins = APP_CONFIG.SPIN.FREE_SPINS_DEFAULT;
     }
 
     return {
@@ -45,25 +47,28 @@ export class SpinService {
       const now = new Date();
       if (!spinState) {
         spinState = await tx.spinState.create({
-          data: { userId, availableFreeSpins: 1 }
+          data: { userId, availableFreeSpins: APP_CONFIG.SPIN.FREE_SPINS_DEFAULT }
         });
       }
 
-      let freeSpins = spinState.availableFreeSpins ?? 1;
+      let freeSpins = spinState.availableFreeSpins ?? APP_CONFIG.SPIN.FREE_SPINS_DEFAULT;
       if (spinState.lastFreeSpinAt) {
         const lastSpinUTC = new Date(Date.UTC(spinState.lastFreeSpinAt.getUTCFullYear(), spinState.lastFreeSpinAt.getUTCMonth(), spinState.lastFreeSpinAt.getUTCDate()));
         const todayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
         const diffDays = Math.floor((todayUTC.getTime() - lastSpinUTC.getTime()) / (1000 * 60 * 60 * 24));
 
         if (diffDays >= 1) {
-          freeSpins = 1;
+          freeSpins = APP_CONFIG.SPIN.FREE_SPINS_DEFAULT;
         }
       } else {
-         freeSpins = 1;
+         freeSpins = APP_CONFIG.SPIN.FREE_SPINS_DEFAULT;
       }
 
       if (useFreeSpin && freeSpins <= 0) {
-        throw { code: 'INSUFFICIENT_SPINS', message: 'No free spins available.' };
+        throw new BadRequestError(
+          ErrorMessages[ErrorCode.INSUFFICIENT_SPINS],
+          ErrorCode.INSUFFICIENT_SPINS
+        );
       }
 
       const rand = Math.random();
@@ -73,31 +78,33 @@ export class SpinService {
       let xpAwarded = 0;
       let freeSpinAwarded = 0;
 
-      if (rand < 0.20) {
-        outcome = SpinOutcome.NOTHING;
-      } else if (rand < 0.45) {
-        outcome = SpinOutcome.GP_20;
+      const rates = APP_CONFIG.SPIN.RATES;
+
+      if (rand < rates.NOTHING) {
+        outcome = (SpinOutcome as any).NOTHING || 'NOTHING';
+      } else if (rand < rates.GP_20) {
+        outcome = (SpinOutcome as any).GP_20 || 'GP_20';
         gpAwarded = 20;
-      } else if (rand < 0.60) {
-        outcome = SpinOutcome.GP_50;
+      } else if (rand < rates.GP_50) {
+        outcome = (SpinOutcome as any).GP_50 || 'GP_50';
         gpAwarded = 50;
-      } else if (rand < 0.70) {
-        outcome = SpinOutcome.GP_100;
+      } else if (rand < rates.GP_100) {
+        outcome = (SpinOutcome as any).GP_100 || 'GP_100';
         gpAwarded = 100;
-      } else if (rand < 0.80) {
-        outcome = SpinOutcome.XP_20;
+      } else if (rand < rates.XP_20) {
+        outcome = (SpinOutcome as any).XP_20 || 'XP_20';
         xpAwarded = 20;
-      } else if (rand < 0.90) {
-        outcome = SpinOutcome.FRAGMENT_1;
+      } else if (rand < rates.FRAGMENT_1) {
+        outcome = (SpinOutcome as any).FRAGMENT_1 || 'FRAGMENT_1';
         fragmentsAwarded = 1;
       } else {
-        outcome = SpinOutcome.FREE_SPIN_1;
+        outcome = (SpinOutcome as any).FREE_SPIN_1 || 'FREE_SPIN_1';
         freeSpinAwarded = 1;
       }
 
       if (useFreeSpin) {
         await this.spinRepository.updateState(tx, userId, {
-          availableFreeSpins: (freeSpins ?? 1) - 1 + freeSpinAwarded,
+          availableFreeSpins: (freeSpins ?? APP_CONFIG.SPIN.FREE_SPINS_DEFAULT) - 1 + freeSpinAwarded,
           lastFreeSpinAt: now,
           totalSpins: (spinState.totalSpins || 0) + 1
         });
@@ -140,11 +147,14 @@ export class SpinService {
   }
 
   async purchase(userId: string) {
-    const COST = 200;
+    const COST = APP_CONFIG.SPIN.COST_GP;
     return await this.prisma.$transaction(async (tx: any) => {
       const user = await tx.user.findUnique({ where: { id: userId }});
       if (!user || user.gp < COST) {
-        throw { code: 'INSUFFICIENT_GP', message: 'Not enough GP to purchase a spin.' };
+        throw new BadRequestError(
+          ErrorMessages[ErrorCode.INSUFFICIENT_GP],
+          ErrorCode.INSUFFICIENT_GP
+        );
       }
 
       await tx.user.update({

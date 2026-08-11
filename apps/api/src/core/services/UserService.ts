@@ -1,12 +1,19 @@
 import { UserRepository } from '../../infrastructure/database/repositories/UserRepository';
 import { calculateXpRequiredForLevel } from '../utils/leveling';
+import { NotFoundError } from '../errors/AppError';
+import { ErrorCode, ErrorMessages } from '@jlt/constants';
 
 export class UserService {
   constructor(private userRepository: UserRepository) {}
 
   async getDashboard(userId: string) {
     const user = await this.userRepository.findWithConnections(null as any, userId);
-    if (!user) throw { code: 'NOT_FOUND', message: 'User not found' };
+    if (!user) {
+      throw new NotFoundError(
+        ErrorMessages[ErrorCode.USER_NOT_FOUND],
+        ErrorCode.USER_NOT_FOUND
+      );
+    }
 
     const socialConnections: Record<string, any> = {
       x: { connected: false },
@@ -50,4 +57,3 @@ export class UserService {
     };
   }
 }
-

@@ -10,7 +10,7 @@ interface SidebarProps {
 
 const NAV_ITEMS = [
   { id: 'Discover', label: 'Discover', iconSrc: '/Discover.svg', path: '/dashboard' },
-  { id: 'Jade Pass', label: 'Rare Pass', iconSrc: '/Push Pass.svg', path: '/dashboard/push-pass' },
+  { id: 'Rare Pass', label: 'Rare Pass', iconSrc: '/Push Pass.svg', path: '/dashboard/push-pass' },
   { id: 'Quests', label: 'Quests', iconSrc: '/Quests.svg', path: '/dashboard/quests' },
   { id: 'Invites/Squads', label: 'Invites', iconSrc: '/InviteSqaud.svg', path: '/dashboard/invites' },
   { id: 'Leaderboards', label: 'Leaderboards', iconSrc: '/LeaderBoard.svg', path: '/dashboard/leaderboards' },
@@ -117,7 +117,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   return (
     <>
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex w-[280px] xl:w-[320px] shrink-0 flex-col justify-start h-full p-6 z-20 relative select-none">
+      <aside className="hidden lg:flex w-[280px] xl:w-[320px] shrink-0 flex-col justify-between h-full p-6 z-20 relative select-none bg-transparent transition-all duration-300">
         {navContent}
       </aside>
 

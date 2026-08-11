@@ -42,8 +42,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat pointer-events-none z-0"
         style={{
-          backgroundImage:
-            "image-set(url('/optimized/dashboard-bg.avif') type('image/avif'), url('/optimized/dashboard-bg.webp') type('image/webp'), url('/Dashboard.png') type('image/png'))",
+          backgroundImage: "url('/Dashboard.png')",
         }}
       />
 
@@ -55,17 +54,19 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
       {/* Left Sidebar */}
       <Sidebar isMobileOpen={mobileMenuOpen} onMobileClose={closeMobileMenu} />
 
-      {/* Main Dashboard Layout */}
-      <main className="flex-1 flex flex-col h-full overflow-y-auto p-3 sm:p-6 lg:pl-2 z-10 gap-4 sm:gap-6">
+      {/* Right Panel: Fixed Header + Scrollable Dashboard Body */}
+      <div className="flex-1 flex flex-col h-full min-w-0 z-10 overflow-hidden relative">
         {/* Top Header Status Bar */}
         <HeaderStatus
           onToggleMobileMenu={openMobileMenu}
           onConnectClick={openConnectModal}
         />
 
-        {/* Dashboard Content Container */}
-        {mounted && children}
-      </main>
+        {/* Scrollable Dashboard Content Container */}
+        <main className="flex-1 overflow-y-auto p-3 sm:p-6 lg:p-6 space-y-6">
+          {mounted && children}
+        </main>
+      </div>
 
       {/* Centered Glassmorphic Connect Wallet Modal Popup covering entire viewport including Sidebar */}
       {isConnectModalOpen && <ConnectWalletModal isOpen={isConnectModalOpen} onClose={closeConnectModal} />}

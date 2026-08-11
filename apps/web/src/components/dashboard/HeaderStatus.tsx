@@ -36,7 +36,7 @@ export const HeaderStatus: React.FC<HeaderStatusProps> = ({
   }, []);
 
   return (
-    <header className="w-full flex items-center justify-between lg:justify-end gap-4 px-3 sm:px-6 py-2 z-20 select-none">
+    <header className="sticky top-0 z-30 shrink-0 w-full flex items-center justify-between lg:justify-end gap-4 px-4 sm:px-8 py-4 bg-transparent select-none transition-all duration-200">
       {/* Mobile Left Brand & Hamburger Menu */}
       <div className="flex items-center gap-3 lg:hidden">
         <button
@@ -52,37 +52,37 @@ export const HeaderStatus: React.FC<HeaderStatusProps> = ({
         <img src="/jltcolor.svg" alt="JLT Logo" width={36} height={36} className="w-9 h-9 object-contain" />
       </div>
 
-      <div className="flex flex-wrap items-center justify-end gap-3 sm:gap-6">
+      <div className="flex flex-wrap items-center justify-end gap-3 sm:gap-4">
         {isConnected && address && (
           <>
-            {/* Item 3: Coins */}
-            <div className="flex items-center gap-1.5 sm:gap-2.5">
-              <div className="w-7 h-7 sm:w-9 sm:h-9 relative flex items-center justify-center shrink-0">
+            {/* Item 3: Coins Badge */}
+            <div className="glass-pill px-3 py-1.5 sm:px-4 sm:py-2 flex items-center gap-2 shadow-md">
+              <div className="w-6 h-6 sm:w-7 sm:h-7 relative flex items-center justify-center shrink-0">
                 <img
                   src="/optimized/coin.webp"
-                  alt="500 Gold Coins Badge"
-                  width={36}
-                  height={36}
+                  alt="Gold Coins Badge"
+                  width={28}
+                  height={28}
                   className="w-full h-full object-contain"
                 />
               </div>
-              <span className="text-white font-gilroyBold text-sm sm:text-lg font-bold tracking-wide">
+              <span className="text-white font-gilroyBold text-sm sm:text-base font-bold tracking-wide">
                 {displayCoins}
               </span>
             </div>
 
-            {/* Item 3.5: Tokens */}
-            <div className="flex items-center gap-1.5 sm:gap-2.5">
-              <div className="w-7 h-7 sm:w-9 sm:h-9 relative flex items-center justify-center shrink-0">
+            {/* Item 3.5: Tokens Badge */}
+            <div className="glass-pill px-3 py-1.5 sm:px-4 sm:py-2 flex items-center gap-2 shadow-md">
+              <div className="w-6 h-6 sm:w-7 sm:h-7 relative flex items-center justify-center shrink-0">
                 <img
                   src="/jltcolor.svg"
-                  alt="50 JLT Badge"
-                  width={36}
-                  height={36}
+                  alt="JLT Token Badge"
+                  width={28}
+                  height={28}
                   className="w-full h-full object-contain"
                 />
               </div>
-              <span className="text-white font-gilroyBold text-sm sm:text-lg font-bold tracking-wide">
+              <span className="text-white font-gilroyBold text-sm sm:text-base font-bold tracking-wide">
                 {displayTokens}
               </span>
             </div>

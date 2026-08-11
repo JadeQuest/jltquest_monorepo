@@ -2,7 +2,7 @@
  * High-Performance API Client with Request Deduplication, Retries & Offline Fallback
  */
 
-import { sanitizeInput, getCookie } from './authCookie';
+import { sanitizeInput, getCookie, setCookie, deleteCookie } from './authCookie';
 
 export function getApiUrl(): string {
   if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
@@ -35,9 +35,11 @@ export async function fetchWithRetry<T = any>(url: string, options: FetchOptions
     return inFlightRequests.get(requestKey) as Promise<T>;
   }
 
-  const executeFetch = async (attempt: number): Promise<T> => {
+let refreshPromise: Promise<string> | null = null;
+
+const executeFetch = async (attempt: number): Promise<T> => {
     try {
-      const authToken = getCookie('jlt_auth_token');
+      let authToken = getCookie('jlt_auth_token');
 
       const reqHeaders: Record<string, string> = {
         'Content-Type': 'application/json',
@@ -45,10 +47,53 @@ export async function fetchWithRetry<T = any>(url: string, options: FetchOptions
         ...(headers as Record<string, string>),
       };
 
-      const response = await fetch(url, {
+      let response = await fetch(url, {
         ...rest,
         headers: reqHeaders,
       });
+
+      // Token Refresh Interceptor
+      if (response.status === 401 && !url.includes('/auth/login') && !url.includes('/auth/refresh')) {
+        try {
+          if (!refreshPromise) {
+            refreshPromise = (async () => {
+              const res = await fetch(`${getApiUrl()}/auth/refresh`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+              });
+              if (!res.ok) {
+                deleteCookie('jlt_auth_token');
+                throw new Error('Session expired');
+              }
+              const result = await res.json();
+              if (!result.success || !result.data?.token) {
+                deleteCookie('jlt_auth_token');
+                throw new Error('Session expired');
+              }
+              setCookie('jlt_auth_token', result.data.token, { days: 7 });
+              return result.data.token;
+            })();
+          }
+
+          const newToken = await refreshPromise;
+          refreshPromise = null;
+
+          // Retry the request with the new access token
+          reqHeaders['Authorization'] = `Bearer ${newToken}`;
+          response = await fetch(url, {
+            ...rest,
+            headers: reqHeaders,
+          });
+        } catch (refreshError) {
+          refreshPromise = null;
+          deleteCookie('jlt_auth_token');
+          // Invalidate React Query cache if window exists
+          if (typeof window !== 'undefined') {
+            window.location.reload();
+          }
+          throw new Error('Session expired. Please reconnect your wallet.');
+        }
+      }
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);

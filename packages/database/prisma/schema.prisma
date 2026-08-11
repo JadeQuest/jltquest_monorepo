@@ -127,6 +127,7 @@ model User {
   walletAddress   String?  @unique
   displayName     String?
   email           String?  @unique
+  role            UserRole @default(USER)
 
   // Progression
   level Int @default(1)
@@ -158,6 +159,8 @@ model User {
   rarePassClaims        RarePassRewardClaim[]
   missionCompletions    UserRarePassMissionCompletion[]
   rarePassPurchases     RarePassPurchase[]
+  refreshTokens         RefreshToken[]
+  auditLogs             AuditLog[]
 
   @@index([gp])
   @@index([xp])
@@ -675,4 +678,40 @@ model UserAvatar {
 
   @@unique([userId, variantId])
   @@map("user_avatars")
+}
+
+// ─────────────────────────────────────────────
+// Security & Authentication Hardening Models
+// ─────────────────────────────────────────────
+
+enum UserRole {
+  USER
+  ADMIN
+  FINANCIAL_OPERATOR
+  SYSTEM
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  isRevoked Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@map("refresh_tokens")
+}
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action      String   // e.g. "AUTH_LOGIN_SUCCESS", "AUTH_LOGIN_FAILED", "USER_LOGOUT", "SPIN_PURCHASE", "REWARD_CLAIM", "ROLE_CHANGE"
+  ipAddress   String?
+  userAgent   String?
+  metadata    Json?    // Detailed context/state changes
+  createdAt   DateTime @default(now())
+
+  @@map("audit_logs")
 }

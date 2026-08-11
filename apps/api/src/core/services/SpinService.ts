@@ -15,7 +15,12 @@ export class SpinService {
     const spinState = await this.spinRepository.findStateByUserId(this.prisma, userId);
     
     if (!spinState) {
-      return { availableFreeSpins: APP_CONFIG.SPIN.FREE_SPINS_DEFAULT, lastFreeSpinAt: null, totalSpins: 0 };
+      return { 
+        availableFreeSpins: APP_CONFIG.SPIN.FREE_SPINS_DEFAULT, 
+        purchasedSpinsAvailable: 0,
+        lastFreeSpinAt: null, 
+        totalSpins: 0 
+      };
     }
 
     const now = new Date();
@@ -35,6 +40,7 @@ export class SpinService {
 
     return {
       availableFreeSpins: freeSpins,
+      purchasedSpinsAvailable: spinState.purchasedSpinsAvailable || 0,
       lastFreeSpinAt: spinState.lastFreeSpinAt,
       totalSpins: spinState.totalSpins
     };
@@ -42,12 +48,15 @@ export class SpinService {
 
   async spin(userId: string, useFreeSpin: boolean) {
     return await this.prisma.$transaction(async (tx: any) => {
+      // 1. Lock the user row to prevent race conditions
+      await tx.$executeRaw`SELECT id FROM users WHERE id = ${userId} FOR UPDATE`;
+
       let spinState = await this.spinRepository.findStateByUserId(tx, userId);
       
       const now = new Date();
       if (!spinState) {
         spinState = await tx.spinState.create({
-          data: { userId, availableFreeSpins: APP_CONFIG.SPIN.FREE_SPINS_DEFAULT }
+          data: { userId, availableFreeSpins: APP_CONFIG.SPIN.FREE_SPINS_DEFAULT, purchasedSpinsAvailable: 0 }
         });
       }
 
@@ -64,13 +73,36 @@ export class SpinService {
          freeSpins = APP_CONFIG.SPIN.FREE_SPINS_DEFAULT;
       }
 
-      if (useFreeSpin && freeSpins <= 0) {
-        throw new BadRequestError(
-          ErrorMessages[ErrorCode.INSUFFICIENT_SPINS],
-          ErrorCode.INSUFFICIENT_SPINS
-        );
+      // 2. Validate and deduct spin balance based on type
+      if (useFreeSpin) {
+        if (freeSpins <= 0) {
+          throw new BadRequestError(
+            ErrorMessages[ErrorCode.INSUFFICIENT_SPINS],
+            ErrorCode.INSUFFICIENT_SPINS
+          );
+        }
+        
+        await this.spinRepository.updateState(tx, userId, {
+          availableFreeSpins: freeSpins - 1,
+          lastFreeSpinAt: now,
+          totalSpins: (spinState.totalSpins || 0) + 1
+        });
+      } else {
+        const purchasedAvailable = spinState.purchasedSpinsAvailable || 0;
+        if (purchasedAvailable <= 0) {
+          throw new BadRequestError(
+            'No purchased spins available. Please purchase one with GP first.',
+            ErrorCode.INSUFFICIENT_SPINS
+          );
+        }
+        
+        await this.spinRepository.updateState(tx, userId, {
+          purchasedSpinsAvailable: purchasedAvailable - 1,
+          totalSpins: (spinState.totalSpins || 0) + 1
+        });
       }
 
+      // 3. Random outcome determination
       const rand = Math.random();
       let outcome: SpinOutcome;
       let gpAwarded = 0;
@@ -106,15 +138,12 @@ export class SpinService {
         freeSpinAwarded = 1;
       }
 
-      if (useFreeSpin) {
+      // 4. Award free spin if won
+      if (freeSpinAwarded > 0) {
+        const updatedState = await this.spinRepository.findStateByUserId(tx, userId);
+        const currentFree = updatedState?.availableFreeSpins ?? 0;
         await this.spinRepository.updateState(tx, userId, {
-          availableFreeSpins: (freeSpins ?? APP_CONFIG.SPIN.FREE_SPINS_DEFAULT) - 1 + freeSpinAwarded,
-          lastFreeSpinAt: now,
-          totalSpins: (spinState.totalSpins || 0) + 1
-        });
-      } else {
-        await this.spinRepository.updateState(tx, userId, {
-          totalSpins: (spinState.totalSpins || 0) + 1
+          availableFreeSpins: currentFree + freeSpinAwarded
         });
       }
 
@@ -172,6 +201,9 @@ export class SpinService {
   async purchase(userId: string) {
     const COST = APP_CONFIG.SPIN.COST_GP;
     return await this.prisma.$transaction(async (tx: any) => {
+      // Lock user row
+      await tx.$executeRaw`SELECT id FROM users WHERE id = ${userId} FOR UPDATE`;
+
       const user = await tx.user.findUnique({ where: { id: userId }});
       if (!user || user.gp < COST) {
         throw new BadRequestError(
@@ -180,6 +212,7 @@ export class SpinService {
         );
       }
 
+      // Deduct GP
       await tx.user.update({
         where: { id: userId },
         data: { gp: { decrement: COST } }
@@ -191,6 +224,27 @@ export class SpinService {
           amount: -COST,
           type: 'DEBIT',
           source: 'SPIN_PURCHASE'
+        }
+      });
+
+      // Increment purchased spins counter
+      let spinState = await this.spinRepository.findStateByUserId(tx, userId);
+      if (!spinState) {
+        await tx.spinState.create({
+          data: { userId, availableFreeSpins: APP_CONFIG.SPIN.FREE_SPINS_DEFAULT, purchasedSpinsAvailable: 1 }
+        });
+      } else {
+        await this.spinRepository.updateState(tx, userId, {
+          purchasedSpinsAvailable: (spinState.purchasedSpinsAvailable || 0) + 1
+        });
+      }
+
+      // Log spin purchase audit trail
+      await tx.auditLog.create({
+        data: {
+          userId,
+          action: 'SPIN_PURCHASE',
+          metadata: { cost: COST }
         }
       });
 

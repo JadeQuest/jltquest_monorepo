@@ -1,6 +1,6 @@
 import { BadRequestError, ConflictError, NotFoundError } from '../errors/AppError';
 import { ErrorCode, ErrorMessages, APP_CONFIG } from '@jlt/constants';
-import { RarePassSeasonStatus, RarePassTrack, RarePassRewardType, RpXpSource, RarePassMissionType } from '@jlt/database';
+import { RarePassSeasonStatus, RarePassTrack, RarePassRewardType, RpXpSource, RarePassMissionType, LedgerSource } from '@jlt/database';
 
 export class RarePassService {
   constructor(private prisma: any) {}
@@ -399,21 +399,75 @@ export class RarePassService {
 
   async buyPremium(userId: string) {
     const season = await this.getActiveSeason();
+    const COST = APP_CONFIG.RARE_PASS.PREMIUM_COST_GP;
     
-    try {
-      await this.prisma.rarePassPurchase.create({
+    return await this.prisma.$transaction(async (tx: any) => {
+      // 1. Lock user row to prevent race conditions
+      await tx.$executeRaw`SELECT id FROM users WHERE id = ${userId} FOR UPDATE`;
+
+      const user = await tx.user.findUnique({ where: { id: userId } });
+      if (!user) {
+        throw new NotFoundError(ErrorMessages[ErrorCode.USER_NOT_FOUND], ErrorCode.USER_NOT_FOUND);
+      }
+
+      // Check if already premium
+      const existingPurchase = await tx.rarePassPurchase.findUnique({
+        where: {
+          userId_seasonId: {
+            userId,
+            seasonId: season.id
+          }
+        }
+      });
+
+      if (existingPurchase) {
+        return { success: true, message: 'Already premium' };
+      }
+
+      // Verify GP balance
+      if (user.gp < COST) {
+        throw new BadRequestError(
+          ErrorMessages[ErrorCode.INSUFFICIENT_GP],
+          ErrorCode.INSUFFICIENT_GP
+        );
+      }
+
+      // Debit GP
+      await tx.user.update({
+        where: { id: userId },
+        data: { gp: { decrement: COST } }
+      });
+
+      // Create GP ledger debit
+      await tx.gpLedgerEntry.create({
+        data: {
+          userId,
+          amount: -COST,
+          type: 'DEBIT',
+          source: LedgerSource.RARE_PASS,
+          refId: season.id
+        }
+      });
+
+      // Create Rare Pass purchase
+      await tx.rarePassPurchase.create({
         data: {
           userId,
           seasonId: season.id
         }
       });
+
+      // Log audit trail
+      await tx.auditLog.create({
+        data: {
+          userId,
+          action: 'RARE_PASS_PREMIUM_PURCHASE',
+          metadata: { cost: COST, seasonId: season.id }
+        }
+      });
+
       return { success: true };
-    } catch (e: any) {
-      if (e.code === 'P2002') {
-        return { success: true, message: 'Already premium' };
-      }
-      throw e;
-    }
+    });
   }
 
   async getMissions(userId: string) {

@@ -33,6 +33,13 @@ export enum ErrorCode {
   MISSION_ALREADY_COMPLETED = 'MISSION_ALREADY_COMPLETED',
   AVATAR_VARIANT_NOT_FOUND = 'AVATAR_VARIANT_NOT_FOUND',
   AVATAR_NOT_UNLOCKED = 'AVATAR_NOT_UNLOCKED',
+  INVALID_SIGNATURE = 'INVALID_SIGNATURE',
+  SIGNATURE_EXPIRED = 'SIGNATURE_EXPIRED',
+  REFRESH_TOKEN_EXPIRED = 'REFRESH_TOKEN_EXPIRED',
+  REFRESH_TOKEN_REVOKED = 'REFRESH_TOKEN_REVOKED',
+  INVALID_REFRESH_TOKEN = 'INVALID_REFRESH_TOKEN',
+  UNAUTHORIZED_ROLE = 'UNAUTHORIZED_ROLE',
+  CSRF_TOKEN_INVALID = 'CSRF_TOKEN_INVALID',
 }
 
 export const ErrorMessages: Record<ErrorCode, string> = {
@@ -66,12 +73,21 @@ export const ErrorMessages: Record<ErrorCode, string> = {
   [ErrorCode.MISSION_ALREADY_COMPLETED]: 'Rare Pass mission already completed.',
   [ErrorCode.AVATAR_VARIANT_NOT_FOUND]: 'Avatar variant not found.',
   [ErrorCode.AVATAR_NOT_UNLOCKED]: 'Avatar variant not unlocked for this user.',
+  [ErrorCode.INVALID_SIGNATURE]: 'Invalid wallet signature.',
+  [ErrorCode.SIGNATURE_EXPIRED]: 'Signature has expired.',
+  [ErrorCode.REFRESH_TOKEN_EXPIRED]: 'Refresh token has expired.',
+  [ErrorCode.REFRESH_TOKEN_REVOKED]: 'Refresh token has been revoked.',
+  [ErrorCode.INVALID_REFRESH_TOKEN]: 'Invalid refresh token.',
+  [ErrorCode.UNAUTHORIZED_ROLE]: 'Unauthorized role access.',
+  [ErrorCode.CSRF_TOKEN_INVALID]: 'Invalid or missing CSRF token.',
 };
 
 export const APP_CONFIG = {
   AUTH: {
-    TOKEN_EXPIRES_IN_SECONDS: 86400,
-    TOKEN_EXPIRES_IN_STR: '1d',
+    TOKEN_EXPIRES_IN_SECONDS: 900, // 15 minutes
+    TOKEN_EXPIRES_IN_STR: '15m',
+    REFRESH_TOKEN_EXPIRES_IN_SECONDS: 604800, // 7 days
+    REFRESH_TOKEN_EXPIRES_IN_STR: '7d',
     WALLET_ADDRESS_REQUIRED_MSG: 'walletAddress required',
   },
   CHECKIN: {
@@ -107,5 +123,6 @@ export const APP_CONFIG = {
   RARE_PASS: {
     DAILY_CAP_RP_XP: 500,
     WEEKLY_CAP_RP_XP: 2500,
+    PREMIUM_COST_GP: 1000,
   }
 };

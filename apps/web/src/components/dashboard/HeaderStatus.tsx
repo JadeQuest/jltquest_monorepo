@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect } from 'react';
-import { useAccount } from 'wagmi';
+import { useAccount, useSignMessage } from 'wagmi';
 import { useAuth } from '@/hooks/useAuth';
 import { useDashboard } from '@/hooks/useDashboard';
 
@@ -21,14 +21,25 @@ const HeaderStatusComponent: React.FC<HeaderStatusProps> = ({
   onConnectClick,
 }) => {
   const { address, isConnected, chain } = useAccount();
+  const { signMessageAsync } = useSignMessage();
   const { login, isLoggingIn } = useAuth();
   const { data: dashboardData } = useDashboard();
   
   useEffect(() => {
-    if (isConnected && address && !getCookie('jlt_auth_token')) {
-      login(address).catch(console.error);
-    }
-  }, [isConnected, address]);
+    const handleLogin = async () => {
+      if (isConnected && address && !getCookie('jlt_auth_token')) {
+        const timestamp = Date.now();
+        const message = `Welcome to JadeQuest!\n\nSign this message to secure your session.\nTimestamp: ${timestamp}`;
+        try {
+          const signature = await signMessageAsync({ message });
+          await login({ walletAddress: address, signature, message });
+        } catch (err) {
+          console.error('Wallet signature login failed:', err);
+        }
+      }
+    };
+    handleLogin();
+  }, [isConnected, address, signMessageAsync, login]);
 
   const displayCoins = (!isConnected || !address) ? '-' : (dashboardData?.user?.gp ?? coins);
   const displayTokens = (!isConnected || !address) ? '-' : (dashboardData?.user?.jlt ?? tokens);

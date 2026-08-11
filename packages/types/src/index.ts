@@ -9,6 +9,8 @@ export interface ApiResponse<T = any> {
 
 export interface UserAuthPayload {
   userId: string;
+  walletAddress?: string;
+  role?: string;
 }
 
 declare global {

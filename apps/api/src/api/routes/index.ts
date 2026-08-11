@@ -9,7 +9,9 @@ import {
   inviteController,
   socialController,
   levelController,
-  collectionController
+  collectionController,
+  rarePassController,
+  avatarController
 } from '../../di/container';
 
 const router = Router();
@@ -53,5 +55,17 @@ router.get('/levels/:level/requirement', levelController.getRequirement.bind(lev
 // Collections
 router.get('/collection', collectionController.getCollection.bind(collectionController));
 router.post('/collection/merge', collectionController.mergeFragments.bind(collectionController));
+
+// Rare Pass
+router.get('/rarepass/status', rarePassController.getStatus.bind(rarePassController));
+router.get('/rarepass/rewards', rarePassController.getRewards.bind(rarePassController));
+router.post('/rarepass/claim', rarePassController.claimReward.bind(rarePassController));
+router.get('/rarepass/missions', rarePassController.getMissions.bind(rarePassController));
+router.post('/rarepass/missions/:missionId/claim', rarePassController.claimMission.bind(rarePassController));
+router.post('/rarepass/buy-premium', rarePassController.buyPremium.bind(rarePassController));
+
+// Avatars
+router.get('/avatars', avatarController.list.bind(avatarController));
+router.post('/avatars/select', avatarController.select.bind(avatarController));
 
 export default router;

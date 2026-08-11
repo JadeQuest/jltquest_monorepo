@@ -1,6 +1,6 @@
 import { StreakRepository } from '../../infrastructure/database/repositories/StreakRepository';
 import { LedgerService } from './LedgerService';
-import { LedgerSource } from '@jlt/database';
+import { LedgerSource, RpXpSource } from '@jlt/database';
 import { ConflictError } from '../errors/AppError';
 import { ErrorCode, ErrorMessages, APP_CONFIG } from '@jlt/constants';
 
@@ -79,9 +79,27 @@ export class CheckInService {
       await this.ledgerService.awardGp(tx, userId, gpAwarded, LedgerSource.CHECKIN);
       await this.ledgerService.awardXp(tx, userId, xpAwarded, LedgerSource.CHECKIN);
 
+      // Award RP XP & update missions
+      const { RarePassService } = require('./RarePassService');
+      const rarePassService = new RarePassService(this.prisma);
+      const rpXpAmount = newStreakValue === 7 ? 50 : 10;
+      const todayStr = now.toISOString().split('T')[0];
+
+      const rpXpAwarded = await rarePassService.awardRpXp(
+        tx,
+        userId,
+        rpXpAmount,
+        RpXpSource.DAILY_CHECKIN,
+        null,
+        `checkin_rpxp:${userId}:${newStreakValue}:${todayStr}`
+      );
+
+      await rarePassService.updateMissionProgress(tx, userId, 'mission_checkin_daily', 1);
+
       return {
         gpAwarded,
         xpAwarded,
+        rpXpAwarded,
         newStreak: newStreakValue
       };
     });

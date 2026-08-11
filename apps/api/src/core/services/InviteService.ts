@@ -44,7 +44,7 @@ export class InviteService {
         );
       }
 
-      if (invite.userId === newUserId) {
+      if (invite.inviterId === newUserId) {
         throw new BadRequestError(
           ErrorMessages[ErrorCode.INVALID_SELF_INVITE],
           ErrorCode.INVALID_SELF_INVITE
@@ -52,7 +52,7 @@ export class InviteService {
       }
 
       const existingRedemption = await tx.inviteRedemption.findUnique({
-        where: { inviteeId: newUserId }
+        where: { redeemedByUserId: newUserId }
       });
 
       if (existingRedemption) {
@@ -64,16 +64,23 @@ export class InviteService {
 
       const inviterGp = APP_CONFIG.INVITE.INVITER_GP_REWARD;
       const inviteeGp = APP_CONFIG.INVITE.INVITEE_GP_REWARD;
+      const inviterXp = 75; // Invite 1 Friend repeatable quest gives 75 XP
 
       await this.inviteRepository.createRedemption(tx, {
         inviteId: invite.id,
-        inviteeId: newUserId,
+        redeemedByUserId: newUserId,
         inviterGpAwarded: inviterGp,
-        inviteeGpAwarded: inviteeGp
+        inviterXpAwarded: inviterXp
       });
 
-      await this.ledgerService.awardGp(tx, invite.userId, inviterGp, LedgerSource.INVITE, newUserId);
-      await this.ledgerService.awardGp(tx, newUserId, inviteeGp, LedgerSource.INVITE, invite.userId);
+      await this.ledgerService.awardGp(tx, invite.inviterId, inviterGp, LedgerSource.INVITE, newUserId);
+      await this.ledgerService.awardXp(tx, invite.inviterId, inviterXp, LedgerSource.INVITE, newUserId);
+      await this.ledgerService.awardGp(tx, newUserId, inviteeGp, LedgerSource.INVITE, invite.inviterId);
+
+      // Increment Rare Pass invite friends weekly mission progress
+      const { RarePassService } = require('./RarePassService');
+      const rarePassService = new RarePassService(this.prisma);
+      await rarePassService.updateMissionProgress(tx, invite.inviterId, 'mission_invite_friends_weekly', 1);
 
       return {
         success: true,

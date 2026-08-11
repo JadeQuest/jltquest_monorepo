@@ -1,5 +1,5 @@
 import { UserRepository } from '../../infrastructure/database/repositories/UserRepository';
-import { calculateXpRequiredForLevel } from '../utils/leveling';
+import { calculateXpRequiredForLevel, getLevelTier } from '../utils/leveling';
 import { NotFoundError } from '../errors/AppError';
 import { ErrorCode, ErrorMessages } from '@jlt/constants';
 
@@ -43,10 +43,19 @@ export class UserService {
         id: user.id,
         walletAddress: user.walletAddress,
         level: user.level,
+        levelTier: getLevelTier(user.level),
         xp: user.xp,
         gp: user.gp,
         jlt: Number(user.jlt),
-        streak: user.streak
+        streak: user.streak,
+        activeAvatar: user.activeAvatarVariant ? {
+          variantId: user.activeAvatarVariant.id,
+          type: user.activeAvatarVariant.type,
+          imageUrl: user.activeAvatarVariant.imageUrl,
+          modelUrl: user.activeAvatarVariant.modelUrl,
+          name: (user.activeAvatarVariant as any).avatar.name,
+          characterKey: (user.activeAvatarVariant as any).avatar.characterKey
+        } : null
       },
       leveling: {
         currentXp: user.xp,

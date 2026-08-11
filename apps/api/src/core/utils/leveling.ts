@@ -41,3 +41,12 @@ export function calculateXpRequiredForLevel(level: number): number {
   const base = LEVEL_XP_REQUIREMENTS[30];
   return Math.round(base * Math.pow(1.10, level - 30));
 }
+
+export function getLevelTier(level: number): string {
+  if (level <= 5) return 'Bronze';
+  if (level <= 10) return 'Silver';
+  if (level <= 15) return 'Gold';
+  if (level <= 20) return 'Platinum';
+  if (level <= 25) return 'Diamond';
+  return 'Elite';
+}

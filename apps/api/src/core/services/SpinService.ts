@@ -1,6 +1,6 @@
 import { SpinRepository } from '../../infrastructure/database/repositories/SpinRepository';
 import { LedgerService } from './LedgerService';
-import { LedgerSource, SpinOutcome } from '@jlt/database';
+import { LedgerSource, SpinOutcome, RpXpSource } from '@jlt/database';
 import { BadRequestError } from '../errors/AppError';
 import { ErrorCode, ErrorMessages, APP_CONFIG } from '@jlt/constants';
 
@@ -77,6 +77,7 @@ export class SpinService {
       let fragmentsAwarded = 0;
       let xpAwarded = 0;
       let freeSpinAwarded = 0;
+      let rpXpAwarded = 0;
 
       const rates = APP_CONFIG.SPIN.RATES;
 
@@ -97,6 +98,9 @@ export class SpinService {
       } else if (rand < rates.FRAGMENT_1) {
         outcome = (SpinOutcome as any).FRAGMENT_1 || 'FRAGMENT_1';
         fragmentsAwarded = 1;
+      } else if (rand < rates.RP_XP_20) {
+        outcome = (SpinOutcome as any).RP_XP_20 || 'RP_XP_20';
+        rpXpAwarded = 20;
       } else {
         outcome = (SpinOutcome as any).FREE_SPIN_1 || 'FREE_SPIN_1';
         freeSpinAwarded = 1;
@@ -136,10 +140,29 @@ export class SpinService {
         });
       }
 
+      // Award Rare Pass XP & update mission progress
+      const { RarePassService } = require('./RarePassService');
+      const rarePassService = new RarePassService(this.prisma);
+      
+      let finalRpXpAwarded = 0;
+      if (rpXpAwarded > 0) {
+        finalRpXpAwarded = await rarePassService.awardRpXp(
+          tx,
+          userId,
+          rpXpAwarded,
+          RpXpSource.SPIN,
+          null,
+          `spin_rpxp:${userId}:${now.toISOString()}`
+        );
+      }
+
+      await rarePassService.updateMissionProgress(tx, userId, 'mission_spin_daily', 1);
+
       return {
         outcome,
         gpAwarded,
         xpAwarded,
+        rpXpAwarded: finalRpXpAwarded,
         fragmentsAwarded,
         freeSpinAwarded
       };

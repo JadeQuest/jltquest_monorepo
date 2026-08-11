@@ -15,7 +15,15 @@ export class UserRepository {
     const db = tx || prisma;
     return db.user.findUnique({ 
       where: { id: userId },
-      include: { socialConnections: true, streak: true }
+      include: { 
+        socialConnections: true, 
+        streak: true,
+        activeAvatarVariant: {
+          include: {
+            avatar: true
+          }
+        }
+      }
     });
   }
 

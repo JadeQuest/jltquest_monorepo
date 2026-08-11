@@ -24,6 +24,15 @@ export enum ErrorCode {
   INVALID_PLATFORM = 'INVALID_PLATFORM',
   USER_NOT_FOUND = 'USER_NOT_FOUND',
   QUEST_NOT_FOUND = 'QUEST_NOT_FOUND',
+  SEASON_NOT_ACTIVE = 'SEASON_NOT_ACTIVE',
+  REWARD_NOT_FOUND = 'REWARD_NOT_FOUND',
+  REWARD_ALREADY_CLAIMED = 'REWARD_ALREADY_CLAIMED',
+  REWARD_LEVEL_NOT_REACHED = 'REWARD_LEVEL_NOT_REACHED',
+  PREMIUM_NOT_PURCHASED = 'PREMIUM_NOT_PURCHASED',
+  MISSION_NOT_FOUND = 'MISSION_NOT_FOUND',
+  MISSION_ALREADY_COMPLETED = 'MISSION_ALREADY_COMPLETED',
+  AVATAR_VARIANT_NOT_FOUND = 'AVATAR_VARIANT_NOT_FOUND',
+  AVATAR_NOT_UNLOCKED = 'AVATAR_NOT_UNLOCKED',
 }
 
 export const ErrorMessages: Record<ErrorCode, string> = {
@@ -48,6 +57,15 @@ export const ErrorMessages: Record<ErrorCode, string> = {
   [ErrorCode.INVALID_PLATFORM]: 'Invalid social platform.',
   [ErrorCode.USER_NOT_FOUND]: 'User not found.',
   [ErrorCode.QUEST_NOT_FOUND]: 'Quest not found.',
+  [ErrorCode.SEASON_NOT_ACTIVE]: 'No active Rare Pass season found.',
+  [ErrorCode.REWARD_NOT_FOUND]: 'Rare Pass reward not found.',
+  [ErrorCode.REWARD_ALREADY_CLAIMED]: 'Rare Pass reward already claimed.',
+  [ErrorCode.REWARD_LEVEL_NOT_REACHED]: 'Required Rare Pass level not reached.',
+  [ErrorCode.PREMIUM_NOT_PURCHASED]: 'Premium Rare Pass is required for this reward.',
+  [ErrorCode.MISSION_NOT_FOUND]: 'Rare Pass mission not found.',
+  [ErrorCode.MISSION_ALREADY_COMPLETED]: 'Rare Pass mission already completed.',
+  [ErrorCode.AVATAR_VARIANT_NOT_FOUND]: 'Avatar variant not found.',
+  [ErrorCode.AVATAR_NOT_UNLOCKED]: 'Avatar variant not unlocked for this user.',
 };
 
 export const APP_CONFIG = {
@@ -64,12 +82,13 @@ export const APP_CONFIG = {
     COST_GP: 200,
     FREE_SPINS_DEFAULT: 1,
     RATES: {
-      NOTHING: 0.20,
-      GP_20: 0.45,
-      GP_50: 0.60,
-      GP_100: 0.70,
-      XP_20: 0.80,
-      FRAGMENT_1: 0.90,
+      NOTHING: 0.15,
+      GP_20: 0.35,
+      GP_50: 0.50,
+      GP_100: 0.60,
+      XP_20: 0.70,
+      FRAGMENT_1: 0.80,
+      RP_XP_20: 0.90,
       FREE_SPIN_1: 1.00,
     }
   },
@@ -84,5 +103,9 @@ export const APP_CONFIG = {
     CONNECTION_GP_REWARD: 100,
     CONNECTION_XP_REWARD: 50,
     CLAWBACK_GP_AMOUNT: 100,
+  },
+  RARE_PASS: {
+    DAILY_CAP_RP_XP: 500,
+    WEEKLY_CAP_RP_XP: 2500,
   }
 };

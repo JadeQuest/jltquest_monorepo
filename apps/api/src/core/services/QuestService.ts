@@ -1,6 +1,6 @@
 import { QuestRepository } from '../../infrastructure/database/repositories/QuestRepository';
 import { LedgerService } from './LedgerService';
-import { LedgerSource } from '@jlt/database';
+import { LedgerSource, RpXpSource } from '@jlt/database';
 import { getQuestPeriodKey } from '../utils/questPeriod';
 import { QuestValidator } from './QuestValidator';
 import { BadRequestError, ConflictError, NotFoundError } from '../errors/AppError';
@@ -88,9 +88,28 @@ export class QuestService {
           });
         }
 
+        // Award Rare Pass XP & update mission progress
+        const { RarePassService } = require('./RarePassService');
+        const rarePassService = new RarePassService(this.prisma);
+        
+        let rpXpAwarded = 0;
+        if (quest.rpXpReward > 0) {
+          rpXpAwarded = await rarePassService.awardRpXp(
+            tx,
+            userId,
+            quest.rpXpReward,
+            RpXpSource.QUEST,
+            questId,
+            `quest_completion_rpxp:${userId}:${questId}:${periodKey}`
+          );
+        }
+
+        await rarePassService.updateMissionProgress(tx, userId, 'mission_complete_quests_daily', 1);
+
         return {
           gpAwarded: quest.gpReward,
           xpAwarded: quest.xpReward,
+          rpXpAwarded,
           fragmentsAwarded: quest.fragmentReward
         };
       });

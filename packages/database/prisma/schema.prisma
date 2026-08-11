@@ -48,6 +48,7 @@ enum SpinOutcome {
   FRAGMENT_1
   FREE_SPIN_1
   NOTHING
+  RP_XP_20
 }
 
 enum LedgerSource {
@@ -59,11 +60,55 @@ enum LedgerSource {
   SOCIAL_CLAWBACK
   CONVERSION
   ADMIN_ADJUSTMENT
+  RARE_PASS
 }
 
 enum LedgerType {
   CREDIT
   DEBIT
+}
+
+enum RarePassSeasonStatus {
+  DRAFT
+  SCHEDULED
+  ACTIVE
+  ENDED
+  ARCHIVED
+}
+
+enum RarePassTrack {
+  FREE
+  PREMIUM
+}
+
+enum RarePassRewardType {
+  GP
+  XP
+  FRAGMENT
+  SPIN
+  CARD
+  AVATAR
+}
+
+enum RpXpSource {
+  DAILY_CHECKIN
+  QUEST
+  SPIN
+  SOCIAL
+  REFERRAL
+  COLLECTION
+  CARD_CRAFT
+}
+
+enum RarePassMissionType {
+  DAILY
+  WEEKLY
+  SEASONAL
+}
+
+enum AvatarVariantType {
+  BASIC
+  THREE_D
 }
 
 // ─────────────────────────────────────────────
@@ -104,6 +149,15 @@ model User {
   invitesSent         Invite[]              @relation("Inviter")
   inviteRedemption    InviteRedemption?     @relation("RedeemedByUser")
   cards               UserCard[]
+
+  // Rare Pass & Avatar Relations
+  activeAvatarVariantId String?
+  activeAvatarVariant   AvatarVariant?        @relation("ActiveAvatar", fields: [activeAvatarVariantId], references: [id])
+  userAvatars           UserAvatar[]
+  rpXpLedger            RpXpLedgerEntry[]
+  rarePassClaims        RarePassRewardClaim[]
+  missionCompletions    UserRarePassMissionCompletion[]
+  rarePassPurchases     RarePassPurchase[]
 
   @@index([gp])
   @@index([xp])
@@ -151,6 +205,7 @@ model Quest {
   description     String?
   gpReward        Int
   xpReward        Int
+  rpXpReward      Int @default(0)
   fragmentReward  Int @default(0)
   frequency       QuestFrequency
   category        QuestCategory @default(GENERAL)
@@ -333,6 +388,7 @@ model SocialQuest {
   description     String?
   gpReward        Int
   xpReward        Int
+  rpXpReward      Int @default(0)
   frequency       QuestFrequency
   category        QuestCategory @default(SOCIAL)
   isHidden        Boolean       @default(false)
@@ -460,4 +516,163 @@ model UserCard {
   @@unique([userId, cardId])
   @@index([userId])
   @@map("user_cards")
+}
+
+// ─────────────────────────────────────────────
+// Rare Pass Seasonal progression
+// ─────────────────────────────────────────────
+
+model RarePassSeason {
+  id            String            @id @default(uuid())
+  name          String
+  startAt       DateTime
+  endAt         DateTime
+  status        RarePassSeasonStatus
+  maxLevel      Int
+  levels        RarePassLevel[]
+  missions      RarePassMission[]
+  ledgerEntries RpXpLedgerEntry[]
+  purchases     RarePassPurchase[]
+
+  @@map("rare_pass_seasons")
+}
+
+model RarePassLevel {
+  id           String           @id @default(uuid())
+  seasonId     String
+  level        Int
+  requiredRpXp Int
+  rewards      RarePassReward[]
+  season       RarePassSeason   @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+
+  @@unique([seasonId, level])
+  @@map("rare_pass_levels")
+}
+
+model RarePassReward {
+  id          String             @id @default(uuid())
+  levelId     String
+  track       RarePassTrack
+  rewardType  RarePassRewardType
+  amount      Int?
+  metadata    Json?
+  sortOrder   Int                @default(0)
+  level       RarePassLevel      @relation(fields: [levelId], references: [id], onDelete: Cascade)
+  claims      RarePassRewardClaim[]
+
+  @@map("rare_pass_rewards")
+}
+
+model RarePassRewardClaim {
+  id          String         @id @default(uuid())
+  userId      String
+  seasonId    String
+  rewardId    String
+  claimedAt   DateTime       @default(now())
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reward      RarePassReward @relation(fields: [rewardId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, rewardId])
+  @@map("rare_pass_reward_claims")
+}
+
+model RpXpLedgerEntry {
+  id             String         @id @default(uuid())
+  userId         String
+  seasonId       String
+  amount         Int
+  source         RpXpSource
+  sourceId       String?
+  idempotencyKey String?
+  createdAt      DateTime       @default(now())
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  season         RarePassSeason @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, idempotencyKey])
+  @@map("rp_xp_ledger_entries")
+}
+
+model RarePassPurchase {
+  id          String         @id @default(uuid())
+  userId      String
+  seasonId    String
+  purchasedAt DateTime       @default(now())
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  season      RarePassSeason @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, seasonId])
+  @@map("rare_pass_purchases")
+}
+
+// ─────────────────────────────────────────────
+// Rare Pass Missions
+// ─────────────────────────────────────────────
+
+model RarePassMission {
+  id           String         @id @default(uuid())
+  seasonId     String
+  code         String
+  name         String
+  description  String?
+  rpXpReward   Int
+  type         RarePassMissionType
+  targetCount  Int            @default(1)
+  season       RarePassSeason @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  completions  UserRarePassMissionCompletion[]
+
+  @@map("rare_pass_missions")
+}
+
+model UserRarePassMissionCompletion {
+  id           String         @id @default(uuid())
+  userId       String
+  missionId    String
+  completedAt  DateTime       @default(now())
+  periodKey    String
+  progress     Int            @default(0)
+  completed    Boolean        @default(false)
+  rpXpAwarded  Int            @default(0)
+  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mission      RarePassMission @relation(fields: [missionId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, missionId, periodKey])
+  @@map("user_rare_pass_mission_completions")
+}
+
+// ─────────────────────────────────────────────
+// Avatars & User Identity
+// ─────────────────────────────────────────────
+
+model Avatar {
+  id           String          @id @default(uuid())
+  name         String
+  characterKey String          @unique
+  variants     AvatarVariant[]
+
+  @@map("avatars")
+}
+
+model AvatarVariant {
+  id          String          @id @default(uuid())
+  avatarId    String
+  type        AvatarVariantType
+  imageUrl    String?
+  modelUrl    String?
+  avatar      Avatar          @relation(fields: [avatarId], references: [id], onDelete: Cascade)
+  userAvatars UserAvatar[]
+  usersActive User[]          @relation("ActiveAvatar")
+
+  @@map("avatar_variants")
+}
+
+model UserAvatar {
+  id         String        @id @default(uuid())
+  userId     String
+  variantId  String
+  unlockedAt DateTime      @default(now())
+  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  variant    AvatarVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, variantId])
+  @@map("user_avatars")
 }

@@ -20,6 +20,8 @@ import { InviteService } from '../core/services/InviteService';
 import { SocialService } from '../core/services/SocialService';
 import { CollectionService } from '../core/services/CollectionService';
 import { LevelService } from '../core/services/LevelService';
+import { RarePassService } from '../core/services/RarePassService';
+import { AvatarService } from '../core/services/AvatarService';
 
 // Controllers
 import { AuthController } from '../api/controllers/AuthController';
@@ -31,6 +33,8 @@ import { InviteController } from '../api/controllers/InviteController';
 import { SocialController } from '../api/controllers/SocialController';
 import { LevelController } from '../api/controllers/LevelController';
 import { CollectionController } from '../api/controllers/CollectionController';
+import { RarePassController } from '../api/controllers/RarePassController';
+import { AvatarController } from '../api/controllers/AvatarController';
 
 // 1. Initialize Repositories
 const userRepository = new UserRepository();
@@ -52,6 +56,8 @@ const inviteService = new InviteService(inviteRepository, ledgerService, prisma)
 const socialService = new SocialService(socialConnectionRepository, ledgerService, prisma);
 const collectionService = new CollectionService(prisma);
 const levelService = new LevelService();
+const rarePassService = new RarePassService(prisma);
+const avatarService = new AvatarService(prisma);
 
 // 3. Initialize Controllers
 export const authController = new AuthController(authService);
@@ -63,3 +69,5 @@ export const inviteController = new InviteController(inviteService);
 export const socialController = new SocialController(socialService);
 export const levelController = new LevelController(levelService);
 export const collectionController = new CollectionController(collectionService);
+export const rarePassController = new RarePassController(rarePassService);
+export const avatarController = new AvatarController(avatarService);

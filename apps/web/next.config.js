@@ -1,10 +1,29 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    // Add other Next.js configuration options here as needed.
+    // Enable modern image formats
+    images: {
+        formats: ['image/avif', 'image/webp'],
+    },
 
-    // This empty turbopack object signals that you are aware of and using Turbopack,
-    // resolving the conflict when a webpack config is also present.
-    turbopack: {},
+    // Recommended for modern apps
+    reactStrictMode: true,
+
+    // Allow Cloudflare tunnel hostnames to reach the Next.js dev server
+    // Fixes: "malformed HTTP response Unauthorized" on HMR WebSocket connections
+    allowedDevOrigins: ['*.trycloudflare.com'],
+
+    // Turbopack options
+    experimental: {},
 };
 
-module.exports = nextConfig;
+let config = nextConfig;
+if (process.env.ANALYZE === 'true') {
+    try {
+        const withBundleAnalyzer = require('@next/bundle-analyzer')({ enabled: true });
+        config = withBundleAnalyzer(nextConfig);
+    } catch (e) {
+        console.warn('ANALYZE env set but @next/bundle-analyzer is not installed.');
+    }
+}
+
+module.exports = config;

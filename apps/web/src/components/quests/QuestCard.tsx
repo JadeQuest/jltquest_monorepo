@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Quest } from '@/hooks/useQuests';
-import { Gift, Star, RefreshCw } from 'lucide-react';
+import { Gift, Star } from 'lucide-react';
+import { JLTLoader } from '@/components/common/JLTLoader';
 
 interface QuestCardProps {
   quest: Quest;
@@ -8,7 +9,7 @@ interface QuestCardProps {
   isClaiming: boolean;
 }
 
-export function QuestCard({ quest, onClaim, isClaiming }: QuestCardProps) {
+function QuestCardComponent({ quest, onClaim, isClaiming }: QuestCardProps) {
   const isCompleted = quest.completed;
   const isSocial = quest.category === 'SOCIAL';
   
@@ -95,7 +96,7 @@ export function QuestCard({ quest, onClaim, isClaiming }: QuestCardProps) {
             onClick={() => onClaim(quest.id)}
           >
             {isClaiming ? (
-              <><RefreshCw className="w-4 h-4 mr-2 animate-spin" /> Claiming...</>
+              <JLTLoader variant="inline" size="sm" text="Claiming..." />
             ) : isCompleted ? (
               'Claimed'
             ) : !isClaimable ? (
@@ -109,3 +110,6 @@ export function QuestCard({ quest, onClaim, isClaiming }: QuestCardProps) {
     </div>
   );
 }
+
+export const QuestCard = React.memo(QuestCardComponent);
+

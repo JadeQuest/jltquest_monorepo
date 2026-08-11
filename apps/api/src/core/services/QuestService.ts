@@ -6,6 +6,8 @@ import { QuestValidator } from './QuestValidator';
 import { BadRequestError, ConflictError, NotFoundError } from '../errors/AppError';
 import { ErrorCode, ErrorMessages } from '@jlt/constants';
 
+import { cacheService } from './CacheService';
+
 export class QuestService {
   private validator: QuestValidator;
 
@@ -18,14 +20,20 @@ export class QuestService {
   }
 
   async listQuests(userId: string) {
-    const [quests, completions] = await Promise.all([
-      this.questRepository.findActiveQuests(this.prisma),
-      this.questRepository.findCompletions(this.prisma, userId)
-    ]);
-    
-    const canClaimMap = await this.validator.validateQuestConditions(userId, quests);
+    let quests = cacheService.get<any[]>('active_quests');
+    if (!quests) {
+      quests = await this.questRepository.findActiveQuests(this.prisma);
+      if (quests) {
+        cacheService.set('active_quests', quests, 60);
+      }
+    }
+    const activeQuests = quests || [];
 
-    return quests.map((quest: any) => {
+    const completions = await this.questRepository.findCompletions(this.prisma, userId);
+    
+    const canClaimMap = await this.validator.validateQuestConditions(userId, activeQuests);
+
+    return activeQuests.map((quest: any) => {
       const periodKey = getQuestPeriodKey(quest.frequency);
       
       const isCompleted = completions.some(

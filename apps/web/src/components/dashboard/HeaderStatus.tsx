@@ -5,6 +5,8 @@ import { useAccount } from 'wagmi';
 import { useAuth } from '@/hooks/useAuth';
 import { useDashboard } from '@/hooks/useDashboard';
 
+import { getCookie } from '@/lib/authCookie';
+
 interface HeaderStatusProps {
   coins?: number;
   tokens?: number;
@@ -12,7 +14,7 @@ interface HeaderStatusProps {
   onConnectClick?: () => void;
 }
 
-export const HeaderStatus: React.FC<HeaderStatusProps> = ({
+const HeaderStatusComponent: React.FC<HeaderStatusProps> = ({
   coins = 0,
   tokens = 0,
   onToggleMobileMenu,
@@ -23,7 +25,7 @@ export const HeaderStatus: React.FC<HeaderStatusProps> = ({
   const { data: dashboardData } = useDashboard();
   
   useEffect(() => {
-    if (isConnected && address) {
+    if (isConnected && address && !getCookie('jlt_auth_token')) {
       login(address).catch(console.error);
     }
   }, [isConnected, address]);
@@ -134,3 +136,5 @@ export const HeaderStatus: React.FC<HeaderStatusProps> = ({
     </header>
   );
 };
+
+export const HeaderStatus = React.memo(HeaderStatusComponent);

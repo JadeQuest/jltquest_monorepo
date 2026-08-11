@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useAccount } from 'wagmi';
 import { useDashboard } from '@/hooks/useDashboard';
 import { useSocial } from '@/hooks/useSocial';
-import { Loader2 } from 'lucide-react';
+import { JLTLoader } from '@/components/common/JLTLoader';
 
 // Custom SVG Icons for exact visual matching & reliability
 const LinkedInIcon = ({ className }: { className?: string }) => (
@@ -103,7 +103,7 @@ const SOCIAL_PLATFORMS: SocialPlatformConfig[] = [
   },
 ];
 
-export const SocialConnectionsCard: React.FC = () => {
+const SocialConnectionsCardComponent: React.FC = () => {
   const { isConnected, address } = useAccount();
   const { data: dashboardData } = useDashboard();
   const { connect, disconnect, getOAuthUrl } = useSocial();
@@ -179,7 +179,7 @@ export const SocialConnectionsCard: React.FC = () => {
 
               <div className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center transition-transform group-hover:scale-110">
                 {isLoading ? (
-                  <Loader2 className="w-5 h-5 text-purple-300 animate-spin" />
+                  <JLTLoader variant="inline" size="sm" />
                 ) : (
                   <Icon className={`w-6 h-6 sm:w-7 sm:h-7 ${isConn ? platform.color : 'text-gray-300 group-hover:text-white'}`} />
                 )}
@@ -195,3 +195,5 @@ export const SocialConnectionsCard: React.FC = () => {
     </div>
   );
 };
+
+export const SocialConnectionsCard = React.memo(SocialConnectionsCardComponent);

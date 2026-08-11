@@ -1,10 +1,11 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import { useAccount } from 'wagmi';
 import { useCheckIn } from '@/hooks/useCheckIn';
 
-export const StreakCard: React.FC = () => {
+const StreakCardComponent: React.FC = () => {
   const { status } = useCheckIn();
   const { isConnected, address } = useAccount();
   const streak = (!isConnected || !address) ? 0 : (status?.streak ?? 0);
@@ -25,11 +26,11 @@ export const StreakCard: React.FC = () => {
 
       {/* South-East Flame graphic - Slightly larger (w-[215px] h-[260px]) */}
       <div className="absolute -right-5 -bottom-7 w-[215px] h-[260px] flex items-center justify-center animate-flame z-10 pointer-events-none">
-        <img
+        <Image
           src="/optimized/flame.webp"
           alt="Flame Badge"
-          width={215}
-          height={260}
+          fill
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           className="w-full h-full object-contain drop-shadow-[0_10px_20px_rgba(234,88,12,0.7)]"
         />
 
@@ -40,3 +41,6 @@ export const StreakCard: React.FC = () => {
     </div>
   );
 };
+
+export const StreakCard = React.memo(StreakCardComponent);
+

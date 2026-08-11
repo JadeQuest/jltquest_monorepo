@@ -183,6 +183,7 @@ model UserQuestCompletion {
   // Prevents double-claiming the same quest within the same period
   @@unique([userId, questId, periodKey])
   @@index([userId, questId])
+  @@index([userId, createdDate])
   @@map("user_quest_completions")
 }
 
@@ -313,6 +314,7 @@ model SocialConnection {
 
   @@unique([platform, platformUserId]) // prevents multi-accounting across wallets
   @@unique([userId, platform])         // one connection per platform per user
+  @@index([userId])
   @@map("social_connections")
 }
 

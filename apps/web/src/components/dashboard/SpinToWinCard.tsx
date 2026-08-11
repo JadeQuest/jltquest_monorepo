@@ -25,7 +25,7 @@ const OUTCOME_TO_INDEX: Record<string, number> = {
   'FRAGMENT_1': 6
 };
 
-export const SpinToWinCard: React.FC = () => {
+const SpinToWinCardComponent: React.FC = () => {
   const { isConnected, address } = useAccount();
   const { spinStatus, spin, isSpinning: isSpinMutating } = useSpin();
 
@@ -225,4 +225,6 @@ export const SpinToWinCard: React.FC = () => {
     </>
   );
 };
+
+export const SpinToWinCard = React.memo(SpinToWinCardComponent);
 

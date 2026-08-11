@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-export const RarePassCard: React.FC = () => {
+const RarePassCardComponent: React.FC = () => {
   return (
     <div className="cosmic-space-card glass-panel p-5 sm:p-6 flex flex-col justify-between h-[320px] sm:h-[360px] relative overflow-hidden group select-none">
       {/* Base Dark Background */}
@@ -47,3 +47,6 @@ export const RarePassCard: React.FC = () => {
     </div>
   );
 };
+
+export const RarePassCard = React.memo(RarePassCardComponent);
+

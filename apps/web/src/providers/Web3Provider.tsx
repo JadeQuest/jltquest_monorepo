@@ -11,10 +11,13 @@ export function Web3Provider({ children }: { children: React.ReactNode }) {
       new QueryClient({
         defaultOptions: {
           queries: {
-            staleTime: 60_000,
-            gcTime: 5 * 60_000,
+            staleTime: 2 * 60_000, // 2 minutes stale time
+            gcTime: 10 * 60_000,   // 10 minutes cache time
             refetchOnWindowFocus: false,
+            refetchOnReconnect: false,
+            refetchOnMount: false,
             retry: 1,
+            structuralSharing: true,
           },
         },
       }),

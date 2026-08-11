@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import { useCollection, Card } from '../../../hooks/useCollection';
-import { Loader2, Sparkles, Layers, Shield, Zap, Award, ArrowRight } from 'lucide-react';
+import { JLTLoader } from '@/components/common/JLTLoader';
+import { Sparkles, Layers, Shield, Zap, Award, ArrowRight } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -21,14 +22,7 @@ export default function CollectionPage() {
   };
 
   if (loading) {
-    return (
-      <div className="flex h-[75vh] w-full items-center justify-center">
-        <div className="flex flex-col items-center gap-4 p-8 glass-panel rounded-3xl">
-          <Loader2 className="w-10 h-10 animate-spin text-[#00F0FF]" />
-          <p className="text-purple-200 font-gilroyMedium text-sm animate-pulse">Loading Rare Collection...</p>
-        </div>
-      </div>
-    );
+    return <JLTLoader variant="page" />;
   }
 
   if (error) {
@@ -112,10 +106,7 @@ export default function CollectionPage() {
               }`}
             >
               {isMerging ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin text-white" />
-                  <span>Merging Fragments...</span>
-                </>
+                <JLTLoader variant="inline" size="sm" text="Merging Fragments..." />
               ) : (
                 <>
                   <Layers className="w-5 h-5" />
@@ -220,7 +211,8 @@ export default function CollectionPage() {
               return (
                 <div
                   key={card.id || idx}
-                  className="group relative glass-panel rounded-2xl overflow-hidden border border-white/10 hover:border-purple-400/50 hover:scale-[1.04] transition-all duration-300 cursor-pointer shadow-xl"
+                  className="group relative glass-panel rounded-2xl overflow-hidden border border-white/10 hover:border-purple-400/50 hover:scale-[1.03] transition-transform duration-300 ease-out cursor-pointer shadow-xl will-change-transform"
+                  style={{ transform: 'translate3d(0,0,0)' }}
                 >
                   {/* Aspect ratio 3:4 card image container */}
                   <div className="relative aspect-[3/4] w-full overflow-hidden bg-purple-950/40">
@@ -228,7 +220,8 @@ export default function CollectionPage() {
                       src={card.imageUrl || `/optimized/collect-${(idx % 16) + 1}.webp`}
                       alt={card.name}
                       fill
-                      className="object-cover transition-transform duration-500 group-hover:scale-110"
+                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 16vw"
+                      className="object-cover transition-transform duration-500 ease-out group-hover:scale-110 will-change-transform"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-[#080411] via-transparent to-black/30 pointer-events-none" />
 
@@ -251,7 +244,7 @@ export default function CollectionPage() {
 
                   {/* Card Bottom Details */}
                   <div className="p-3.5 bg-gradient-to-b from-[#150A2A] to-[#080411] border-t border-white/5">
-                    <h3 className="text-white font-gilroyBold text-sm truncate tracking-wide group-hover:text-[#00F0FF] transition-colors">
+                    <h3 className="text-white font-gilroyBold text-sm truncate tracking-wide group-hover:text-[#00F0FF] transition-colors duration-200">
                       {card.name}
                     </h3>
                     <p className="text-purple-300/80 font-gilroyRegular text-xs mt-0.5">

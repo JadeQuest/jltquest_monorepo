@@ -16,7 +16,8 @@ export class QuestRepository {
 
   async findCompletions(tx: any, userId: string) {
     return tx.userQuestCompletion.findMany({
-      where: { userId }
+      where: { userId },
+      select: { questId: true, periodKey: true }
     });
   }
 

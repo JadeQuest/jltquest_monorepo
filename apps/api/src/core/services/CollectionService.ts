@@ -12,9 +12,17 @@ export class CollectionService {
       }),
       this.prisma.userCard.findMany({
         where: { userId },
-        include: {
-          card: true
-        }
+        select: {
+          quantity: true,
+          updatedAt: true,
+          card: {
+            select: {
+              id: true,
+              name: true,
+              imageUrl: true,
+            },
+          },
+        },
       })
     ]);
 

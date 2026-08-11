@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import { useAccount } from 'wagmi';
 import { useCheckIn } from '@/hooks/useCheckIn';
 
-export const DailyCheckInCard: React.FC = () => {
+const DailyCheckInCardComponent: React.FC = () => {
   const { status, claimAsync, isClaiming } = useCheckIn();
   const { isConnected, address } = useAccount();
   const isLoggedOut = !isConnected || !address;
@@ -144,3 +144,6 @@ export const DailyCheckInCard: React.FC = () => {
     </div>
   );
 };
+
+export const DailyCheckInCard = React.memo(DailyCheckInCardComponent);
+

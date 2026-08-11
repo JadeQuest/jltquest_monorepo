@@ -1,8 +1,9 @@
 'use client';
 
+import React from 'react';
 import Link from 'next/link';
 
-export const CollectRaresCard: React.FC = () => {
+const CollectRaresCardComponent: React.FC = () => {
   return (
     <Link href="/dashboard/collection" className="block h-full">
       <div className="daily-card-panel p-6 flex flex-col justify-between h-[360px] relative overflow-hidden group select-none cursor-pointer transition-transform hover:scale-[1.02]">
@@ -23,7 +24,7 @@ export const CollectRaresCard: React.FC = () => {
       <div className="relative w-full h-36 sm:h-44 mt-2 flex items-center justify-center">
         {/* Collect3 Card - Explorer */}
         <div
-          className="absolute right-2 sm:right-6 bottom-2 w-[95px] sm:w-[121px] h-[130px] sm:h-[166px] rounded-[10px] overflow-hidden transform rotate-[15deg] group-hover:rotate-[22deg] transition-transform duration-500 z-0 flex flex-col"
+          className="absolute right-2 sm:right-6 bottom-2 w-[95px] sm:w-[121px] h-[130px] sm:h-[166px] rounded-[10px] overflow-hidden transform rotate-[15deg] group-hover:rotate-[22deg] transition-transform duration-500 ease-out will-change-transform z-0 flex flex-col"
           style={{ boxShadow: '2px 6px 4.5px 0px rgba(0, 0, 0, 0.7)' }}
         >
           <img
@@ -44,7 +45,7 @@ export const CollectRaresCard: React.FC = () => {
 
         {/* Collect2 Card - Leader */}
         <div
-          className="absolute left-1/2 -translate-x-1/2 bottom-3 w-[95px] sm:w-[121px] h-[130px] sm:h-[166px] rounded-[10px] overflow-hidden transform rotate-[4deg] group-hover:rotate-[8deg] transition-transform duration-500 z-10 flex flex-col"
+          className="absolute left-1/2 -translate-x-1/2 bottom-3 w-[95px] sm:w-[121px] h-[130px] sm:h-[166px] rounded-[10px] overflow-hidden transform rotate-[4deg] group-hover:rotate-[8deg] transition-transform duration-500 ease-out will-change-transform z-10 flex flex-col"
           style={{ boxShadow: '2px 6px 4.5px 0px rgba(0, 0, 0, 0.7)' }}
         >
           <img
@@ -65,7 +66,7 @@ export const CollectRaresCard: React.FC = () => {
 
         {/* Collect1 Card - Starter */}
         <div
-          className="absolute left-2 sm:left-6 bottom-1 w-[95px] sm:w-[121px] h-[130px] sm:h-[166px] rounded-[10px] overflow-hidden transform -rotate-[10deg] group-hover:-rotate-[14deg] transition-transform duration-500 z-20 flex flex-col"
+          className="absolute left-2 sm:left-6 bottom-1 w-[95px] sm:w-[121px] h-[130px] sm:h-[166px] rounded-[10px] overflow-hidden transform -rotate-[10deg] group-hover:-rotate-[14deg] transition-transform duration-500 ease-out will-change-transform z-20 flex flex-col"
           style={{ boxShadow: '2px 6px 4.5px 0px rgba(0, 0, 0, 0.7)' }}
         >
           <img
@@ -88,3 +89,6 @@ export const CollectRaresCard: React.FC = () => {
     </Link>
   );
 };
+
+export const CollectRaresCard = React.memo(CollectRaresCardComponent);
+

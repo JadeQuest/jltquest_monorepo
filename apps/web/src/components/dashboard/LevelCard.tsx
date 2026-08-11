@@ -4,7 +4,7 @@ import React from 'react';
 import { useAccount } from 'wagmi';
 import { useDashboard } from '@/hooks/useDashboard';
 
-export const LevelCard: React.FC = () => {
+const LevelCardComponent: React.FC = () => {
   const { data: dashboardData } = useDashboard();
   const { isConnected, address } = useAccount();
 
@@ -75,3 +75,5 @@ export const LevelCard: React.FC = () => {
     </div>
   );
 };
+
+export const LevelCard = React.memo(LevelCardComponent);

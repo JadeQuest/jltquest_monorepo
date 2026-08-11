@@ -16,7 +16,7 @@ const NAV_ITEMS = [
   { id: 'Leaderboards', label: 'Leaderboards', iconSrc: '/LeaderBoard.svg', path: '/dashboard/leaderboards' },
 ];
 
-export const Sidebar: React.FC<SidebarProps> = ({
+const SidebarComponent: React.FC<SidebarProps> = ({
   isMobileOpen = false,
   onMobileClose,
 }) => {
@@ -136,3 +136,5 @@ export const Sidebar: React.FC<SidebarProps> = ({
     </>
   );
 };
+
+export const Sidebar = React.memo(SidebarComponent);

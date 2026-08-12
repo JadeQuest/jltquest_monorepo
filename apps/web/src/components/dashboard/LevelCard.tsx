@@ -14,6 +14,17 @@ const LevelCardComponent: React.FC = () => {
   const currentXp = (!isConnected || !address) ? 0 : (dashboardData?.leveling?.currentXp ?? 0);
   const nextLevelXp = (!isConnected || !address) ? 0 : (dashboardData?.leveling?.nextLevelXp ?? 0);
 
+  const getLevelTier = (lvl: number | string) => {
+    if (typeof lvl !== 'number') return 'Bronze';
+    if (lvl <= 5) return 'Bronze';
+    if (lvl <= 10) return 'Silver';
+    if (lvl <= 20) return 'Gold';
+    if (lvl <= 30) return 'Platinum';
+    return 'Diamond';
+  };
+
+  const tier = getLevelTier(level);
+
   return (
     <div className="daily-card-panel p-6 flex flex-col justify-between h-[260px] relative overflow-hidden group">
       <div className="absolute top-0 right-0 w-36 h-36 bg-blue-600/10 rounded-full blur-2xl group-hover:bg-blue-600/20 transition-all duration-500" />
@@ -22,7 +33,7 @@ const LevelCardComponent: React.FC = () => {
         <div className="w-32 h-32 relative flex items-center justify-center shrink-0 animate-float">
           <img
             src="/optimized/container-level.webp"
-            alt="Lv. 1 Medal"
+            alt="Level Medal"
             width={128}
             height={128}
             className="w-full h-full object-contain drop-shadow-[0_4px_12px_rgba(0,0,0,0.4)]"
@@ -35,13 +46,13 @@ const LevelCardComponent: React.FC = () => {
               <div className="text-white font-gilroyBold text-4xl font-extrabold tracking-tight">
                 Lv. {level}
               </div>
-              <div className="text-purple-300 font-gilroyMedium text-lg font-medium tracking-wide">
-                Starter
+              <div className="text-[#00F0FF] font-gilroyBold text-base font-semibold tracking-wide uppercase">
+                {tier} Tier
               </div>
             </>
           ) : (
             <div className="text-white font-gilroyBold text-2xl font-bold tracking-tight">
-              Starter
+              Bronze Tier
             </div>
           )}
         </div>

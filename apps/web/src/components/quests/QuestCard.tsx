@@ -34,11 +34,10 @@ function QuestCardComponent({ quest, onClaim, isClaiming }: QuestCardProps) {
     setHasClickedGo(true);
   };
 
-  const showGoButton = isSocial && !isCompleted && !hasClickedGo;
+  const showGoButton = isSocial && !isCompleted && !hasClickedGo && !quest.canClaim;
   
-  // For social quests, rely on the local 'hasClickedGo' state to determine claimability,
-  // since the backend auto-validates them. For other quests, trust the backend 'canClaim'.
-  const isClaimable = isSocial ? hasClickedGo : quest.canClaim;
+  // A quest is claimable if the backend returns canClaim: true OR if it's a social quest where the user clicked Go
+  const isClaimable = quest.canClaim || (isSocial && hasClickedGo);
   
   return (
     <div className="daily-card-panel p-5 flex flex-col justify-between min-h-[220px] relative overflow-hidden group">
@@ -54,17 +53,29 @@ function QuestCardComponent({ quest, onClaim, isClaiming }: QuestCardProps) {
         </div>
         <p className="text-sm text-gray-400 font-gilroyMedium mb-4 leading-relaxed">{quest.description}</p>
         
-        <div className="flex items-center gap-4 mt-auto pt-2">
+        <div className="flex flex-wrap items-center gap-3 mt-auto pt-2">
           {quest.gpReward > 0 && (
             <div className="flex items-center text-[#FCD34D] font-gilroyBold text-sm font-semibold tracking-wide">
-              <Gift className="w-4 h-4 mr-1.5 opacity-80" />
+              <Gift className="w-4 h-4 mr-1 opacity-80" />
               +{quest.gpReward} GP
             </div>
           )}
           {quest.xpReward > 0 && (
             <div className="flex items-center text-[#A78BFA] font-gilroyBold text-sm font-semibold tracking-wide">
-              <Star className="w-4 h-4 mr-1.5 opacity-80" />
+              <Star className="w-4 h-4 mr-1 opacity-80" />
               +{quest.xpReward} XP
+            </div>
+          )}
+          {!!quest.rpXpReward && quest.rpXpReward > 0 && (
+            <div className="flex items-center text-[#00F0FF] font-gilroyBold text-sm font-semibold tracking-wide">
+              <span className="mr-1 opacity-90">⚡</span>
+              +{quest.rpXpReward} RP XP
+            </div>
+          )}
+          {!!quest.fragmentReward && quest.fragmentReward > 0 && (
+            <div className="flex items-center text-emerald-400 font-gilroyBold text-sm font-semibold tracking-wide">
+              <span className="mr-1 opacity-90">🎴</span>
+              +{quest.fragmentReward} Frag
             </div>
           )}
         </div>

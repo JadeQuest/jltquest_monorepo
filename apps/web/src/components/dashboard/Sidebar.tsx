@@ -10,7 +10,7 @@ interface SidebarProps {
 
 const NAV_ITEMS = [
   { id: 'Discover', label: 'Discover', iconSrc: '/Discover.svg', path: '/dashboard' },
-  { id: 'Rare Pass', label: 'Rare Pass', iconSrc: '/Push Pass.svg', path: '/dashboard/push-pass' },
+  { id: 'Rare Pass', label: 'Rare Pass', iconSrc: '/Push Pass.svg', path: '/dashboard/rare-pass' },
   { id: 'Quests', label: 'Quests', iconSrc: '/Quests.svg', path: '/dashboard/quests' },
   { id: 'Invites/Squads', label: 'Invites', iconSrc: '/InviteSqaud.svg', path: '/dashboard/invites' },
   { id: 'Leaderboards', label: 'Leaderboards', iconSrc: '/LeaderBoard.svg', path: '/dashboard/leaderboards' },

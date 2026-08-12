@@ -44,7 +44,7 @@ export class QuestService {
       return {
         ...quest,
         completed: isCompleted,
-        canClaim: canClaimMap[quest.id] || false,
+        canClaim: isCompleted ? false : (canClaimMap[quest.id] || false),
         completedCount: completions.filter((c: any) => c.questId === quest.id).length
       };
     });

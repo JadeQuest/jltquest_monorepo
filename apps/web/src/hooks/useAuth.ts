@@ -13,7 +13,7 @@ export function useAuth() {
 
   const loginMutation = useMutation({
     mutationFn: async ({ walletAddress, signature, message }: LoginParams) => {
-      const response = await fetchWithRetry<{ success: boolean; data: { token: string; userId: string }; error: string | null }>(`${getApiUrl()}/auth/login`, {
+      const response = await fetchWithRetry<{ success: boolean; data: { token: string; refreshToken?: string; userId: string }; error: string | null }>(`${getApiUrl()}/auth/login`, {
         method: 'POST',
         body: JSON.stringify({ walletAddress, signature, message }),
       });
@@ -23,8 +23,11 @@ export function useAuth() {
       return response.data;
     },
     onSuccess: (data) => {
-      // Save access token (expires in 15m server-side)
+      // Save access token and refresh token
       setCookie('jlt_auth_token', data.token, { days: 7 });
+      if (data.refreshToken) {
+        setCookie('jlt_refresh_token', data.refreshToken, { days: 30 });
+      }
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
     },
   });
@@ -37,6 +40,7 @@ export function useAuth() {
     },
     onSuccess: () => {
       deleteCookie('jlt_auth_token');
+      deleteCookie('jlt_refresh_token');
       queryClient.clear();
     }
   });

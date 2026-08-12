@@ -4,6 +4,7 @@ import React, { useEffect } from 'react';
 import { useAccount, useSignMessage } from 'wagmi';
 import { useAuth } from '@/hooks/useAuth';
 import { useDashboard } from '@/hooks/useDashboard';
+import { isUserRejectedError } from '@/lib/web3Error';
 
 import { getCookie } from '@/lib/authCookie';
 
@@ -33,8 +34,12 @@ const HeaderStatusComponent: React.FC<HeaderStatusProps> = ({
         try {
           const signature = await signMessageAsync({ message });
           await login({ walletAddress: address, signature, message });
-        } catch (err) {
-          console.error('Wallet signature login failed:', err);
+        } catch (err: unknown) {
+          if (isUserRejectedError(err)) {
+            console.log('User cancelled wallet signature prompt.');
+          } else {
+            console.error('Wallet signature login failed:', err);
+          }
         }
       }
     };

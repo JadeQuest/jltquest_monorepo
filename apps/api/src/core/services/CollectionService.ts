@@ -1,6 +1,7 @@
 import { BadRequestError, NotFoundError } from '../errors/AppError';
 import { ErrorCode, ErrorMessages, APP_CONFIG } from '@jlt/constants';
 import { RpXpSource } from '@jlt/database';
+import { RarePassService } from './RarePassService';
 
 export class CollectionService {
   constructor(private prisma: any) {}
@@ -62,7 +63,7 @@ export class CollectionService {
       // Deduct fragments
       await tx.user.update({
         where: { id: userId },
-        data: { fragments: { decrement: requiredFragments } }
+        data: { fragments: { increment: requiredFragments } }
       });
 
       // Get all available rare cards
@@ -107,7 +108,6 @@ export class CollectionService {
       }
 
       // Award RP XP & update missions
-      const { RarePassService } = require('./RarePassService');
       const rarePassService = new RarePassService(this.prisma);
       
       const rpXpAwarded = await rarePassService.awardRpXp(

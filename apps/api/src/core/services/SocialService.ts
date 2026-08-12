@@ -1,5 +1,6 @@
 import { SocialConnectionRepository } from '../../infrastructure/database/repositories/SocialConnectionRepository';
 import { LedgerService } from './LedgerService';
+import { RarePassService } from './RarePassService';
 import { SocialPlatform, LedgerSource, RpXpSource } from '@jlt/database';
 import { BadRequestError, ConflictError, NotFoundError } from '../errors/AppError';
 import { ErrorCode, ErrorMessages, APP_CONFIG } from '@jlt/constants';
@@ -159,7 +160,7 @@ export class SocialService {
         xpAwarded,
         connection: scrubbedConnection
       };
-    });
+    }, { maxWait: 10000, timeout: 20000 });
   }
 
   async disconnect(userId: string, platformString: string) {
@@ -220,7 +221,7 @@ export class SocialService {
         gpClawedBack,
         connection: scrubbedConnection
       };
-    });
+    }, { maxWait: 10000, timeout: 20000 });
   }
 
   async listQuests(userId: string) {
@@ -342,7 +343,6 @@ export class SocialService {
       await this.ledgerService.awardXp(tx, userId, quest.xpReward, LedgerSource.SOCIAL, quest.id);
 
       // Award Rare Pass XP
-      const { RarePassService } = require('./RarePassService');
       const rarePassService = new RarePassService(this.prisma);
       
       let rpXpAwarded = 0;
@@ -373,6 +373,6 @@ export class SocialService {
         xpAwarded: quest.xpReward,
         rpXpAwarded
       };
-    });
+    }, { maxWait: 10000, timeout: 20000 });
   }
 }

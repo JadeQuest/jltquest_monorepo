@@ -50,14 +50,7 @@ export const ConvertGPModal: React.FC<ConvertGPModalProps> = ({ isOpen, onClose 
   return createPortal(
     <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/70 backdrop-blur-md p-4 animate-fade-in">
       <div className="glass-panel w-full max-w-lg p-6 sm:p-8 flex flex-col relative shadow-[0_0_50px_rgba(123,44,191,0.35)] border border-white/10 rounded-3xl overflow-hidden">
-        {/* Close Button */}
-        <button
-          onClick={onClose}
-          type="button"
-          className="absolute top-5 right-5 p-2 rounded-full glass-pill text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
-        >
-          <X className="w-5 h-5" />
-        </button>
+
 
         {/* Ambient background glow */}
         <div className="absolute top-0 right-0 w-48 h-48 bg-purple-600/15 rounded-full blur-3xl pointer-events-none" />
@@ -86,16 +79,22 @@ export const ConvertGPModal: React.FC<ConvertGPModalProps> = ({ isOpen, onClose 
         ) : (
           <div className="flex flex-col gap-6">
             {/* Header */}
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0">
-                <RefreshCw className="w-6 h-6 text-amber-400" />
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div>
+                  <h3 className="text-white font-gilroyBold text-2xl">Convert GP to JLT</h3>
+                  <p className="text-purple-300 font-gilroyRegular text-xs sm:text-sm">
+                    100 GP = 1 JLT token (Tokenomics rate)
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-white font-gilroyBold text-2xl">Convert GP to JLT</h3>
-                <p className="text-purple-300 font-gilroyRegular text-xs sm:text-sm">
-                  100 GP = 1 JLT token (Tokenomics rate)
-                </p>
-              </div>
+              <button
+                onClick={onClose}
+                type="button"
+                className="p-2 rounded-full text-gray-400 hover:text-white hover:bg-white/10 transition-colors shrink-0"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
 
             {/* Current Balances Bar */}
@@ -103,14 +102,14 @@ export const ConvertGPModal: React.FC<ConvertGPModalProps> = ({ isOpen, onClose 
               <div className="flex flex-col">
                 <span className="text-xs text-purple-300 font-gilroyMedium">GP Balance</span>
                 <span className="text-xl font-gilroyBold text-amber-400 flex items-center gap-1.5 mt-0.5">
-                  <Coins className="w-4 h-4" />
+                  <img src="/optimized/coin.webp" alt="GP" className="w-4 h-4 object-contain" />
                   {userGp}
                 </span>
               </div>
               <div className="flex flex-col border-l border-white/10 pl-4">
                 <span className="text-xs text-purple-300 font-gilroyMedium">JLT Tokens</span>
                 <span className="text-xl font-gilroyBold text-[#00F0FF] flex items-center gap-1.5 mt-0.5">
-                  <Sparkles className="w-4 h-4" />
+                  <img src="/jltcolor.svg" alt="JLT" className="w-4 h-4 object-contain" />
                   {userJlt}
                 </span>
               </div>
@@ -143,11 +142,10 @@ export const ConvertGPModal: React.FC<ConvertGPModalProps> = ({ isOpen, onClose 
                       key={idx}
                       type="button"
                       onClick={() => setGpInput(roundedAmt)}
-                      className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-gilroyBold border transition-all ${
-                        gpInput === roundedAmt
-                          ? 'bg-purple-500/30 text-white border-purple-400 shadow-[0_0_10px_#7B2CBF]'
-                          : 'bg-black/30 text-gray-400 border-white/10 hover:text-white'
-                      }`}
+                      className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-gilroyBold border transition-all ${gpInput === roundedAmt
+                        ? 'bg-purple-500/30 text-white border-purple-400 shadow-[0_0_10px_#7B2CBF]'
+                        : 'bg-black/30 text-gray-400 border-white/10 hover:text-white'
+                        }`}
                     >
                       {idx === 3 ? 'MAX' : `${roundedAmt}`}
                     </button>
@@ -178,20 +176,18 @@ export const ConvertGPModal: React.FC<ConvertGPModalProps> = ({ isOpen, onClose 
               type="button"
               disabled={isConverting || userGp < 100 || gpInput < 100}
               onClick={handleConvert}
-              className={`w-full py-3.5 px-6 rounded-xl font-gilroyBold text-base flex items-center justify-center gap-2 transition-all cursor-pointer ${
-                userGp < 100
-                  ? 'bg-black/40 text-gray-500 border border-white/10 cursor-not-allowed'
-                  : 'glass-btn text-white shadow-[0_0_20px_#7B2CBF] hover:shadow-[0_0_30px_#7B2CBF]'
-              }`}
+              className={`w-full py-3.5 px-6 rounded-xl font-gilroyBold text-base flex items-center justify-center gap-2 transition-all cursor-pointer ${userGp < 100
+                ? 'bg-black/40 text-gray-500 border border-white/10 cursor-not-allowed'
+                : 'glass-btn text-white shadow-[0_0_20px_#7B2CBF] hover:shadow-[0_0_30px_#7B2CBF]'
+                }`}
             >
               {isConverting ? (
-                <JLTLoader variant="inline" size="sm" text="Converting GP..." />
+                <JLTLoader variant="inline" size="sm" text="Exchanging..." />
               ) : userGp < 100 ? (
                 'Requires Minimum 100 GP'
               ) : (
                 <>
-                  <span>Confirm Swap to JLT</span>
-                  <Sparkles className="w-4 h-4 text-[#00F0FF]" />
+                  <span>Exchange</span>
                 </>
               )}
             </button>

@@ -14,16 +14,17 @@ const LevelCardComponent: React.FC = () => {
   const currentXp = (!isConnected || !address) ? 0 : (dashboardData?.leveling?.currentXp ?? 0);
   const nextLevelXp = (!isConnected || !address) ? 0 : (dashboardData?.leveling?.nextLevelXp ?? 0);
 
-  const getLevelTier = (lvl: number | string) => {
-    if (typeof lvl !== 'number') return 'Bronze';
-    if (lvl <= 5) return 'Bronze';
-    if (lvl <= 10) return 'Silver';
-    if (lvl <= 20) return 'Gold';
-    if (lvl <= 30) return 'Platinum';
-    return 'Diamond';
+  const getLevelInfo = (lvl: number | string) => {
+    if (typeof lvl !== 'number') return { tier: 'Starter', badge: '/optimized/container-level.webp' };
+    if (lvl <= 5) return { tier: 'Starter', badge: '/optimized/container-level.webp' };
+    if (lvl <= 10) return { tier: 'Bronze', badge: '/optimized/bronze-badge.webp' };
+    if (lvl <= 15) return { tier: 'Silver', badge: '/optimized/silver-badge.webp' };
+    if (lvl <= 20) return { tier: 'Gold', badge: '/optimized/gold-badge.webp' };
+    if (lvl <= 25) return { tier: 'Platinum', badge: '/optimized/platinum-badge.webp' };
+    return { tier: 'Diamond', badge: '/optimized/diamond-badge.webp' };
   };
 
-  const tier = getLevelTier(level);
+  const { tier, badge } = getLevelInfo(level);
 
   return (
     <div className="daily-card-panel p-6 flex flex-col justify-between h-[260px] relative overflow-hidden group">
@@ -32,8 +33,8 @@ const LevelCardComponent: React.FC = () => {
       <div className="flex items-center gap-6">
         <div className="w-32 h-32 relative flex items-center justify-center shrink-0 animate-float">
           <img
-            src="/optimized/container-level.webp"
-            alt="Level Medal"
+            src={badge}
+            alt={`${tier} Medal`}
             width={128}
             height={128}
             className="w-full h-full object-contain drop-shadow-[0_4px_12px_rgba(0,0,0,0.4)]"
@@ -52,7 +53,7 @@ const LevelCardComponent: React.FC = () => {
             </>
           ) : (
             <div className="text-white font-gilroyBold text-2xl font-bold tracking-tight">
-              Bronze Tier
+              Starter Tier
             </div>
           )}
         </div>

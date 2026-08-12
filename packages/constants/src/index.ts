@@ -15,6 +15,7 @@ export enum ErrorCode {
   NOT_CONNECTED = 'NOT_CONNECTED',
   INSUFFICIENT_SPINS = 'INSUFFICIENT_SPINS',
   INSUFFICIENT_GP = 'INSUFFICIENT_GP',
+  INSUFFICIENT_JLT = 'INSUFFICIENT_JLT',
   INSUFFICIENT_FRAGMENTS = 'INSUFFICIENT_FRAGMENTS',
   NO_CARDS_AVAILABLE = 'NO_CARDS_AVAILABLE',
   REQUIREMENTS_NOT_MET = 'REQUIREMENTS_NOT_MET',
@@ -55,6 +56,7 @@ export const ErrorMessages: Record<ErrorCode, string> = {
   [ErrorCode.NOT_CONNECTED]: 'Platform not connected.',
   [ErrorCode.INSUFFICIENT_SPINS]: 'No free spins available.',
   [ErrorCode.INSUFFICIENT_GP]: 'Not enough GP balance.',
+  [ErrorCode.INSUFFICIENT_JLT]: 'Not enough JLT balance.',
   [ErrorCode.INSUFFICIENT_FRAGMENTS]: 'Not enough fragments. 10 required.',
   [ErrorCode.NO_CARDS_AVAILABLE]: 'No rare cards exist in the system.',
   [ErrorCode.REQUIREMENTS_NOT_MET]: 'Quest requirements are not met yet.',
@@ -124,5 +126,6 @@ export const APP_CONFIG = {
     DAILY_CAP_RP_XP: 500,
     WEEKLY_CAP_RP_XP: 2500,
     PREMIUM_COST_GP: 1000,
+    PREMIUM_COST_JLT: 50,
   }
 };

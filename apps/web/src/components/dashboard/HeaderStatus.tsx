@@ -92,15 +92,6 @@ const HeaderStatusComponent: React.FC<HeaderStatusProps> = ({
         <div className="flex flex-wrap items-center justify-end gap-3 sm:gap-4">
           {isConnected && address && (
             <>
-              {/* Level Tier Badge */}
-              <div className="glass-pill px-3 py-1.5 sm:px-4 sm:py-2 flex items-center gap-1.5 shadow-md">
-                <span className="text-purple-300 font-gilroyMedium text-xs hidden sm:inline">
-                  Lv.{level}
-                </span>
-                <span className="text-white font-gilroyBold text-xs sm:text-sm font-bold tracking-wide">
-                  {TIER_BADGES[levelTier] || TIER_BADGES.Bronze}
-                </span>
-              </div>
 
               {/* Coins Badge */}
               <div className="glass-pill px-3 py-1.5 sm:px-4 sm:py-2 flex items-center gap-2 shadow-md">
@@ -118,16 +109,7 @@ const HeaderStatusComponent: React.FC<HeaderStatusProps> = ({
                 </span>
               </div>
 
-              {/* Convert GP Button */}
-              <button
-                type="button"
-                onClick={() => setIsConvertModalOpen(true)}
-                className="glass-pill px-2.5 py-1.5 sm:px-3.5 sm:py-2 flex items-center gap-1.5 text-xs font-gilroyBold text-amber-300 hover:text-white hover:border-amber-400/50 hover:bg-amber-500/10 transition-all shadow-md cursor-pointer"
-                title="Convert GP to JLT Tokens"
-              >
-                <RefreshCw className="w-3.5 h-3.5 text-amber-400 animate-spin-slow" />
-                <span className="hidden md:inline">Convert GP</span>
-              </button>
+
 
               {/* Tokens Badge */}
               <div className="glass-pill px-3 py-1.5 sm:px-4 sm:py-2 flex items-center gap-2 shadow-md">
@@ -140,9 +122,17 @@ const HeaderStatusComponent: React.FC<HeaderStatusProps> = ({
                     className="w-full h-full object-contain"
                   />
                 </div>
-                <span className="text-[#00F0FF] font-gilroyBold text-sm sm:text-base font-bold tracking-wide">
+                <span className="text-white font-gilroyBold text-sm sm:text-base font-bold tracking-wide mr-1">
                   {displayTokens} JLT
                 </span>
+                <button
+                  type="button"
+                  onClick={() => setIsConvertModalOpen(true)}
+                  className="p-1 rounded-md text-amber-400 hover:text-white hover:bg-white/10 transition-colors"
+                  title="Convert GP to JLT"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                </button>
               </div>
             </>
           )}

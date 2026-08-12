@@ -3,22 +3,13 @@ import { useLeaderboard, LeaderboardEntry } from '@/hooks/useLeaderboard';
 import { Trophy, Medal, Star, Flame, Zap, ShieldAlert } from 'lucide-react';
 import { JLTLoader } from '@/components/common/JLTLoader';
 
-const TIER_COLORS: Record<string, string> = {
-  Bronze: 'text-amber-600 border-amber-600/30 bg-amber-950/20',
-  Silver: 'text-gray-300 border-gray-300/30 bg-gray-900/30',
-  Gold: 'text-yellow-400 border-yellow-400/40 bg-yellow-950/30',
-  Platinum: 'text-cyan-300 border-cyan-400/40 bg-cyan-950/30',
-  Diamond: 'text-purple-300 border-purple-400/40 bg-purple-950/30',
-  Elite: 'text-pink-400 border-pink-400/40 bg-pink-950/30',
-};
-
-const TIER_ICONS: Record<string, string> = {
-  Bronze: '🥉',
-  Silver: '🥈',
-  Gold: '🥇',
-  Platinum: '💎',
-  Diamond: '👑',
-  Elite: '🌌',
+const getLevelInfo = (lvl: number) => {
+  if (lvl <= 5) return { tier: 'Starter', badge: '/optimized/container-level.webp', color: 'text-gray-400 border-gray-400/30 bg-gray-900/30' };
+  if (lvl <= 10) return { tier: 'Bronze', badge: '/optimized/bronze-badge.webp', color: 'text-amber-600 border-amber-600/30 bg-amber-950/20' };
+  if (lvl <= 15) return { tier: 'Silver', badge: '/optimized/silver-badge.webp', color: 'text-gray-300 border-gray-300/30 bg-gray-900/30' };
+  if (lvl <= 20) return { tier: 'Gold', badge: '/optimized/gold-badge.webp', color: 'text-yellow-400 border-yellow-400/40 bg-yellow-950/30' };
+  if (lvl <= 25) return { tier: 'Platinum', badge: '/optimized/platinum-badge.webp', color: 'text-cyan-300 border-cyan-400/40 bg-cyan-950/30' };
+  return { tier: 'Diamond', badge: '/optimized/diamond-badge.webp', color: 'text-purple-300 border-purple-400/40 bg-purple-950/30' };
 };
 
 export const LeaderboardCardComponent: React.FC = () => {
@@ -71,8 +62,7 @@ export const LeaderboardCardComponent: React.FC = () => {
           </div>
         ) : leaderboard.length > 0 ? (
           leaderboard.map((user: LeaderboardEntry) => {
-            const tierColor = TIER_COLORS[user.levelTier] || TIER_COLORS.Bronze;
-            const tierIcon = TIER_ICONS[user.levelTier] || '🥉';
+            const { tier: tierName, color: tierColor, badge: tierBadge } = getLevelInfo(user.level);
 
             return (
               <div
@@ -103,18 +93,17 @@ export const LeaderboardCardComponent: React.FC = () => {
                   />
 
                   {/* User Address & Level */}
-                  <div className="flex flex-col">
+                  <div className="flex items-center gap-3">
                     <span className="text-white font-gilroyBold text-sm tracking-wide">
                       {user.maskedAddress}
                     </span>
-                    <div className="flex items-center gap-1.5 mt-0.5">
-                      <span className="text-purple-300 font-gilroyMedium text-xs">
-                        Level {user.level}
-                      </span>
-                      <span className={`text-[10px] font-gilroyBold px-1.5 py-0.2 rounded border ${tierColor}`}>
-                        {tierIcon} {user.levelTier}
-                      </span>
-                    </div>
+                    <span className="text-purple-300 font-gilroyMedium text-xs border-l border-white/10 pl-3">
+                      Level {user.level}
+                    </span>
+                    <span className={`text-[10px] font-gilroyBold px-1.5 py-0.5 rounded border flex items-center gap-1 ${tierColor}`}>
+                      <img src={tierBadge} alt={tierName} className="w-3.5 h-3.5 object-contain drop-shadow-sm" />
+                      {tierName}
+                    </span>
                   </div>
                 </div>
 

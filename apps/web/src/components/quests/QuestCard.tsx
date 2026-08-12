@@ -78,7 +78,7 @@ function QuestCardComponent({ quest, onClaim, isClaiming }: QuestCardProps) {
               +{quest.xpReward} XP
             </div>
           )}
-          {!!quest.rpXpReward && quest.rpXpReward > 0 && (
+          {!!quest.rpXpReward && quest.rpXpReward > 0 && (quest.frequency === 'DAILY' || quest.frequency === 'WEEKLY') && (
             <div className="flex items-center text-[#00F0FF] font-gilroyBold text-sm font-semibold tracking-wide">
               <span className="mr-1 opacity-90">⚡</span>
               +{quest.rpXpReward} RP XP

@@ -31,18 +31,16 @@ const CATEGORIES = [
   'REFERRAL',
   'MILESTONE',
   'ACHIEVEMENT',
-  'RARE_PASS',
 ] as const;
 
 const CATEGORY_META: Record<string, { label: string; icon: React.ReactNode; desc: string }> = {
-  DAILY:       { label: 'Daily',       icon: <Clock className="w-4 h-4" />,        desc: 'Refresh every day' },
-  WEEKLY:      { label: 'Weekly',      icon: <Zap className="w-4 h-4" />,          desc: 'Refresh every week' },
-  EARNING:     { label: 'Earning',     icon: <Gift className="w-4 h-4" />,          desc: 'Earn GP & XP' },
-  SOCIAL:      { label: 'Social',      icon: <Star className="w-4 h-4" />,          desc: 'Connect your socials' },
-  REFERRAL:    { label: 'Referral',    icon: <ArrowRight className="w-4 h-4" />,   desc: 'Invite friends' },
-  MILESTONE:   { label: 'Milestone',   icon: <Target className="w-4 h-4" />,        desc: 'Long-term goals' },
+  DAILY: { label: 'Daily', icon: <Clock className="w-4 h-4" />, desc: 'Refresh every day' },
+  WEEKLY: { label: 'Weekly', icon: <Zap className="w-4 h-4" />, desc: 'Refresh every week' },
+  EARNING: { label: 'Earning', icon: <Gift className="w-4 h-4" />, desc: 'Earn GP & XP' },
+  SOCIAL: { label: 'Social', icon: <Star className="w-4 h-4" />, desc: 'Connect your socials' },
+  REFERRAL: { label: 'Referral', icon: <ArrowRight className="w-4 h-4" />, desc: 'Invite friends' },
+  MILESTONE: { label: 'Milestone', icon: <Target className="w-4 h-4" />, desc: 'Long-term goals' },
   ACHIEVEMENT: { label: 'Achievement', icon: <CheckCircle2 className="w-4 h-4" />, desc: 'Special achievements' },
-  RARE_PASS:   { label: 'Rare Pass',   icon: <Sparkles className="w-4 h-4" />,     desc: 'Seasonal Pass Missions' },
 };
 
 /* ─── Skeleton quest card for disconnected / loading state ─── */
@@ -139,7 +137,7 @@ export default function QuestsPage() {
   const visibleQuests = quests?.filter((q) => !q.isHidden || q.completed) ?? [];
   const completedCount = visibleQuests.filter((q) => q.completed).length;
   const claimableCount = visibleQuests.filter((q) => q.canClaim && !q.completed).length;
-  
+
   const totalGpAvail = visibleQuests
     .filter((q) => !q.completed)
     .reduce((sum, q) => sum + (q.gpReward || 0), 0);
@@ -202,45 +200,19 @@ export default function QuestsPage() {
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full glass-pill border border-purple-400/20 w-fit">
               <Target className="w-4 h-4 text-[#00F0FF] animate-sparkle" />
               <span className="text-[#00F0FF] font-gilroyMedium text-xs font-semibold uppercase tracking-wider">
-                Quest Board & Rare Pass
+                Quest Board
               </span>
             </div>
-
-            {isConnected && passStatus && (
-              <span className={`text-xs font-gilroyBold px-3 py-1 rounded-full border ${isPremiumPass ? 'bg-purple-500/20 text-purple-200 border-purple-400/40' : 'bg-white/10 text-gray-300 border-white/15'}`}>
-                {isPremiumPass ? '★ Premium Pass Active' : 'Free Pass'}
-              </span>
-            )}
           </div>
 
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-gilroyBold text-white tracking-tight drop-shadow-md">
-            Quests & Seasonal Pass
+            Quests
           </h1>
           <p className="text-purple-200 font-gilroyRegular text-sm sm:text-base leading-relaxed opacity-90">
-            Complete daily check-ins, social tasks, referrals, and Rare Pass missions to earn GP, XP, RP XP, and creature fragments according to JLTQuest tokenomics.
+            Complete daily check-ins, social tasks, and referrals to earn GP, XP, RP XP, and creature fragments according to JLTQuest tokenomics.
           </p>
 
-          {/* Rare Pass Level Progress Sub-bar */}
-          {isConnected && passStatus && (
-            <div className="glass-panel p-4 rounded-xl border border-white/10 mt-2 flex flex-col gap-2 bg-black/30 backdrop-blur-md">
-              <div className="flex justify-between items-center text-xs text-purple-200 font-gilroyMedium">
-                <span className="font-gilroyBold text-white flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-[#00F0FF]" />
-                  {seasonName} — Level {passLevel}
-                </span>
-                <span className="text-[#00F0FF] font-gilroyBold">
-                  {xpInCurrentLevel} / {xpRequiredForNext} RP XP ({Math.round(passProgressPercent)}%)
-                </span>
-              </div>
 
-              <div className="w-full h-2.5 bg-black/60 rounded-full p-0.5 border border-purple-500/30 overflow-hidden">
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-[#00F0FF] via-[#7B2CBF] to-[#FFA28D] transition-all duration-500 shadow-[0_0_10px_#00F0FF]"
-                  style={{ width: `${Math.min(100, Math.max(0, passProgressPercent))}%` }}
-                />
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Right — quick stats or connect prompt */}
@@ -249,57 +221,12 @@ export default function QuestsPage() {
             <div className="glass-panel p-5 sm:p-6 rounded-2xl flex flex-col gap-4 min-w-full lg:min-w-[340px] shadow-xl border border-white/10">
               <div className="flex justify-between items-center">
                 <span className="text-xs text-purple-300 font-gilroyMedium uppercase tracking-wider">
-                  Quest Progress
+                  Ready to Claim
                 </span>
                 <span className="text-2xl font-gilroyBold text-white tracking-wide">
-                  {completedCount}
-                  <span className="text-purple-400 text-lg font-gilroyRegular"> / {visibleQuests.length}</span>
+                  {claimableCount}
                 </span>
               </div>
-
-              {/* Progress bar */}
-              <div className="w-full h-3 bg-black/50 rounded-full overflow-hidden p-0.5 border border-purple-500/20">
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-[#FFA28D] via-[#7B2CBF] to-[#00F0FF] transition-all duration-500 shadow-[0_0_12px_#00F0FF]"
-                  style={{ width: `${visibleQuests.length > 0 ? Math.round((completedCount / visibleQuests.length) * 100) : 0}%` }}
-                />
-              </div>
-
-              {claimableCount > 0 ? (
-                <button
-                  onClick={handleSelectClaimableTab}
-                  className="flex items-center justify-between gap-2 px-4 py-3 rounded-xl bg-purple-500/20 border border-purple-400/30 hover:border-[#00F0FF] transition-all cursor-pointer text-left w-full shadow-[0_0_15px_rgba(123,44,191,0.3)]"
-                >
-                  <div className="flex items-center gap-2">
-                    <Zap className="w-4 h-4 text-[#00F0FF] shrink-0 animate-bounce" />
-                    <span className="text-purple-200 font-gilroyMedium text-sm">
-                      <span className="text-white font-gilroyBold">{claimableCount}</span> quest{claimableCount !== 1 ? 's' : ''} ready to claim!
-                    </span>
-                  </div>
-                  <span className="text-xs text-[#00F0FF] font-gilroyBold uppercase underline">
-                    View →
-                  </span>
-                </button>
-              ) : (
-                <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-black/30 border border-white/5">
-                  <CheckCircle2 className="w-4 h-4 text-purple-400 shrink-0" />
-                  <span className="text-purple-300 font-gilroyMedium text-sm">
-                    {totalGpAvail > 0 ? `${totalGpAvail} GP available` : 'All caught up!'}
-                  </span>
-                </div>
-              )}
-
-              {/* Upgrade to Premium Button */}
-              {passStatus && !isPremiumPass && (
-                <button
-                  onClick={() => buyPremium().catch((err) => alert(err.message))}
-                  disabled={isBuyingPremium}
-                  className="w-full py-2.5 px-4 rounded-xl text-xs font-gilroyBold bg-gradient-to-r from-amber-500 to-purple-600 hover:from-amber-400 hover:to-purple-500 text-white transition-all shadow-[0_0_15px_rgba(245,158,11,0.3)] cursor-pointer flex items-center justify-center gap-2"
-                >
-                  <Sparkles className="w-3.5 h-3.5 text-yellow-300 animate-spin" />
-                  <span>{isBuyingPremium ? 'Upgrading...' : 'Upgrade to Premium Pass (200 GP)'}</span>
-                </button>
-              )}
             </div>
           ) : (
             /* Not connected — prompt */
@@ -322,52 +249,7 @@ export default function QuestsPage() {
         </div>
       </div>
 
-      {/* ════════════════════════════════════════════════════════
-          STATS ROW (only when connected & loaded)
-          ════════════════════════════════════════════════════════ */}
-      {isConnected && quests && (
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-          <div className="glass-panel p-5 flex items-center gap-4 rounded-2xl">
-            <div className="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center shrink-0">
-              <CheckCircle2 className="w-6 h-6 text-purple-400" />
-            </div>
-            <div>
-              <p className="text-xs text-purple-300 font-gilroyMedium uppercase tracking-wider">Completed</p>
-              <p className="text-2xl font-gilroyBold text-white mt-0.5">{completedCount}</p>
-            </div>
-          </div>
 
-          <div className="glass-panel p-5 flex items-center gap-4 rounded-2xl">
-            <div className="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shrink-0">
-              <Zap className="w-6 h-6 text-[#00F0FF]" />
-            </div>
-            <div>
-              <p className="text-xs text-purple-300 font-gilroyMedium uppercase tracking-wider">Ready to Claim</p>
-              <p className="text-2xl font-gilroyBold text-white mt-0.5">{claimableCount}</p>
-            </div>
-          </div>
-
-          <div className="glass-panel p-5 flex items-center gap-4 rounded-2xl">
-            <div className="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0">
-              <Gift className="w-6 h-6 text-[#FCD34D]" />
-            </div>
-            <div>
-              <p className="text-xs text-purple-300 font-gilroyMedium uppercase tracking-wider">GP Available</p>
-              <p className="text-2xl font-gilroyBold text-white mt-0.5">{totalGpAvail}</p>
-            </div>
-          </div>
-
-          <div className="glass-panel p-5 flex items-center gap-4 rounded-2xl">
-            <div className="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center shrink-0">
-              <Sparkles className="w-6 h-6 text-[#00F0FF]" />
-            </div>
-            <div>
-              <p className="text-xs text-purple-300 font-gilroyMedium uppercase tracking-wider">RP XP Available</p>
-              <p className="text-2xl font-gilroyBold text-white mt-0.5">{totalRpXpAvail}</p>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* ════════════════════════════════════════════════════════
           CATEGORY TABS + QUEST / MISSION GRID
@@ -378,17 +260,16 @@ export default function QuestsPage() {
           <div className="flex bg-black/40 border border-white/10 rounded-xl p-1.5 w-max gap-1 backdrop-blur-md">
             {CATEGORIES.map((cat) => {
               const meta = CATEGORY_META[cat];
-              const count = cat === 'RARE_PASS' ? missions?.length ?? 0 : groupedQuests[cat]?.length ?? 0;
+              const count = groupedQuests[cat]?.length ?? 0;
               const isActive = activeTab === cat;
               return (
                 <button
                   key={cat}
                   onClick={() => setActiveTab(cat)}
-                  className={`px-4 py-2 rounded-lg font-gilroyMedium text-sm font-semibold tracking-wide transition-all flex items-center gap-1.5 cursor-pointer ${
-                    isActive
-                      ? 'glass-btn text-white shadow-[0_0_15px_#7B2CBF]'
-                      : 'text-gray-400 hover:text-white hover:bg-white/5'
-                  }`}
+                  className={`px-4 py-2 rounded-lg font-gilroyMedium text-sm font-semibold tracking-wide transition-all flex items-center gap-1.5 cursor-pointer ${isActive
+                    ? 'glass-btn text-white shadow-[0_0_15px_#7B2CBF]'
+                    : 'text-gray-400 hover:text-white hover:bg-white/5'
+                    }`}
                 >
                   {meta.icon}
                   {meta.label}
@@ -428,7 +309,7 @@ export default function QuestsPage() {
               missions.map((mission: RarePassMission) => (
                 <div key={mission.id} className="daily-card-panel p-5 flex flex-col justify-between min-h-[220px] relative overflow-hidden group">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-600/10 rounded-full blur-2xl group-hover:bg-cyan-600/20 transition-all duration-500" />
-                  
+
                   <div className="flex-grow flex flex-col relative z-10">
                     <div className="flex justify-between items-start mb-3">
                       <h3 className="text-white font-gilroyBold text-xl font-bold tracking-tight">{mission.name}</h3>
@@ -463,13 +344,12 @@ export default function QuestsPage() {
 
                   <div className="mt-5 relative z-10">
                     <button
-                      className={`w-full font-gilroyBold text-sm sm:text-base py-2.5 px-4 rounded-xl flex items-center justify-center transition-all duration-300 cursor-pointer ${
-                        mission.completed
-                          ? 'bg-black/40 text-gray-500 border border-white/5 cursor-not-allowed'
-                          : !mission.canClaim
+                      className={`w-full font-gilroyBold text-sm sm:text-base py-2.5 px-4 rounded-xl flex items-center justify-center transition-all duration-300 cursor-pointer ${mission.completed
+                        ? 'bg-black/40 text-gray-500 border border-white/5 cursor-not-allowed'
+                        : !mission.canClaim
                           ? 'bg-cyan-900/20 text-cyan-400/50 border border-cyan-500/10 cursor-not-allowed'
                           : 'glass-btn text-white hover:shadow-[0_0_15px_#00F0FF]'
-                      }`}
+                        }`}
                       disabled={mission.completed || (claimingId === mission.id) || !mission.canClaim}
                       onClick={() => handleClaimMission(mission.id)}
                     >

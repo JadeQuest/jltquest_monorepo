@@ -399,7 +399,7 @@ export class RarePassService {
 
   async buyPremium(userId: string) {
     const season = await this.getActiveSeason();
-    const COST = APP_CONFIG.RARE_PASS.PREMIUM_COST_GP;
+    const COST = APP_CONFIG.RARE_PASS.PREMIUM_COST_JLT;
     
     return await this.prisma.$transaction(async (tx: any) => {
       // 1. Lock user row to prevent race conditions
@@ -424,29 +424,18 @@ export class RarePassService {
         return { success: true, message: 'Already premium' };
       }
 
-      // Verify GP balance
-      if (user.gp < COST) {
+      // Verify JLT balance
+      if (user.jlt.lessThan(COST) || user.jlt < COST) {
         throw new BadRequestError(
-          ErrorMessages[ErrorCode.INSUFFICIENT_GP],
-          ErrorCode.INSUFFICIENT_GP
+          ErrorMessages[ErrorCode.INSUFFICIENT_JLT],
+          ErrorCode.INSUFFICIENT_JLT
         );
       }
 
-      // Debit GP
+      // Debit JLT
       await tx.user.update({
         where: { id: userId },
-        data: { gp: { decrement: COST } }
-      });
-
-      // Create GP ledger debit
-      await tx.gpLedgerEntry.create({
-        data: {
-          userId,
-          amount: -COST,
-          type: 'DEBIT',
-          source: LedgerSource.RARE_PASS,
-          refId: season.id
-        }
+        data: { jlt: { decrement: COST } }
       });
 
       // Create Rare Pass purchase

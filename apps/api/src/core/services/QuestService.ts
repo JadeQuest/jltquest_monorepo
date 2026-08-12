@@ -94,7 +94,7 @@ export class QuestService {
           const rarePassService = new RarePassService(this.prisma);
           
           let rpXpAwarded = 0;
-          if (quest.rpXpReward > 0) {
+          if (quest.rpXpReward > 0 && (quest.frequency === 'DAILY' || quest.frequency === 'WEEKLY')) {
             rpXpAwarded = await rarePassService.awardRpXp(
               tx,
               userId,

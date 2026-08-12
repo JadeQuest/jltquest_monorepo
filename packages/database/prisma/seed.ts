@@ -466,7 +466,7 @@ async function main() {
   console.log('Seeding Rare Pass active season...');
   const now = new Date();
   const startAt = new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000);
-  const endAt = new Date(now.getTime() + 35 * 24 * 60 * 60 * 1000);
+  const endAt = new Date(now.getTime() + 55 * 24 * 60 * 60 * 1000); // 60 days total duration
 
   const activeSeasonCount = await prisma.rarePassSeason.count({
     where: { status: RarePassSeasonStatus.ACTIVE },
@@ -479,16 +479,16 @@ async function main() {
         status: RarePassSeasonStatus.ACTIVE,
         startAt,
         endAt,
-        maxLevel: 30,
+        maxLevel: 50,
       },
     });
 
     console.log(`Created Rare Pass Season: ${season.name} (${season.id})`);
 
-    // Create 30 levels with cumulative RP XP requirements
+    // Create 50 levels with cumulative RP XP requirements
     console.log('Seeding Rare Pass Levels and Rewards...');
     let cumulativeXp = 0;
-    for (let l = 1; l <= 30; l++) {
+    for (let l = 1; l <= 50; l++) {
       if (l > 1) {
         cumulativeXp += 100 + 20 * (l - 2);
       }

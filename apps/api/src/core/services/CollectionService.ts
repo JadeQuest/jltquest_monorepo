@@ -63,7 +63,7 @@ export class CollectionService {
       // Deduct fragments
       await tx.user.update({
         where: { id: userId },
-        data: { fragments: { increment: requiredFragments } }
+        data: { fragments: { decrement: requiredFragments } }
       });
 
       // Get all available rare cards

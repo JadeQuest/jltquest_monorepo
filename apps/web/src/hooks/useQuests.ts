@@ -10,6 +10,8 @@ export interface Quest {
   description: string;
   gpReward: number;
   xpReward: number;
+  rpXpReward?: number;
+  fragmentReward?: number;
   completed: boolean;
   canClaim: boolean;
   completedCount: number;

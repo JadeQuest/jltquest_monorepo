@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { authenticate } from '../middlewares/auth';
 import { loginRateLimiter, transactionRateLimiter } from '../middlewares/rateLimiter';
 import { validateRequest } from '../middlewares/validation';
-import { loginSchema, claimQuestSchema, selectAvatarSchema } from '@jlt/validation';
+import { loginSchema, claimQuestSchema, selectAvatarSchema, convertGpSchema } from '@jlt/validation';
 import { 
   authController, 
   userController, 
@@ -14,7 +14,8 @@ import {
   levelController,
   collectionController,
   rarePassController,
-  avatarController
+  avatarController,
+  leaderboardController
 } from '../../di/container';
 
 const router = Router();
@@ -29,6 +30,10 @@ router.use(authenticate);
 
 // Users
 router.get('/users/me', userController.getMe.bind(userController));
+router.post('/users/convert-gp', transactionRateLimiter, validateRequest(convertGpSchema), userController.convertGp.bind(userController));
+
+// Leaderboard
+router.get('/leaderboard', leaderboardController.getLeaderboard.bind(leaderboardController));
 
 // CheckIn
 router.get('/checkin/status', checkInController.getStatus.bind(checkInController));

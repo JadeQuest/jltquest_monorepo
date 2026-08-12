@@ -1,40 +1,275 @@
-const { PrismaClient, QuestFrequency, QuestCategory, SocialPlatform } = require('@prisma/client');
+const { PrismaClient, QuestFrequency, QuestCategory } = require('@prisma/client');
 const prisma = new PrismaClient();
 
-async function main() {
-  console.log('Seeding Quests...');
+const quests = [
+  // Standard Onboarding Quests
+  {
+    code: 'quest_connect_wallet',
+    name: 'Connect Wallet',
+    description: 'Connect your Web3 wallet to your account.',
+    gpReward: 100,
+    xpReward: 50,
+    rpXpReward: 0,
+    fragmentReward: 1,
+    frequency: QuestFrequency.ONE_TIME,
+    category: QuestCategory.GENERAL,
+  },
+  {
+    code: 'quest_complete_profile',
+    name: 'Complete Profile',
+    description: 'Set up your display name and email address.',
+    gpReward: 100,
+    xpReward: 50,
+    rpXpReward: 0,
+    fragmentReward: 1,
+    frequency: QuestFrequency.ONE_TIME,
+    category: QuestCategory.GENERAL,
+  },
+  {
+    code: 'quest_invite_friend',
+    name: 'Invite 1 Friend',
+    description: 'Invite a friend using your unique referral link.',
+    gpReward: 150,
+    xpReward: 75,
+    rpXpReward: 200,
+    fragmentReward: 2,
+    frequency: QuestFrequency.REPEATABLE,
+    category: QuestCategory.REFERRAL,
+  },
+  {
+    code: 'quest_3_daily_spins',
+    name: 'Complete 3 Daily Spins',
+    description: 'Spin the wheel 3 times today.',
+    gpReward: 100,
+    xpReward: 40,
+    rpXpReward: 20,
+    fragmentReward: 1,
+    frequency: QuestFrequency.DAILY,
+    category: QuestCategory.DAILY,
+  },
+  {
+    code: 'quest_connect_x',
+    name: 'Connect X (Twitter)',
+    description: 'Link your X account to receive rewards.',
+    gpReward: 100,
+    xpReward: 50,
+    rpXpReward: 40,
+    fragmentReward: 1,
+    frequency: QuestFrequency.ONE_TIME,
+    category: QuestCategory.SOCIAL,
+  },
+  {
+    code: 'quest_connect_discord',
+    name: 'Join Discord + Link Account',
+    description: 'Link your Discord account to receive rewards.',
+    gpReward: 100,
+    xpReward: 50,
+    rpXpReward: 40,
+    fragmentReward: 1,
+    frequency: QuestFrequency.ONE_TIME,
+    category: QuestCategory.SOCIAL,
+  },
+  {
+    code: 'quest_connect_telegram',
+    name: 'Join Telegram + Link Account',
+    description: 'Link your Telegram account to receive rewards.',
+    gpReward: 100,
+    xpReward: 50,
+    rpXpReward: 40,
+    fragmentReward: 1,
+    frequency: QuestFrequency.ONE_TIME,
+    category: QuestCategory.SOCIAL,
+  },
 
-  // General Quests
-  const quests = [
-    // Daily
-    { code: 'daily_checkin', name: 'Daily Check-in', description: 'Log in and claim your daily reward.', gpReward: 50, xpReward: 50, frequency: QuestFrequency.DAILY, category: QuestCategory.DAILY },
-    { code: 'daily_spin', name: 'Complete 1 Spin', description: 'Try your luck on the Spin to Win wheel.', gpReward: 25, xpReward: 15, frequency: QuestFrequency.DAILY, category: QuestCategory.DAILY },
+  // Daily Quests
+  {
+    code: 'daily_checkin',
+    name: 'Daily Check-in',
+    description: 'Log in and claim your daily check-in streak reward.',
+    gpReward: 50,
+    xpReward: 50,
+    rpXpReward: 20,
+    fragmentReward: 0,
+    frequency: QuestFrequency.DAILY,
+    category: QuestCategory.DAILY,
+  },
+  {
+    code: 'daily_spin',
+    name: 'Complete 1 Spin',
+    description: 'Try your luck on the Spin to Win wheel.',
+    gpReward: 25,
+    xpReward: 15,
+    rpXpReward: 10,
+    fragmentReward: 0,
+    frequency: QuestFrequency.DAILY,
+    category: QuestCategory.DAILY,
+  },
 
-    // Earning
-    { code: 'earn_500gp', name: 'Earn 500 GP', description: 'Accumulate a total of 500 GP.', gpReward: 75, xpReward: 35, frequency: QuestFrequency.ONE_TIME, category: QuestCategory.EARNING },
-    { code: 'earn_1000gp', name: 'Earn 1,000 GP', description: 'Accumulate a total of 1,000 GP.', gpReward: 150, xpReward: 75, frequency: QuestFrequency.ONE_TIME, category: QuestCategory.EARNING },
-    { code: 'earn_5000gp', name: 'Earn 5,000 GP', description: 'Accumulate a total of 5,000 GP.', gpReward: 500, xpReward: 250, frequency: QuestFrequency.ONE_TIME, category: QuestCategory.EARNING },
+  // Earning Quests
+  {
+    code: 'earn_500gp',
+    name: 'Earn 500 GP',
+    description: 'Accumulate a total balance of 500 GP.',
+    gpReward: 75,
+    xpReward: 35,
+    rpXpReward: 50,
+    fragmentReward: 0,
+    frequency: QuestFrequency.ONE_TIME,
+    category: QuestCategory.EARNING,
+  },
+  {
+    code: 'earn_1000gp',
+    name: 'Earn 1,000 GP',
+    description: 'Accumulate a total balance of 1,000 GP.',
+    gpReward: 150,
+    xpReward: 75,
+    rpXpReward: 100,
+    fragmentReward: 0,
+    frequency: QuestFrequency.ONE_TIME,
+    category: QuestCategory.EARNING,
+  },
+  {
+    code: 'earn_5000gp',
+    name: 'Earn 5,000 GP',
+    description: 'Accumulate a total balance of 5,000 GP.',
+    gpReward: 500,
+    xpReward: 250,
+    rpXpReward: 250,
+    fragmentReward: 0,
+    frequency: QuestFrequency.ONE_TIME,
+    category: QuestCategory.EARNING,
+  },
 
-    // Milestone
-    { code: 'ms_lvl_5', name: 'Reach Level 5', description: 'Level up your account to level 5.', gpReward: 300, xpReward: 0, frequency: QuestFrequency.ONE_TIME, category: QuestCategory.MILESTONE },
-    { code: 'ms_lvl_10', name: 'Reach Level 10', description: 'Level up your account to level 10.', gpReward: 600, xpReward: 0, frequency: QuestFrequency.ONE_TIME, category: QuestCategory.MILESTONE },
-    { code: 'ms_lvl_20', name: 'Reach Level 20', description: 'Level up your account to level 20.', gpReward: 1200, xpReward: 0, frequency: QuestFrequency.ONE_TIME, category: QuestCategory.MILESTONE },
-    { code: 'ms_lvl_30', name: 'Reach Level 30', description: 'Level up your account to level 30.', gpReward: 2500, xpReward: 0, frequency: QuestFrequency.ONE_TIME, category: QuestCategory.MILESTONE },
+  // Milestone Quests
+  {
+    code: 'ms_lvl_5',
+    name: 'Reach Level 5',
+    description: 'Level up your account to level 5.',
+    gpReward: 300,
+    xpReward: 0,
+    rpXpReward: 100,
+    fragmentReward: 0,
+    frequency: QuestFrequency.ONE_TIME,
+    category: QuestCategory.MILESTONE,
+  },
+  {
+    code: 'ms_lvl_10',
+    name: 'Reach Level 10',
+    description: 'Level up your account to level 10.',
+    gpReward: 600,
+    xpReward: 0,
+    rpXpReward: 200,
+    fragmentReward: 0,
+    frequency: QuestFrequency.ONE_TIME,
+    category: QuestCategory.MILESTONE,
+  },
+  {
+    code: 'ms_lvl_20',
+    name: 'Reach Level 20',
+    description: 'Level up your account to level 20.',
+    gpReward: 1200,
+    xpReward: 0,
+    rpXpReward: 400,
+    fragmentReward: 0,
+    frequency: QuestFrequency.ONE_TIME,
+    category: QuestCategory.MILESTONE,
+  },
+  {
+    code: 'ms_lvl_30',
+    name: 'Reach Level 30',
+    description: 'Level up your account to level 30.',
+    gpReward: 2500,
+    xpReward: 0,
+    rpXpReward: 800,
+    fragmentReward: 0,
+    frequency: QuestFrequency.ONE_TIME,
+    category: QuestCategory.MILESTONE,
+  },
 
-    // Achievement
-    { code: 'ach_connect_wallet', name: 'Connect Wallet', description: 'Connect your Web3 wallet to your account.', gpReward: 100, xpReward: 50, frequency: QuestFrequency.ACHIEVEMENT, category: QuestCategory.ACHIEVEMENT },
-    { code: 'ach_first_login', name: 'First Login', description: 'Log into your account for the first time.', gpReward: 50, xpReward: 25, frequency: QuestFrequency.ACHIEVEMENT, category: QuestCategory.ACHIEVEMENT },
-    { code: 'ach_first_spin', name: 'First Spin', description: 'Use the Spin to Win feature for the first time.', gpReward: 25, xpReward: 10, frequency: QuestFrequency.ACHIEVEMENT, category: QuestCategory.ACHIEVEMENT },
+  // Achievement Quests
+  {
+    code: 'ach_connect_wallet',
+    name: 'Connect Wallet (Achievement)',
+    description: 'Connect your Web3 wallet to your account.',
+    gpReward: 100,
+    xpReward: 50,
+    rpXpReward: 50,
+    fragmentReward: 0,
+    frequency: QuestFrequency.ACHIEVEMENT,
+    category: QuestCategory.ACHIEVEMENT,
+  },
+  {
+    code: 'ach_first_login',
+    name: 'First Login',
+    description: 'Log into your account for the first time.',
+    gpReward: 50,
+    xpReward: 25,
+    rpXpReward: 25,
+    fragmentReward: 0,
+    frequency: QuestFrequency.ACHIEVEMENT,
+    category: QuestCategory.ACHIEVEMENT,
+  },
+  {
+    code: 'ach_first_spin',
+    name: 'First Spin',
+    description: 'Use the Spin to Win feature for the first time.',
+    gpReward: 25,
+    xpReward: 10,
+    rpXpReward: 10,
+    fragmentReward: 0,
+    frequency: QuestFrequency.ACHIEVEMENT,
+    category: QuestCategory.ACHIEVEMENT,
+  },
 
-    // Social Quests
-    { code: 'soc_x_connect', name: 'Connect X', description: 'Connect your X (Twitter) account.', gpReward: 100, xpReward: 50, frequency: QuestFrequency.ONE_TIME, category: QuestCategory.SOCIAL },
-    { code: 'soc_discord_connect', name: 'Connect Discord', description: 'Connect your Discord account.', gpReward: 100, xpReward: 50, frequency: QuestFrequency.ONE_TIME, category: QuestCategory.SOCIAL },
-    { code: 'soc_instagram_connect', name: 'Follow Instagram', description: 'Follow our official Instagram page.', gpReward: 100, xpReward: 50, frequency: QuestFrequency.ONE_TIME, category: QuestCategory.SOCIAL },
-    { code: 'soc_facebook_connect', name: 'Like Facebook', description: 'Like our official Facebook page.', gpReward: 100, xpReward: 50, frequency: QuestFrequency.ONE_TIME, category: QuestCategory.SOCIAL },
-  ];
+  // Social Quests
+  {
+    code: 'soc_x_connect',
+    name: 'Connect X',
+    description: 'Connect your X (Twitter) account.',
+    gpReward: 100,
+    xpReward: 50,
+    rpXpReward: 40,
+    fragmentReward: 0,
+    frequency: QuestFrequency.ONE_TIME,
+    category: QuestCategory.SOCIAL,
+  },
+  {
+    code: 'soc_discord_connect',
+    name: 'Connect Discord',
+    description: 'Connect your Discord account.',
+    gpReward: 100,
+    xpReward: 50,
+    rpXpReward: 40,
+    fragmentReward: 0,
+    frequency: QuestFrequency.ONE_TIME,
+    category: QuestCategory.SOCIAL,
+  },
+  {
+    code: 'soc_instagram_connect',
+    name: 'Follow Instagram',
+    description: 'Follow our official Instagram page.',
+    gpReward: 100,
+    xpReward: 50,
+    rpXpReward: 40,
+    fragmentReward: 0,
+    frequency: QuestFrequency.ONE_TIME,
+    category: QuestCategory.SOCIAL,
+  },
+  {
+    code: 'soc_facebook_connect',
+    name: 'Like Facebook',
+    description: 'Like our official Facebook page.',
+    gpReward: 100,
+    xpReward: 50,
+    rpXpReward: 40,
+    fragmentReward: 0,
+    frequency: QuestFrequency.ONE_TIME,
+    category: QuestCategory.SOCIAL,
+  },
+];
 
-  await prisma.quest.deleteMany({});
-
+async function seedQuestsStandalone() {
+  console.log('Seeding Quests safely with upsert...');
   for (const q of quests) {
     await prisma.quest.upsert({
       where: { code: q.code },
@@ -42,10 +277,12 @@ async function main() {
       create: { ...q },
     });
   }
-
-  console.log('Quests seeded successfully!');
+  console.log(`Successfully seeded/updated ${quests.length} quests.`);
 }
 
-main()
-  .catch(console.error)
+seedQuestsStandalone()
+  .catch((e) => {
+    console.error('Quest seeding error:', e);
+    process.exit(1);
+  })
   .finally(() => prisma.$disconnect());

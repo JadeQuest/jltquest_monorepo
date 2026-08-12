@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useAccount } from 'wagmi';
 import { useQuests, Quest } from '@/hooks/useQuests';
+import { useRarePass, RarePassMission } from '@/hooks/useRarePass';
 import { QuestCard } from '@/components/quests/QuestCard';
 import { JLTLoader } from '@/components/common/JLTLoader';
 import {
@@ -15,10 +16,23 @@ import {
   ArrowRight,
   Star,
   Gift,
+  Sparkles,
+  ShieldAlert,
+  Flame,
+  Layers,
 } from 'lucide-react';
 import Link from 'next/link';
 
-const CATEGORIES = ['DAILY', 'WEEKLY', 'EARNING', 'SOCIAL', 'REFERRAL', 'MILESTONE', 'ACHIEVEMENT'] as const;
+const CATEGORIES = [
+  'DAILY',
+  'WEEKLY',
+  'EARNING',
+  'SOCIAL',
+  'REFERRAL',
+  'MILESTONE',
+  'ACHIEVEMENT',
+  'RARE_PASS',
+] as const;
 
 const CATEGORY_META: Record<string, { label: string; icon: React.ReactNode; desc: string }> = {
   DAILY:       { label: 'Daily',       icon: <Clock className="w-4 h-4" />,        desc: 'Refresh every day' },
@@ -28,6 +42,7 @@ const CATEGORY_META: Record<string, { label: string; icon: React.ReactNode; desc
   REFERRAL:    { label: 'Referral',    icon: <ArrowRight className="w-4 h-4" />,   desc: 'Invite friends' },
   MILESTONE:   { label: 'Milestone',   icon: <Target className="w-4 h-4" />,        desc: 'Long-term goals' },
   ACHIEVEMENT: { label: 'Achievement', icon: <CheckCircle2 className="w-4 h-4" />, desc: 'Special achievements' },
+  RARE_PASS:   { label: 'Rare Pass',   icon: <Sparkles className="w-4 h-4" />,     desc: 'Seasonal Pass Missions' },
 };
 
 /* ─── Skeleton quest card for disconnected / loading state ─── */
@@ -61,21 +76,42 @@ function QuestCardSkeleton({ delay = 0 }: { delay?: number }) {
 
 export default function QuestsPage() {
   const { isConnected } = useAccount();
-  const { quests, isLoading, claim, isClaiming } = useQuests();
+  const { quests, isLoading: isLoadingQuests, claim, isClaiming } = useQuests();
+  const {
+    status: passStatus,
+    missions,
+    isLoadingMissions,
+    claimMission,
+    isClaimingMission,
+    buyPremium,
+    isBuyingPremium,
+  } = useRarePass();
 
-  const [claimingId, setClaimingId]   = useState<string | null>(null);
-  const [activeTab, setActiveTab]     = useState<string>('DAILY');
-  const [showPopup, setShowPopup]     = useState(false);
-  const [rewardData, setRewardData]   = useState<{ gpAwarded: number; xpAwarded: number } | null>(null);
-  const [mounted, setMounted]         = useState(false);
+  const [claimingId, setClaimingId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<string>('DAILY');
+  const [showPopup, setShowPopup] = useState(false);
+  const [rewardData, setRewardData] = useState<{
+    gpAwarded?: number;
+    xpAwarded?: number;
+    rpXpAwarded?: number;
+    fragmentsAwarded?: number;
+  } | null>(null);
+  const [mounted, setMounted] = useState(false);
 
-  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
-  const handleClaim = async (id: string) => {
+  const handleClaimQuest = async (id: string) => {
     try {
       setClaimingId(id);
       const res = await claim(id);
-      setRewardData({ gpAwarded: res.gpAwarded, xpAwarded: res.xpAwarded });
+      setRewardData({
+        gpAwarded: res.gpAwarded || 0,
+        xpAwarded: res.xpAwarded || 0,
+        rpXpAwarded: res.rpXpAwarded || 0,
+        fragmentsAwarded: res.fragmentsAwarded || 0,
+      });
       setShowPopup(true);
     } catch (err: any) {
       alert(err.message || 'Failed to claim quest');
@@ -84,51 +120,133 @@ export default function QuestsPage() {
     }
   };
 
-  /* ── Derive quest stats (only when data is available) ── */
-  const visibleQuests   = quests?.filter(q => !q.isHidden || q.completed) ?? [];
-  const completedCount  = visibleQuests.filter(q => q.completed).length;
-  const claimableCount  = visibleQuests.filter(q => q.canClaim && !q.completed).length;
-  const totalGpAvail    = visibleQuests.filter(q => !q.completed).reduce((s, q) => s + q.gpReward, 0);
+  const handleClaimMission = async (missionId: string) => {
+    try {
+      setClaimingId(missionId);
+      const res = await claimMission(missionId);
+      setRewardData({
+        rpXpAwarded: res.rpXpAwarded || 0,
+      });
+      setShowPopup(true);
+    } catch (err: any) {
+      alert(err.message || 'Failed to claim Rare Pass mission');
+    } finally {
+      setClaimingId(null);
+    }
+  };
 
-  const groupedQuests = visibleQuests.reduce((acc, quest) => {
+  /* ── Derive quest calculations ── */
+  const visibleQuests = quests?.filter((q) => !q.isHidden || q.completed) ?? [];
+  const completedCount = visibleQuests.filter((q) => q.completed).length;
+  const claimableCount = visibleQuests.filter((q) => q.canClaim && !q.completed).length;
+  
+  const totalGpAvail = visibleQuests
+    .filter((q) => !q.completed)
+    .reduce((sum, q) => sum + (q.gpReward || 0), 0);
+  const totalXpAvail = visibleQuests
+    .filter((q) => !q.completed)
+    .reduce((sum, q) => sum + (q.xpReward || 0), 0);
+  const totalRpXpAvail = visibleQuests
+    .filter((q) => !q.completed)
+    .reduce((sum, q) => sum + (q.rpXpReward || 0), 0);
+
+  const groupedQuests = visibleQuests.reduce((acc, quest: Quest) => {
     const cat = quest.category;
     if (!acc[cat]) acc[cat] = [];
     acc[cat].push(quest);
     return acc;
   }, {} as Record<string, Quest[]>);
 
-  /* isLoading is handled inline via skeleton cards — no full-page loader */
+  const claimablePerCategory = visibleQuests.reduce((acc, quest) => {
+    if (quest.canClaim && !quest.completed) {
+      acc[quest.category] = (acc[quest.category] || 0) + 1;
+    }
+    return acc;
+  }, {} as Record<string, number>);
+
+  if (missions) {
+    const claimableMissions = missions.filter((m) => m.canClaim && !m.completed).length;
+    if (claimableMissions > 0) {
+      claimablePerCategory['RARE_PASS'] = claimableMissions;
+    }
+  }
+
+  const firstClaimableCat = Object.keys(claimablePerCategory)[0];
+
+  const handleSelectClaimableTab = () => {
+    if (firstClaimableCat) {
+      setActiveTab(firstClaimableCat);
+    }
+  };
+
+  /* Rare Pass Status Calculations */
+  const seasonName = passStatus?.season?.name || 'Season 01: Cosmic Origins';
+  const passLevel = passStatus?.progression?.currentLevel ?? 1;
+  const xpInCurrentLevel = passStatus?.progression?.xpInCurrentLevel ?? 0;
+  const xpRequiredForNext = passStatus?.progression?.xpRequiredForNext ?? 100;
+  const passProgressPercent = passStatus?.progression?.progress ?? 0;
+  const isPremiumPass = passStatus?.progression?.isPremium ?? false;
 
   return (
     <div className="flex flex-col gap-6 max-w-[1550px] w-full mx-auto">
 
       {/* ════════════════════════════════════════════════════════
-          HERO BANNER — matches collection page style
+          RARE PASS SEASON BANNER & HERO BAR
           ════════════════════════════════════════════════════════ */}
       <div className="daily-card-panel p-6 sm:p-8 relative overflow-hidden flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 shadow-2xl">
-        <div className="absolute inset-0 bg-radial from-[#7B2CBF]/20 via-transparent to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-radial from-[#7B2CBF]/25 via-transparent to-transparent pointer-events-none" />
 
         {/* Left — title + description */}
         <div className="flex flex-col gap-3 z-10 max-w-2xl">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full glass-pill border border-purple-400/20 w-fit">
-            <Target className="w-4 h-4 text-[#00F0FF] animate-sparkle" />
-            <span className="text-[#00F0FF] font-gilroyMedium text-xs font-semibold uppercase tracking-wider">
-              Quest Board
-            </span>
+          <div className="flex items-center gap-2">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full glass-pill border border-purple-400/20 w-fit">
+              <Target className="w-4 h-4 text-[#00F0FF] animate-sparkle" />
+              <span className="text-[#00F0FF] font-gilroyMedium text-xs font-semibold uppercase tracking-wider">
+                Quest Board & Rare Pass
+              </span>
+            </div>
+
+            {isConnected && passStatus && (
+              <span className={`text-xs font-gilroyBold px-3 py-1 rounded-full border ${isPremiumPass ? 'bg-purple-500/20 text-purple-200 border-purple-400/40' : 'bg-white/10 text-gray-300 border-white/15'}`}>
+                {isPremiumPass ? '★ Premium Pass Active' : 'Free Pass'}
+              </span>
+            )}
           </div>
 
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-gilroyBold text-white tracking-tight drop-shadow-md">
-            Quests
+            Quests & Seasonal Pass
           </h1>
           <p className="text-purple-200 font-gilroyRegular text-sm sm:text-base leading-relaxed opacity-90">
-            Complete daily check-ins, social tasks, referrals, and milestone challenges to earn GP, XP, and rare creature fragments.
+            Complete daily check-ins, social tasks, referrals, and Rare Pass missions to earn GP, XP, RP XP, and creature fragments according to JLTQuest tokenomics.
           </p>
+
+          {/* Rare Pass Level Progress Sub-bar */}
+          {isConnected && passStatus && (
+            <div className="glass-panel p-4 rounded-xl border border-white/10 mt-2 flex flex-col gap-2 bg-black/30 backdrop-blur-md">
+              <div className="flex justify-between items-center text-xs text-purple-200 font-gilroyMedium">
+                <span className="font-gilroyBold text-white flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-[#00F0FF]" />
+                  {seasonName} — Level {passLevel}
+                </span>
+                <span className="text-[#00F0FF] font-gilroyBold">
+                  {xpInCurrentLevel} / {xpRequiredForNext} RP XP ({Math.round(passProgressPercent)}%)
+                </span>
+              </div>
+
+              <div className="w-full h-2.5 bg-black/60 rounded-full p-0.5 border border-purple-500/30 overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-[#00F0FF] via-[#7B2CBF] to-[#FFA28D] transition-all duration-500 shadow-[0_0_10px_#00F0FF]"
+                  style={{ width: `${Math.min(100, Math.max(0, passProgressPercent))}%` }}
+                />
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Right — quick stats or connect prompt */}
         <div className="w-full lg:w-auto z-10 shrink-0">
           {isConnected && quests ? (
-            <div className="glass-panel p-5 sm:p-6 rounded-2xl flex flex-col gap-4 min-w-full lg:min-w-[320px] shadow-xl border border-white/10">
+            <div className="glass-panel p-5 sm:p-6 rounded-2xl flex flex-col gap-4 min-w-full lg:min-w-[340px] shadow-xl border border-white/10">
               <div className="flex justify-between items-center">
                 <span className="text-xs text-purple-300 font-gilroyMedium uppercase tracking-wider">
                   Quest Progress
@@ -148,12 +266,20 @@ export default function QuestsPage() {
               </div>
 
               {claimableCount > 0 ? (
-                <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-purple-500/10 border border-purple-500/20">
-                  <Zap className="w-4 h-4 text-[#00F0FF] shrink-0" />
-                  <span className="text-purple-200 font-gilroyMedium text-sm">
-                    <span className="text-white font-gilroyBold">{claimableCount}</span> quest{claimableCount !== 1 ? 's' : ''} ready to claim!
+                <button
+                  onClick={handleSelectClaimableTab}
+                  className="flex items-center justify-between gap-2 px-4 py-3 rounded-xl bg-purple-500/20 border border-purple-400/30 hover:border-[#00F0FF] transition-all cursor-pointer text-left w-full shadow-[0_0_15px_rgba(123,44,191,0.3)]"
+                >
+                  <div className="flex items-center gap-2">
+                    <Zap className="w-4 h-4 text-[#00F0FF] shrink-0 animate-bounce" />
+                    <span className="text-purple-200 font-gilroyMedium text-sm">
+                      <span className="text-white font-gilroyBold">{claimableCount}</span> quest{claimableCount !== 1 ? 's' : ''} ready to claim!
+                    </span>
+                  </div>
+                  <span className="text-xs text-[#00F0FF] font-gilroyBold uppercase underline">
+                    View →
                   </span>
-                </div>
+                </button>
               ) : (
                 <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-black/30 border border-white/5">
                   <CheckCircle2 className="w-4 h-4 text-purple-400 shrink-0" />
@@ -161,6 +287,18 @@ export default function QuestsPage() {
                     {totalGpAvail > 0 ? `${totalGpAvail} GP available` : 'All caught up!'}
                   </span>
                 </div>
+              )}
+
+              {/* Upgrade to Premium Button */}
+              {passStatus && !isPremiumPass && (
+                <button
+                  onClick={() => buyPremium().catch((err) => alert(err.message))}
+                  disabled={isBuyingPremium}
+                  className="w-full py-2.5 px-4 rounded-xl text-xs font-gilroyBold bg-gradient-to-r from-amber-500 to-purple-600 hover:from-amber-400 hover:to-purple-500 text-white transition-all shadow-[0_0_15px_rgba(245,158,11,0.3)] cursor-pointer flex items-center justify-center gap-2"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-yellow-300 animate-spin" />
+                  <span>{isBuyingPremium ? 'Upgrading...' : 'Upgrade to Premium Pass (200 GP)'}</span>
+                </button>
               )}
             </div>
           ) : (
@@ -172,7 +310,7 @@ export default function QuestsPage() {
                 </div>
                 <div>
                   <p className="text-white font-gilroyBold text-sm">Wallet Required</p>
-                  <p className="text-purple-300 font-gilroyMedium text-xs">Connect to track progress</p>
+                  <p className="text-purple-300 font-gilroyMedium text-xs">Connect wallet to track progress</p>
                 </div>
               </div>
               <div className="h-3 bg-black/50 rounded-full overflow-hidden p-0.5 border border-purple-500/20">
@@ -188,7 +326,7 @@ export default function QuestsPage() {
           STATS ROW (only when connected & loaded)
           ════════════════════════════════════════════════════════ */}
       {isConnected && quests && (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
           <div className="glass-panel p-5 flex items-center gap-4 rounded-2xl">
             <div className="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center shrink-0">
               <CheckCircle2 className="w-6 h-6 text-purple-400" />
@@ -218,36 +356,51 @@ export default function QuestsPage() {
               <p className="text-2xl font-gilroyBold text-white mt-0.5">{totalGpAvail}</p>
             </div>
           </div>
+
+          <div className="glass-panel p-5 flex items-center gap-4 rounded-2xl">
+            <div className="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center shrink-0">
+              <Sparkles className="w-6 h-6 text-[#00F0FF]" />
+            </div>
+            <div>
+              <p className="text-xs text-purple-300 font-gilroyMedium uppercase tracking-wider">RP XP Available</p>
+              <p className="text-2xl font-gilroyBold text-white mt-0.5">{totalRpXpAvail}</p>
+            </div>
+          </div>
         </div>
       )}
 
       {/* ════════════════════════════════════════════════════════
-          CATEGORY TABS + QUEST GRID
+          CATEGORY TABS + QUEST / MISSION GRID
           ════════════════════════════════════════════════════════ */}
       <div className="w-full">
         {/* Tabs */}
         <div className="overflow-x-auto pb-2 mb-5 scrollbar-hide">
           <div className="flex bg-black/40 border border-white/10 rounded-xl p-1.5 w-max gap-1 backdrop-blur-md">
-            {CATEGORIES.map(cat => {
-              const meta  = CATEGORY_META[cat];
-              const count = groupedQuests[cat]?.length ?? 0;
+            {CATEGORIES.map((cat) => {
+              const meta = CATEGORY_META[cat];
+              const count = cat === 'RARE_PASS' ? missions?.length ?? 0 : groupedQuests[cat]?.length ?? 0;
               const isActive = activeTab === cat;
               return (
                 <button
                   key={cat}
                   onClick={() => setActiveTab(cat)}
-                  className={`px-4 py-2 rounded-lg font-gilroyMedium text-sm font-semibold tracking-wide transition-all flex items-center gap-1.5 ${
+                  className={`px-4 py-2 rounded-lg font-gilroyMedium text-sm font-semibold tracking-wide transition-all flex items-center gap-1.5 cursor-pointer ${
                     isActive
                       ? 'glass-btn text-white shadow-[0_0_15px_#7B2CBF]'
                       : 'text-gray-400 hover:text-white hover:bg-white/5'
                   }`}
                 >
+                  {meta.icon}
                   {meta.label}
-                  {isConnected && quests && count > 0 && (
+                  {isConnected && claimablePerCategory[cat] > 0 ? (
+                    <span className="text-[10px] font-gilroyBold px-2 py-0.5 rounded-full bg-[#00F0FF] text-black shadow-[0_0_10px_#00F0FF] animate-pulse">
+                      {claimablePerCategory[cat]} READY
+                    </span>
+                  ) : isConnected && count > 0 ? (
                     <span className={`text-[10px] font-gilroyBold px-1.5 py-0.5 rounded-full ${isActive ? 'bg-white/20 text-white' : 'bg-white/8 text-gray-400'}`}>
                       {count}
                     </span>
-                  )}
+                  ) : null}
                 </button>
               );
             })}
@@ -263,21 +416,95 @@ export default function QuestsPage() {
           </div>
         )}
 
-        {/* ── CONNECTED: full-page loader while fetching (no text) ── */}
-        {isConnected && isLoading && (
+        {/* ── CONNECTED: full-page loader while fetching ── */}
+        {isConnected && (isLoadingQuests || (activeTab === 'RARE_PASS' && isLoadingMissions)) && (
           <JLTLoader variant="page" />
         )}
 
-        {/* ── CONNECTED, DATA LOADED ── */}
-        {isConnected && !isLoading && quests && (
+        {/* ── RARE PASS MISSIONS TAB ── */}
+        {isConnected && activeTab === 'RARE_PASS' && !isLoadingMissions && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {missions && missions.length > 0 ? (
+              missions.map((mission: RarePassMission) => (
+                <div key={mission.id} className="daily-card-panel p-5 flex flex-col justify-between min-h-[220px] relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-600/10 rounded-full blur-2xl group-hover:bg-cyan-600/20 transition-all duration-500" />
+                  
+                  <div className="flex-grow flex flex-col relative z-10">
+                    <div className="flex justify-between items-start mb-3">
+                      <h3 className="text-white font-gilroyBold text-xl font-bold tracking-tight">{mission.name}</h3>
+                      <span className={`text-xs px-2.5 py-1 rounded-md ml-2 whitespace-nowrap font-gilroyMedium border ${mission.completed ? 'bg-black/40 text-gray-500 border-white/5' : 'bg-cyan-500/10 text-cyan-300 border-cyan-500/20'}`}>
+                        {mission.type}
+                      </span>
+                    </div>
+
+                    <p className="text-sm text-gray-400 font-gilroyMedium mb-4 leading-relaxed">{mission.description}</p>
+
+                    {/* Progress indicator */}
+                    <div className="flex flex-col gap-1.5 mb-4">
+                      <div className="flex justify-between text-xs text-gray-300 font-gilroyMedium">
+                        <span>Progress</span>
+                        <span className="text-cyan-300 font-gilroyBold">
+                          {mission.progress} / {mission.targetCount}
+                        </span>
+                      </div>
+                      <div className="w-full h-2 bg-black/50 rounded-full overflow-hidden p-0.5 border border-white/10">
+                        <div
+                          className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-purple-500 transition-all duration-300"
+                          style={{ width: `${Math.min(100, Math.round((mission.progress / mission.targetCount) * 100))}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex items-center text-[#00F0FF] font-gilroyBold text-sm font-semibold tracking-wide mt-auto pt-2">
+                      <Sparkles className="w-4 h-4 mr-1.5 opacity-90 animate-pulse" />
+                      +{mission.rpXpReward} RP XP
+                    </div>
+                  </div>
+
+                  <div className="mt-5 relative z-10">
+                    <button
+                      className={`w-full font-gilroyBold text-sm sm:text-base py-2.5 px-4 rounded-xl flex items-center justify-center transition-all duration-300 cursor-pointer ${
+                        mission.completed
+                          ? 'bg-black/40 text-gray-500 border border-white/5 cursor-not-allowed'
+                          : !mission.canClaim
+                          ? 'bg-cyan-900/20 text-cyan-400/50 border border-cyan-500/10 cursor-not-allowed'
+                          : 'glass-btn text-white hover:shadow-[0_0_15px_#00F0FF]'
+                      }`}
+                      disabled={mission.completed || (claimingId === mission.id) || !mission.canClaim}
+                      onClick={() => handleClaimMission(mission.id)}
+                    >
+                      {claimingId === mission.id ? (
+                        <JLTLoader variant="inline" size="sm" text="Claiming..." />
+                      ) : mission.completed ? (
+                        'Completed'
+                      ) : !mission.canClaim ? (
+                        'In Progress'
+                      ) : (
+                        'Claim Mission'
+                      )}
+                    </button>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="col-span-full py-16 text-center text-gray-500 font-gilroyMedium daily-card-panel border-dashed border-white/10 rounded-2xl flex flex-col items-center gap-3">
+                <Sparkles className="w-10 h-10 text-cyan-400/30" />
+                <p>No Rare Pass missions available right now.</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── STANDARD QUESTS GRID ── */}
+        {isConnected && !isLoadingQuests && quests && activeTab !== 'RARE_PASS' && (
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {groupedQuests[activeTab]?.length > 0 ? (
-                groupedQuests[activeTab].map(quest => (
+                groupedQuests[activeTab].map((quest) => (
                   <QuestCard
                     key={quest.id}
                     quest={quest}
-                    onClaim={handleClaim}
+                    onClaim={handleClaimQuest}
                     isClaiming={claimingId === quest.id}
                   />
                 ))
@@ -298,36 +525,56 @@ export default function QuestsPage() {
       {showPopup && rewardData && mounted &&
         createPortal(
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-            <div className="glass-panel w-full max-w-sm p-6 sm:p-8 flex flex-col items-center text-center relative animate-fade-in shadow-[0_0_40px_rgba(123,44,191,0.3)] border border-white/10 rounded-2xl">
+            <div className="glass-panel w-full max-w-md p-6 sm:p-8 flex flex-col items-center text-center relative animate-fade-in shadow-[0_0_40px_rgba(123,44,191,0.3)] border border-white/10 rounded-2xl">
               <div className="absolute inset-0 bg-radial from-[#7B2CBF]/20 via-transparent to-transparent pointer-events-none rounded-2xl" />
 
               <div className="w-16 h-16 rounded-full glass-panel border border-purple-400/30 flex items-center justify-center mb-4 shadow-[0_0_25px_rgba(123,44,191,0.4)]">
                 <CheckCircle2 className="w-8 h-8 text-[#00F0FF]" />
               </div>
 
-              <h3 className="text-white font-gilroyBold text-2xl mb-2 tracking-wide">Quest Claimed!</h3>
+              <h3 className="text-white font-gilroyBold text-2xl mb-2 tracking-wide">Reward Claimed!</h3>
               <p className="text-purple-200 font-gilroyMedium text-base mb-6">
-                You completed a quest and earned rewards!
+                Your reward has been granted and credited to your account!
               </p>
 
-              <div className="flex gap-8 mb-8">
-                <div className="flex flex-col items-center">
-                  <span className="text-4xl font-bold text-[#FCD34D] drop-shadow-[0_0_15px_#F59E0B]">
-                    +{rewardData.gpAwarded}
-                  </span>
-                  <span className="text-sm text-gray-400 font-gilroyMedium uppercase tracking-wider mt-1">GP</span>
-                </div>
-                <div className="flex flex-col items-center">
-                  <span className="text-4xl font-bold text-[#A78BFA] drop-shadow-[0_0_15px_#7C3AED]">
-                    +{rewardData.xpAwarded}
-                  </span>
-                  <span className="text-sm text-gray-400 font-gilroyMedium uppercase tracking-wider mt-1">XP</span>
-                </div>
+              <div className="flex flex-wrap justify-center items-center gap-6 mb-8 w-full">
+                {!!rewardData.gpAwarded && rewardData.gpAwarded > 0 && (
+                  <div className="flex flex-col items-center">
+                    <span className="text-3xl font-bold text-[#FCD34D] drop-shadow-[0_0_15px_#F59E0B]">
+                      +{rewardData.gpAwarded}
+                    </span>
+                    <span className="text-xs text-gray-400 font-gilroyMedium uppercase tracking-wider mt-1">GP</span>
+                  </div>
+                )}
+                {!!rewardData.xpAwarded && rewardData.xpAwarded > 0 && (
+                  <div className="flex flex-col items-center">
+                    <span className="text-3xl font-bold text-[#A78BFA] drop-shadow-[0_0_15px_#7C3AED]">
+                      +{rewardData.xpAwarded}
+                    </span>
+                    <span className="text-xs text-gray-400 font-gilroyMedium uppercase tracking-wider mt-1">XP</span>
+                  </div>
+                )}
+                {!!rewardData.rpXpAwarded && rewardData.rpXpAwarded > 0 && (
+                  <div className="flex flex-col items-center">
+                    <span className="text-3xl font-bold text-[#00F0FF] drop-shadow-[0_0_15px_#00F0FF]">
+                      +{rewardData.rpXpAwarded}
+                    </span>
+                    <span className="text-xs text-gray-400 font-gilroyMedium uppercase tracking-wider mt-1">RP XP</span>
+                  </div>
+                )}
+                {!!rewardData.fragmentsAwarded && rewardData.fragmentsAwarded > 0 && (
+                  <div className="flex flex-col items-center">
+                    <span className="text-3xl font-bold text-emerald-400 drop-shadow-[0_0_15px_#10B981]">
+                      +{rewardData.fragmentsAwarded}
+                    </span>
+                    <span className="text-xs text-gray-400 font-gilroyMedium uppercase tracking-wider mt-1">Fragment</span>
+                  </div>
+                )}
               </div>
 
               <button
                 onClick={() => setShowPopup(false)}
-                className="glass-btn px-8 py-3 rounded-xl text-white font-gilroyBold text-lg shadow-[0_0_15px_#7B2CBF] hover:shadow-[0_0_25px_#7B2CBF] transition-shadow w-full"
+                className="glass-btn px-8 py-3 rounded-xl text-white font-gilroyBold text-lg shadow-[0_0_15px_#7B2CBF] hover:shadow-[0_0_25px_#7B2CBF] transition-shadow w-full cursor-pointer"
               >
                 Awesome
               </button>

@@ -8,6 +8,7 @@ export interface DashboardData {
     id: string;
     walletAddress: string;
     level: number;
+    levelTier?: string;
     xp: number;
     gp: number;
     jlt: number;

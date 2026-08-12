@@ -71,11 +71,33 @@ export const useSpin = () => {
     },
   });
 
+  const purchaseSpinMutation = useMutation({
+    mutationFn: async (): Promise<{ success: boolean; data: any; error?: any }> => {
+      if (!address || !token) throw new Error('Not connected');
+      const response = await fetchWithRetry<{ success: boolean; data: any; error?: any }>(`${getApiUrl()}/spin/purchase`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      if (!response.success) {
+        throw new Error(response.error?.message || response.error || 'Purchase failed');
+      }
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['spinStatus', address] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard', address] });
+    },
+  });
+
   return {
     spinStatus,
     isLoadingStatus,
     statusError,
     spin: spinMutation.mutateAsync,
     isSpinning: spinMutation.isPending,
+    purchaseSpin: purchaseSpinMutation.mutateAsync,
+    isPurchasing: purchaseSpinMutation.isPending,
   };
 };

@@ -35,9 +35,9 @@ export async function fetchWithRetry<T = any>(url: string, options: FetchOptions
     return inFlightRequests.get(requestKey) as Promise<T>;
   }
 
-let refreshPromise: Promise<string> | null = null;
+  let refreshPromise: Promise<string> | null = null;
 
-const executeFetch = async (attempt: number): Promise<T> => {
+  const executeFetch = async (attempt: number): Promise<T> => {
     try {
       let authToken = getCookie('jlt_auth_token');
 
@@ -48,6 +48,7 @@ const executeFetch = async (attempt: number): Promise<T> => {
       };
 
       let response = await fetch(url, {
+        credentials: options.credentials || 'include',
         ...rest,
         headers: reqHeaders,
       });
@@ -59,6 +60,7 @@ const executeFetch = async (attempt: number): Promise<T> => {
             refreshPromise = (async () => {
               const res = await fetch(`${getApiUrl()}/auth/refresh`, {
                 method: 'POST',
+                credentials: options.credentials || 'include',
                 headers: { 'Content-Type': 'application/json' },
               });
               if (!res.ok) {
@@ -81,6 +83,7 @@ const executeFetch = async (attempt: number): Promise<T> => {
           // Retry the request with the new access token
           reqHeaders['Authorization'] = `Bearer ${newToken}`;
           response = await fetch(url, {
+            credentials: options.credentials || 'include',
             ...rest,
             headers: reqHeaders,
           });
@@ -96,7 +99,20 @@ const executeFetch = async (attempt: number): Promise<T> => {
       }
 
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+        try {
+          const errorBody = await response.json();
+          if (errorBody?.error?.message) {
+            errorMessage = errorBody.error.message;
+          } else if (errorBody?.message) {
+            errorMessage = errorBody.message;
+          } else {
+            errorMessage = JSON.stringify(errorBody);
+          }
+        } catch (e) {
+          // ignore JSON parsing errors
+        }
+        throw new Error(errorMessage);
       }
 
       return (await response.json()) as T;

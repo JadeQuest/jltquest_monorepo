@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { type Connector, useAccount, useConnect, useDisconnect } from 'wagmi';
 import { Wallet, X, Check, Copy, ExternalLink, LogOut, ShieldCheck, AlertCircle } from 'lucide-react';
+import { isUserRejectedError } from '@/lib/web3Error';
 
 interface ConnectWalletModalProps {
   isOpen: boolean;
@@ -65,10 +66,8 @@ export const ConnectWalletModal: React.FC<ConnectWalletModalProps> = ({ isOpen, 
       await connectAsync({ connector });
       onClose();
     } catch (err: unknown) {
-      // Gracefully handle user rejection (RPC Error code 4001) or extension disconnect
-      const errorObj = err as { code?: number; message?: string };
-      if (errorObj?.code === 4001 || errorObj?.message?.includes('rejected')) {
-        console.log('User rejected wallet connection prompt.');
+      if (isUserRejectedError(err)) {
+        console.log('User cancelled wallet connection prompt.');
       } else if (process.env.NODE_ENV !== 'production') {
         console.error('Wallet connection error:', err);
       }
@@ -170,7 +169,7 @@ export const ConnectWalletModal: React.FC<ConnectWalletModalProps> = ({ isOpen, 
               Choose your Web3 wallet provider to log in and unlock daily quests:
             </p>
 
-            {connectError && (
+            {connectError && !isUserRejectedError(connectError) && (
               <div className="glass-pill p-3 rounded-xl border border-red-500/30 bg-red-500/10 flex items-center gap-2 text-xs text-red-300">
                 <AlertCircle className="w-4 h-4 shrink-0" />
                 <span>{connectError.message || 'Failed to connect. Please try again.'}</span>

@@ -313,7 +313,7 @@ export class RarePassService {
         success: true,
         grantDetails
       };
-    });
+    }, { maxWait: 10000, timeout: 20000 });
   }
 
   async awardRpXp(tx: any, userId: string, amount: number, source: RpXpSource, sourceId?: string, idempotencyKey?: string) {
@@ -467,7 +467,7 @@ export class RarePassService {
       });
 
       return { success: true };
-    });
+    }, { maxWait: 10000, timeout: 20000 });
   }
 
   async getMissions(userId: string) {
@@ -600,7 +600,7 @@ export class RarePassService {
         success: true,
         rpXpAwarded: awarded
       };
-    });
+    }, { maxWait: 10000, timeout: 20000 });
   }
 
   async updateMissionProgress(tx: any, userId: string, missionCode: string, increment: number) {

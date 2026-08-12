@@ -1,5 +1,6 @@
 import { SocialConnectionRepository } from '../../infrastructure/database/repositories/SocialConnectionRepository';
 import { LedgerService } from './LedgerService';
+import { RarePassService } from './RarePassService';
 import { SocialPlatform, LedgerSource, RpXpSource } from '@jlt/database';
 import { BadRequestError, ConflictError, NotFoundError } from '../errors/AppError';
 import { ErrorCode, ErrorMessages, APP_CONFIG } from '@jlt/constants';
@@ -21,6 +22,8 @@ export class SocialService {
     if (p === 'linkedin') return (SocialPlatform as any).LINKEDIN || 'LINKEDIN';
     if (p === 'whatsapp') return (SocialPlatform as any).WHATSAPP || 'WHATSAPP';
     if (p === 'email') return (SocialPlatform as any).EMAIL || 'EMAIL';
+    if (p === 'instagram') return (SocialPlatform as any).INSTAGRAM || 'INSTAGRAM';
+    if (p === 'facebook') return (SocialPlatform as any).FACEBOOK || 'FACEBOOK';
     throw new BadRequestError(
       `${ErrorMessages[ErrorCode.INVALID_PLATFORM]}: ${platformString}`,
       ErrorCode.INVALID_PLATFORM
@@ -53,6 +56,16 @@ export class SocialService {
         return {
           type: 'oauth',
           url: `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=jltquest&redirect_uri=https://jltquest.io/callback/linkedin&state=${userId}`
+        };
+      case (SocialPlatform as any).INSTAGRAM || 'INSTAGRAM':
+        return {
+          type: 'oauth',
+          url: `https://www.instagram.com/oauth/authorize?client_id=jltquest&redirect_uri=https://jltquest.io/callback/instagram&response_type=code&state=${userId}`
+        };
+      case (SocialPlatform as any).FACEBOOK || 'FACEBOOK':
+        return {
+          type: 'oauth',
+          url: `https://www.facebook.com/v12.0/dialog/oauth?client_id=jltquest&redirect_uri=https://jltquest.io/callback/facebook&state=${userId}`
         };
       case SocialPlatform.DISCORD:
         return {
@@ -103,10 +116,15 @@ export class SocialService {
 
       if (connection) {
         if (connection.connected) {
-          throw new ConflictError(
-            ErrorMessages[ErrorCode.ALREADY_CLAIMED],
-            ErrorCode.ALREADY_CLAIMED
-          );
+          const { accessToken, refreshToken, ...scrubbedConnection } = connection;
+          return {
+            platform: platformString,
+            connected: true,
+            connectionBonusAwarded: false,
+            gpAwarded: 0,
+            xpAwarded: 0,
+            connection: scrubbedConnection
+          };
         }
 
         connection = await this.socialRepo.update(tx, connection.id, {
@@ -159,7 +177,7 @@ export class SocialService {
         xpAwarded,
         connection: scrubbedConnection
       };
-    });
+    }, { maxWait: 10000, timeout: 20000 });
   }
 
   async disconnect(userId: string, platformString: string) {
@@ -220,7 +238,7 @@ export class SocialService {
         gpClawedBack,
         connection: scrubbedConnection
       };
-    });
+    }, { maxWait: 10000, timeout: 20000 });
   }
 
   async listQuests(userId: string) {
@@ -342,7 +360,6 @@ export class SocialService {
       await this.ledgerService.awardXp(tx, userId, quest.xpReward, LedgerSource.SOCIAL, quest.id);
 
       // Award Rare Pass XP
-      const { RarePassService } = require('./RarePassService');
       const rarePassService = new RarePassService(this.prisma);
       
       let rpXpAwarded = 0;
@@ -373,6 +390,6 @@ export class SocialService {
         xpAwarded: quest.xpReward,
         rpXpAwarded
       };
-    });
+    }, { maxWait: 10000, timeout: 20000 });
   }
 }

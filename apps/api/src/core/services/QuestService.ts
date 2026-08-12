@@ -1,5 +1,6 @@
 import { QuestRepository } from '../../infrastructure/database/repositories/QuestRepository';
 import { LedgerService } from './LedgerService';
+import { RarePassService } from './RarePassService';
 import { LedgerSource, RpXpSource } from '@jlt/database';
 import { getQuestPeriodKey } from '../utils/questPeriod';
 import { QuestValidator } from './QuestValidator';
@@ -43,7 +44,7 @@ export class QuestService {
       return {
         ...quest,
         completed: isCompleted,
-        canClaim: canClaimMap[quest.id] || false,
+        canClaim: isCompleted ? false : (canClaimMap[quest.id] || false),
         completedCount: completions.filter((c: any) => c.questId === quest.id).length
       };
     });
@@ -67,52 +68,54 @@ export class QuestService {
     }
 
     try {
-      return await this.prisma.$transaction(async (tx: any) => {
-        const periodKey = getQuestPeriodKey(quest.frequency);
+      return await this.prisma.$transaction(
+        async (tx: any) => {
+          const periodKey = getQuestPeriodKey(quest.frequency);
 
-        await this.questRepository.createCompletion(tx, {
-          userId,
-          questId,
-          periodKey,
-          gpAwarded: quest.gpReward,
-          xpAwarded: quest.xpReward
-        });
-
-        await this.ledgerService.awardGp(tx, userId, quest.gpReward, LedgerSource.QUEST, questId);
-        await this.ledgerService.awardXp(tx, userId, quest.xpReward, LedgerSource.QUEST, questId);
-
-        if (quest.fragmentReward > 0) {
-          await tx.user.update({
-            where: { id: userId },
-            data: { fragments: { increment: quest.fragmentReward } }
-          });
-        }
-
-        // Award Rare Pass XP & update mission progress
-        const { RarePassService } = require('./RarePassService');
-        const rarePassService = new RarePassService(this.prisma);
-        
-        let rpXpAwarded = 0;
-        if (quest.rpXpReward > 0) {
-          rpXpAwarded = await rarePassService.awardRpXp(
-            tx,
+          await this.questRepository.createCompletion(tx, {
             userId,
-            quest.rpXpReward,
-            RpXpSource.QUEST,
             questId,
-            `quest_completion_rpxp:${userId}:${questId}:${periodKey}`
-          );
-        }
+            periodKey,
+            gpAwarded: quest.gpReward,
+            xpAwarded: quest.xpReward
+          });
 
-        await rarePassService.updateMissionProgress(tx, userId, 'mission_complete_quests_daily', 1);
+          await this.ledgerService.awardGp(tx, userId, quest.gpReward, LedgerSource.QUEST, questId);
+          await this.ledgerService.awardXp(tx, userId, quest.xpReward, LedgerSource.QUEST, questId);
 
-        return {
-          gpAwarded: quest.gpReward,
-          xpAwarded: quest.xpReward,
-          rpXpAwarded,
-          fragmentsAwarded: quest.fragmentReward
-        };
-      });
+          if (quest.fragmentReward > 0) {
+            await tx.user.update({
+              where: { id: userId },
+              data: { fragments: { increment: quest.fragmentReward } }
+            });
+          }
+
+          // Award Rare Pass XP & update mission progress
+          const rarePassService = new RarePassService(this.prisma);
+          
+          let rpXpAwarded = 0;
+          if (quest.rpXpReward > 0) {
+            rpXpAwarded = await rarePassService.awardRpXp(
+              tx,
+              userId,
+              quest.rpXpReward,
+              RpXpSource.QUEST,
+              questId,
+              `quest_completion_rpxp:${userId}:${questId}:${periodKey}`
+            );
+          }
+
+          await rarePassService.updateMissionProgress(tx, userId, 'mission_complete_quests_daily', 1);
+
+          return {
+            gpAwarded: quest.gpReward,
+            xpAwarded: quest.xpReward,
+            rpXpAwarded,
+            fragmentsAwarded: quest.fragmentReward
+          };
+        },
+        { maxWait: 10000, timeout: 20000 }
+      );
     } catch (err: any) {
       if (err.code === 'P2002') {
         throw new ConflictError(

@@ -28,12 +28,12 @@ export class LeaderboardService {
             avatar: { select: { name: true, characterKey: true } }
           }
         },
-        streak: { select: { currentStreak: true, longestStreak: true } }
+        streak: { select: { currentDay: true } }
       }
     });
 
     if (type === 'streak') {
-      users.sort((a: any, b: any) => (b.streak?.currentStreak || 0) - (a.streak?.currentStreak || 0));
+      users.sort((a: any, b: any) => (b.streak?.currentDay || 0) - (a.streak?.currentDay || 0));
     }
 
     const sliced = users.slice(0, take);
@@ -48,7 +48,7 @@ export class LeaderboardService {
       xp: u.xp,
       gp: u.gp,
       jlt: Number(u.jlt),
-      currentStreak: u.streak?.currentStreak || 0,
+      currentStreak: u.streak?.currentDay || 0,
       avatarUrl: u.activeAvatarVariant?.imageUrl || '/optimized/avatars/cosmic_explorer_basic.webp'
     }));
   }

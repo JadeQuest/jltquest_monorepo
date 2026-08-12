@@ -30,6 +30,11 @@ export const socialCallbackSchema = z.object({
   }).passthrough(),
 });
 
+export const convertGpSchema = z.object({
+  gpAmount: z.number().int().min(100, 'Minimum 100 GP required for conversion'),
+});
+
 export type LoginInput = z.infer<typeof loginSchema>;
 export type ClaimQuestInput = z.infer<typeof claimQuestSchema>;
 export type SelectAvatarInput = z.infer<typeof selectAvatarSchema>;
+export type ConvertGpInput = z.infer<typeof convertGpSchema>;

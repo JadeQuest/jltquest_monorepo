@@ -18,6 +18,8 @@ enum SocialPlatform {
   LINKEDIN
   WHATSAPP
   EMAIL
+  INSTAGRAM
+  FACEBOOK
 }
 
 enum QuestFrequency {

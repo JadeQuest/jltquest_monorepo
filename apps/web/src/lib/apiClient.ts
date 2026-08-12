@@ -48,6 +48,7 @@ export async function fetchWithRetry<T = any>(url: string, options: FetchOptions
       };
 
       let response = await fetch(url, {
+        credentials: options.credentials || 'include',
         ...rest,
         headers: reqHeaders,
       });
@@ -59,6 +60,7 @@ export async function fetchWithRetry<T = any>(url: string, options: FetchOptions
             refreshPromise = (async () => {
               const res = await fetch(`${getApiUrl()}/auth/refresh`, {
                 method: 'POST',
+                credentials: options.credentials || 'include',
                 headers: { 'Content-Type': 'application/json' },
               });
               if (!res.ok) {
@@ -81,6 +83,7 @@ export async function fetchWithRetry<T = any>(url: string, options: FetchOptions
           // Retry the request with the new access token
           reqHeaders['Authorization'] = `Bearer ${newToken}`;
           response = await fetch(url, {
+            credentials: options.credentials || 'include',
             ...rest,
             headers: reqHeaders,
           });

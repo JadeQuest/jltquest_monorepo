@@ -13,18 +13,26 @@ export class InviteService {
   ) {}
 
   async getInviteStats(userId: string) {
-    const invite = await this.inviteRepository.findStats(this.prisma, userId);
+    let invite = await this.inviteRepository.findStats(this.prisma, userId);
     if (!invite) {
-      return { inviteCode: null, totalInvited: 0, gpEarnedFromInvites: 0 };
+      const code = `JLT_${userId.substring(0, 8).toUpperCase()}`;
+      invite = await this.prisma.invite.create({
+        data: {
+          inviterId: userId,
+          code
+        },
+        include: { redemptions: true }
+      });
     }
 
-    const totalInvited = invite.redemptions.length;
-    const gpEarnedFromInvites = invite.redemptions.reduce((acc: number, r: any) => acc + r.inviterGpAwarded, 0);
+    const totalInvited = invite.redemptions?.length || 0;
+    const gpEarnedFromInvites = invite.redemptions?.reduce((acc: number, r: any) => acc + (r.inviterGpAwarded || 0), 0) || 0;
 
     return {
       inviteCode: invite.code,
       totalInvited,
-      gpEarnedFromInvites
+      gpEarnedFromInvites,
+      redemptions: invite.redemptions || []
     };
   }
 

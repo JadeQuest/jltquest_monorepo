@@ -1,10 +1,13 @@
 import { UserRepository } from '../../infrastructure/database/repositories/UserRepository';
 import { calculateXpRequiredForLevel, getLevelTier } from '../utils/leveling';
-import { NotFoundError } from '../errors/AppError';
+import { NotFoundError, BadRequestError } from '../errors/AppError';
 import { ErrorCode, ErrorMessages } from '@jlt/constants';
 
 export class UserService {
-  constructor(private userRepository: UserRepository) {}
+  constructor(
+    private userRepository: UserRepository,
+    private prisma: any
+  ) {}
 
   async getDashboard(userId: string) {
     const user = await this.userRepository.findWithConnections(null as any, userId);
@@ -64,5 +67,54 @@ export class UserService {
       },
       socialConnections
     };
+  }
+
+  async convertGp(userId: string, gpAmount: number) {
+    if (!gpAmount || gpAmount < 100) {
+      throw new BadRequestError('Minimum 100 GP required for conversion', ErrorCode.INVALID_INPUT);
+    }
+    if (gpAmount % 100 !== 0) {
+      throw new BadRequestError('GP amount must be a multiple of 100', ErrorCode.INVALID_INPUT);
+    }
+
+    const jltToAdd = gpAmount / 100;
+
+    return await this.prisma.$transaction(async (tx: any) => {
+      const user = await tx.user.findUnique({ where: { id: userId } });
+      if (!user) {
+        throw new NotFoundError(ErrorMessages[ErrorCode.USER_NOT_FOUND], ErrorCode.USER_NOT_FOUND);
+      }
+
+      if (user.gp < gpAmount) {
+        throw new BadRequestError(ErrorMessages[ErrorCode.INSUFFICIENT_GP], ErrorCode.INSUFFICIENT_GP);
+      }
+
+      // Deduct GP and add JLT
+      const updatedUser = await tx.user.update({
+        where: { id: userId },
+        data: {
+          gp: { decrement: gpAmount },
+          jlt: { increment: jltToAdd }
+        }
+      });
+
+      // Record in ledger
+      await tx.gpLedgerEntry.create({
+        data: {
+          userId,
+          amount: -gpAmount,
+          type: 'DEBIT',
+          source: 'CONVERSION',
+          refId: `convert_${userId}_${Date.now()}`
+        }
+      });
+
+      return {
+        convertedGp: gpAmount,
+        jltReceived: jltToAdd,
+        newGpBalance: updatedUser.gp,
+        newJltBalance: Number(updatedUser.jlt)
+      };
+    });
   }
 }

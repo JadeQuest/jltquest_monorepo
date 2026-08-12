@@ -22,6 +22,8 @@ export class SocialService {
     if (p === 'linkedin') return (SocialPlatform as any).LINKEDIN || 'LINKEDIN';
     if (p === 'whatsapp') return (SocialPlatform as any).WHATSAPP || 'WHATSAPP';
     if (p === 'email') return (SocialPlatform as any).EMAIL || 'EMAIL';
+    if (p === 'instagram') return (SocialPlatform as any).INSTAGRAM || 'INSTAGRAM';
+    if (p === 'facebook') return (SocialPlatform as any).FACEBOOK || 'FACEBOOK';
     throw new BadRequestError(
       `${ErrorMessages[ErrorCode.INVALID_PLATFORM]}: ${platformString}`,
       ErrorCode.INVALID_PLATFORM
@@ -54,6 +56,16 @@ export class SocialService {
         return {
           type: 'oauth',
           url: `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=jltquest&redirect_uri=https://jltquest.io/callback/linkedin&state=${userId}`
+        };
+      case (SocialPlatform as any).INSTAGRAM || 'INSTAGRAM':
+        return {
+          type: 'oauth',
+          url: `https://www.instagram.com/oauth/authorize?client_id=jltquest&redirect_uri=https://jltquest.io/callback/instagram&response_type=code&state=${userId}`
+        };
+      case (SocialPlatform as any).FACEBOOK || 'FACEBOOK':
+        return {
+          type: 'oauth',
+          url: `https://www.facebook.com/v12.0/dialog/oauth?client_id=jltquest&redirect_uri=https://jltquest.io/callback/facebook&state=${userId}`
         };
       case SocialPlatform.DISCORD:
         return {
@@ -104,10 +116,15 @@ export class SocialService {
 
       if (connection) {
         if (connection.connected) {
-          throw new ConflictError(
-            ErrorMessages[ErrorCode.ALREADY_CLAIMED],
-            ErrorCode.ALREADY_CLAIMED
-          );
+          const { accessToken, refreshToken, ...scrubbedConnection } = connection;
+          return {
+            platform: platformString,
+            connected: true,
+            connectionBonusAwarded: false,
+            gpAwarded: 0,
+            xpAwarded: 0,
+            connection: scrubbedConnection
+          };
         }
 
         connection = await this.socialRepo.update(tx, connection.id, {

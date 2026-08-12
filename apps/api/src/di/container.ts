@@ -22,6 +22,7 @@ import { CollectionService } from '../core/services/CollectionService';
 import { LevelService } from '../core/services/LevelService';
 import { RarePassService } from '../core/services/RarePassService';
 import { AvatarService } from '../core/services/AvatarService';
+import { LeaderboardService } from '../core/services/LeaderboardService';
 
 // Controllers
 import { AuthController } from '../api/controllers/AuthController';
@@ -35,6 +36,7 @@ import { LevelController } from '../api/controllers/LevelController';
 import { CollectionController } from '../api/controllers/CollectionController';
 import { RarePassController } from '../api/controllers/RarePassController';
 import { AvatarController } from '../api/controllers/AvatarController';
+import { LeaderboardController } from '../api/controllers/LeaderboardController';
 
 // 1. Initialize Repositories
 const userRepository = new UserRepository();
@@ -48,7 +50,7 @@ const ledgerRepository = new LedgerRepository();
 // 2. Initialize Services
 const authService = new AuthService(userRepository);
 const ledgerService = new LedgerService(ledgerRepository);
-const userService = new UserService(userRepository);
+const userService = new UserService(userRepository, prisma);
 const checkInService = new CheckInService(streakRepository, ledgerService, prisma);
 const questService = new QuestService(questRepository, ledgerService, prisma);
 const spinService = new SpinService(spinRepository, ledgerService, prisma);
@@ -58,6 +60,7 @@ const collectionService = new CollectionService(prisma);
 const levelService = new LevelService();
 const rarePassService = new RarePassService(prisma);
 const avatarService = new AvatarService(prisma);
+const leaderboardService = new LeaderboardService(prisma);
 
 // 3. Initialize Controllers
 export const authController = new AuthController(authService);
@@ -71,3 +74,4 @@ export const levelController = new LevelController(levelService);
 export const collectionController = new CollectionController(collectionService);
 export const rarePassController = new RarePassController(rarePassService);
 export const avatarController = new AvatarController(avatarService);
+export const leaderboardController = new LeaderboardController(leaderboardService);

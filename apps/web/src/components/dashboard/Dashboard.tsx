@@ -7,6 +7,7 @@ import { DailyCheckInCard } from './DailyCheckInCard';
 import { SpinToWinCard } from './SpinToWinCard';
 import { CollectRaresCard } from './CollectRaresCard';
 import { RarePassCard } from './RarePassCard';
+import { LeaderboardCard } from './LeaderboardCard';
 
 export const Dashboard: React.FC = () => {
   return (
@@ -41,6 +42,12 @@ export const Dashboard: React.FC = () => {
         </div>
       </div>
 
+      {/* Bottom Row - Leaderboard & Global Rankings */}
+      <div className="grid grid-cols-12 gap-4 sm:gap-6">
+        <div className="col-span-12">
+          <LeaderboardCard />
+        </div>
+      </div>
     </div>
   );
 };

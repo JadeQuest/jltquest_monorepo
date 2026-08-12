@@ -103,9 +103,9 @@ const SpinToWinCardComponent: React.FC = () => {
           <h2 className="text-white font-gilroyBold text-2xl font-bold tracking-tight">
             Spin to Win
           </h2>
-          <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full border border-[#00F0FF]/40 bg-[#00F0FF]/10 shadow-[0_0_15px_rgba(0,240,255,0.25)] backdrop-blur-md">
-            <span className="w-2 h-2 rounded-full bg-[#00F0FF] animate-pulse" />
-            <span className="text-[#00F0FF] font-gilroyBold text-xs font-semibold tracking-wide">
+          <div className="glass-pill px-3.5 py-1 inline-flex items-center gap-2 rounded-full shadow-[0_0_15px_rgba(123,44,191,0.3)]">
+            <span className={`w-2 h-2 rounded-full ${canSpin ? 'bg-[#FFA28D] animate-pulse' : 'bg-purple-300/40'}`} />
+            <span className="text-purple-200 font-gilroyMedium text-xs font-semibold tracking-wide">
               {!isConnected
                 ? '1 Free Spin Daily'
                 : !spinStatus
@@ -115,8 +115,8 @@ const SpinToWinCardComponent: React.FC = () => {
                 : '0 Free Spins Today'}
             </span>
           </div>
-          <div className="mt-4 px-4 py-2 rounded-lg bg-white/10 text-white font-gilroyBold text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 backdrop-blur-sm border border-white/20">
-            Click to Play!
+          <div className="mt-3 px-5 py-2 rounded-xl text-white font-gilroyBold text-xs font-bold uppercase tracking-wider opacity-0 group-hover:opacity-100 transition-all duration-300 glass-btn shadow-[0_0_20px_rgba(123,44,191,0.5)]">
+            Click to Play →
           </div>
         </div>
 

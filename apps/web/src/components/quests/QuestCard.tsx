@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Quest } from '@/hooks/useQuests';
-import { Gift, Star } from 'lucide-react';
+import { Gift, Star, ExternalLink } from 'lucide-react';
 import { JLTLoader } from '@/components/common/JLTLoader';
+import { useSocial } from '@/hooks/useSocial';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface QuestCardProps {
   quest: Quest;
@@ -12,33 +14,43 @@ interface QuestCardProps {
 function QuestCardComponent({ quest, onClaim, isClaiming }: QuestCardProps) {
   const isCompleted = quest.completed;
   const isSocial = quest.category === 'SOCIAL';
-  
-  const [hasClickedGo, setHasClickedGo] = useState(false);
+  const canClaim = quest.canClaim;
+  const queryClient = useQueryClient();
+  const { connect } = useSocial();
+  const [isConnectingSocial, setIsConnectingSocial] = useState(false);
 
-  useEffect(() => {
-    if (isSocial && typeof window !== 'undefined') {
-      const clicked = localStorage.getItem(`quest_go_${quest.id}`) === 'true';
-      setHasClickedGo(clicked);
-    }
-  }, [quest.id, isSocial]);
-
-  const handleGo = () => {
-    let url = 'https://jadequest.com'; 
-    if (quest.code === 'soc_x_connect') url = 'https://twitter.com';
-    else if (quest.code === 'soc_discord_connect') url = 'https://discord.com';
-    else if (quest.code === 'soc_instagram_connect') url = 'https://instagram.com';
-    else if (quest.code === 'soc_facebook_connect') url = 'https://facebook.com';
-    
-    window.open(url, '_blank');
-    localStorage.setItem(`quest_go_${quest.id}`, 'true');
-    setHasClickedGo(true);
+  const getPlatformInfo = (code: string) => {
+    const c = code.toLowerCase();
+    if (c.includes('x') || c.includes('twitter')) return { platform: 'x', label: 'Connect X', url: 'https://twitter.com' };
+    if (c.includes('discord')) return { platform: 'discord', label: 'Connect Discord', url: 'https://discord.com' };
+    if (c.includes('telegram')) return { platform: 'telegram', label: 'Connect Telegram', url: 'https://t.me' };
+    if (c.includes('instagram')) return { platform: 'instagram', label: 'Connect Instagram', url: 'https://instagram.com' };
+    if (c.includes('facebook')) return { platform: 'facebook', label: 'Connect Facebook', url: 'https://facebook.com' };
+    return { platform: 'x', label: 'Connect Account', url: 'https://twitter.com' };
   };
 
-  const showGoButton = isSocial && !isCompleted && !hasClickedGo && !quest.canClaim;
-  
-  // A quest is claimable if the backend returns canClaim: true OR if it's a social quest where the user clicked Go
-  const isClaimable = quest.canClaim || (isSocial && hasClickedGo);
-  
+  const socialInfo = isSocial ? getPlatformInfo(quest.code) : null;
+
+  const handleConnectSocial = async () => {
+    if (!socialInfo) return;
+    try {
+      setIsConnectingSocial(true);
+      // Open external social page in new tab
+      if (typeof window !== 'undefined') {
+        window.open(socialInfo.url, '_blank');
+      }
+      // Link/Verify connection in database
+      await connect({ platform: socialInfo.platform });
+      // Refresh quests & dashboard state
+      queryClient.invalidateQueries({ queryKey: ['quests'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+    } catch (err: any) {
+      console.error('Social connection error:', err);
+    } finally {
+      setIsConnectingSocial(false);
+    }
+  };
+
   return (
     <div className="daily-card-panel p-5 flex flex-col justify-between min-h-[220px] relative overflow-hidden group">
       {/* Background glow effect on hover */}
@@ -87,34 +99,46 @@ function QuestCardComponent({ quest, onClaim, isClaiming }: QuestCardProps) {
       </div>
       
       <div className="mt-5 relative z-10">
-        {showGoButton ? (
+        {isCompleted ? (
           <button 
-            className="w-full font-gilroyBold text-sm sm:text-base py-2.5 px-4 rounded-xl flex items-center justify-center transition-all duration-300 glass-btn text-white hover:shadow-[0_0_15px_#7B2CBF]"
-            onClick={handleGo}
+            className="w-full font-gilroyBold text-sm sm:text-base py-2.5 px-4 rounded-xl flex items-center justify-center bg-black/40 text-gray-500 border border-white/5 cursor-not-allowed"
+            disabled
           >
-            Go
+            Claimed
           </button>
-        ) : (
+        ) : canClaim ? (
           <button 
-            className={`w-full font-gilroyBold text-sm sm:text-base py-2.5 px-4 rounded-xl flex items-center justify-center transition-all duration-300 ${
-              isCompleted 
-                ? 'bg-black/40 text-gray-500 border border-white/5 cursor-not-allowed' 
-                : !isClaimable
-                ? 'bg-purple-900/20 text-purple-400/50 border border-purple-500/10 cursor-not-allowed'
-                : 'glass-btn text-white hover:shadow-[0_0_15px_#7B2CBF]'
-            }`}
-            disabled={isCompleted || isClaiming || !isClaimable}
+            className="w-full font-gilroyBold text-sm sm:text-base py-2.5 px-4 rounded-xl flex items-center justify-center transition-all duration-300 glass-btn text-white hover:shadow-[0_0_15px_#7B2CBF] cursor-pointer"
+            disabled={isClaiming}
             onClick={() => onClaim(quest.id)}
           >
             {isClaiming ? (
               <JLTLoader variant="inline" size="sm" text="Claiming..." />
-            ) : isCompleted ? (
-              'Claimed'
-            ) : !isClaimable ? (
-              'Incomplete'
             ) : (
               'Claim Reward'
             )}
+          </button>
+        ) : isSocial ? (
+          <button 
+            className="w-full font-gilroyBold text-sm sm:text-base py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-all duration-300 glass-btn text-white hover:shadow-[0_0_15px_#7B2CBF] cursor-pointer"
+            disabled={isConnectingSocial}
+            onClick={handleConnectSocial}
+          >
+            {isConnectingSocial ? (
+              <JLTLoader variant="inline" size="sm" text="Connecting..." />
+            ) : (
+              <>
+                <span>{socialInfo?.label || 'Connect Account'}</span>
+                <ExternalLink className="w-4 h-4 text-purple-300" />
+              </>
+            )}
+          </button>
+        ) : (
+          <button 
+            className="w-full font-gilroyBold text-sm sm:text-base py-2.5 px-4 rounded-xl flex items-center justify-center bg-purple-900/20 text-purple-400/50 border border-purple-500/10 cursor-not-allowed"
+            disabled
+          >
+            Incomplete
           </button>
         )}
       </div>

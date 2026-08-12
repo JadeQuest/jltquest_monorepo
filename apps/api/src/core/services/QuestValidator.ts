@@ -87,6 +87,14 @@ export class QuestValidator {
         case 'quest_connect_telegram':
           canClaim = user.socialConnections.some((c: any) => c.platform === 'TELEGRAM' && c.connected);
           break;
+        case 'soc_instagram_connect':
+        case 'quest_connect_instagram':
+          canClaim = user.socialConnections.some((c: any) => c.platform === 'INSTAGRAM' && c.connected);
+          break;
+        case 'soc_facebook_connect':
+        case 'quest_connect_facebook':
+          canClaim = user.socialConnections.some((c: any) => c.platform === 'FACEBOOK' && c.connected);
+          break;
         default:
           canClaim = false;
       }

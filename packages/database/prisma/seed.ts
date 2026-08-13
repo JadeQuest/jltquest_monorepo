@@ -314,7 +314,7 @@ async function main() {
       id: 'var_cosmic_explorer_basic',
       avatarId: cosmicExplorer.id,
       type: AvatarVariantType.BASIC,
-      imageUrl: '/optimized/avatars/cosmic_explorer_basic.webp',
+      imageUrl: '/optimized/avatars/cosmic_explorer_basic.avif',
     },
   });
 
@@ -325,7 +325,7 @@ async function main() {
       id: 'var_cosmic_explorer_3d',
       avatarId: cosmicExplorer.id,
       type: AvatarVariantType.THREE_D,
-      imageUrl: '/optimized/avatars/cosmic_explorer_3d.webp',
+      imageUrl: '/optimized/avatars/cosmic_explorer_3d.avif',
     },
   });
 
@@ -346,7 +346,7 @@ async function main() {
       id: 'var_space_ranger_basic',
       avatarId: spaceRanger.id,
       type: AvatarVariantType.BASIC,
-      imageUrl: '/optimized/avatars/space_ranger_basic.webp',
+      imageUrl: '/optimized/avatars/space_ranger_basic.avif',
     },
   });
 
@@ -357,7 +357,7 @@ async function main() {
       id: 'var_space_ranger_3d',
       avatarId: spaceRanger.id,
       type: AvatarVariantType.THREE_D,
-      imageUrl: '/optimized/avatars/space_ranger_3d.webp',
+      imageUrl: '/optimized/avatars/space_ranger_3d.avif',
     },
   });
 
@@ -452,7 +452,7 @@ async function main() {
   if (existingCardsCount === 0) {
     const rareCardsData = Array.from({ length: 16 }).map((_, i) => ({
       name: `Card ${i + 1}`,
-      imageUrl: `/optimized/collect-${i + 1}.webp`,
+      imageUrl: `/optimized/collect-${i + 1}.avif`,
     }));
     await prisma.rareCard.createMany({
       data: rareCardsData,
@@ -487,6 +487,59 @@ async function main() {
 
     // Create 50 levels with cumulative RP XP requirements
     console.log('Seeding Rare Pass Levels and Rewards...');
+    const rewardsMap: Record<number, { free: { type: RarePassRewardType, amount?: number, metadata?: any }, premium: { type: RarePassRewardType, amount?: number, metadata?: any } }> = {
+      1: { free: { type: RarePassRewardType.GP, amount: 50 }, premium: { type: RarePassRewardType.GP, amount: 100 } },
+      2: { free: { type: RarePassRewardType.XP, amount: 50 }, premium: { type: RarePassRewardType.XP, amount: 100 } },
+      3: { free: { type: RarePassRewardType.GP, amount: 75 }, premium: { type: RarePassRewardType.GP, amount: 150 } },
+      4: { free: { type: RarePassRewardType.FRAGMENT, amount: 1 }, premium: { type: RarePassRewardType.FRAGMENT, amount: 2 } },
+      5: { free: { type: RarePassRewardType.GP, amount: 75 }, premium: { type: RarePassRewardType.GP, amount: 150 } },
+      6: { free: { type: RarePassRewardType.XP, amount: 75 }, premium: { type: RarePassRewardType.XP, amount: 150 } },
+      7: { free: { type: RarePassRewardType.SPIN, amount: 1 }, premium: { type: RarePassRewardType.SPIN, amount: 2 } },
+      8: { free: { type: RarePassRewardType.GP, amount: 100 }, premium: { type: RarePassRewardType.GP, amount: 200 } },
+      9: { free: { type: RarePassRewardType.XP, amount: 100 }, premium: { type: RarePassRewardType.XP, amount: 200 } },
+      10: { free: { type: RarePassRewardType.AVATAR, metadata: { variantId: explorerBasic.id } }, premium: { type: RarePassRewardType.AVATAR, metadata: { variantId: explorer3D.id } } },
+      11: { free: { type: RarePassRewardType.GP, amount: 100 }, premium: { type: RarePassRewardType.GP, amount: 200 } },
+      12: { free: { type: RarePassRewardType.XP, amount: 100 }, premium: { type: RarePassRewardType.XP, amount: 200 } },
+      13: { free: { type: RarePassRewardType.FRAGMENT, amount: 1 }, premium: { type: RarePassRewardType.FRAGMENT, amount: 3 } },
+      14: { free: { type: RarePassRewardType.GP, amount: 150 }, premium: { type: RarePassRewardType.GP, amount: 300 } },
+      15: { free: { type: RarePassRewardType.SPIN, amount: 1 }, premium: { type: RarePassRewardType.SPIN, amount: 3 } },
+      16: { free: { type: RarePassRewardType.XP, amount: 150 }, premium: { type: RarePassRewardType.XP, amount: 300 } },
+      17: { free: { type: RarePassRewardType.GP, amount: 150 }, premium: { type: RarePassRewardType.GP, amount: 300 } },
+      18: { free: { type: RarePassRewardType.FRAGMENT, amount: 1 }, premium: { type: RarePassRewardType.FRAGMENT, amount: 3 } },
+      19: { free: { type: RarePassRewardType.XP, amount: 150 }, premium: { type: RarePassRewardType.XP, amount: 300 } },
+      20: { free: { type: RarePassRewardType.GP, amount: 200 }, premium: { type: RarePassRewardType.GP, amount: 400 } },
+      21: { free: { type: RarePassRewardType.SPIN, amount: 1 }, premium: { type: RarePassRewardType.SPIN, amount: 3 } },
+      22: { free: { type: RarePassRewardType.XP, amount: 150 }, premium: { type: RarePassRewardType.XP, amount: 300 } },
+      23: { free: { type: RarePassRewardType.FRAGMENT, amount: 1 }, premium: { type: RarePassRewardType.FRAGMENT, amount: 3 } },
+      24: { free: { type: RarePassRewardType.GP, amount: 200 }, premium: { type: RarePassRewardType.GP, amount: 400 } },
+      25: { free: { type: RarePassRewardType.XP, amount: 200 }, premium: { type: RarePassRewardType.XP, amount: 400 } },
+      26: { free: { type: RarePassRewardType.SPIN, amount: 1 }, premium: { type: RarePassRewardType.SPIN, amount: 3 } },
+      27: { free: { type: RarePassRewardType.GP, amount: 200 }, premium: { type: RarePassRewardType.GP, amount: 400 } },
+      28: { free: { type: RarePassRewardType.FRAGMENT, amount: 1 }, premium: { type: RarePassRewardType.FRAGMENT, amount: 3 } },
+      29: { free: { type: RarePassRewardType.XP, amount: 200 }, premium: { type: RarePassRewardType.XP, amount: 400 } },
+      30: { free: { type: RarePassRewardType.GP, amount: 250 }, premium: { type: RarePassRewardType.GP, amount: 500 } },
+      31: { free: { type: RarePassRewardType.SPIN, amount: 1 }, premium: { type: RarePassRewardType.SPIN, amount: 3 } },
+      32: { free: { type: RarePassRewardType.XP, amount: 200 }, premium: { type: RarePassRewardType.XP, amount: 400 } },
+      33: { free: { type: RarePassRewardType.FRAGMENT, amount: 2 }, premium: { type: RarePassRewardType.FRAGMENT, amount: 5 } },
+      34: { free: { type: RarePassRewardType.GP, amount: 250 }, premium: { type: RarePassRewardType.GP, amount: 500 } },
+      35: { free: { type: RarePassRewardType.XP, amount: 200 }, premium: { type: RarePassRewardType.XP, amount: 400 } },
+      36: { free: { type: RarePassRewardType.SPIN, amount: 2 }, premium: { type: RarePassRewardType.SPIN, amount: 5 } },
+      37: { free: { type: RarePassRewardType.GP, amount: 250 }, premium: { type: RarePassRewardType.GP, amount: 500 } },
+      38: { free: { type: RarePassRewardType.FRAGMENT, amount: 2 }, premium: { type: RarePassRewardType.FRAGMENT, amount: 5 } },
+      39: { free: { type: RarePassRewardType.XP, amount: 200 }, premium: { type: RarePassRewardType.XP, amount: 400 } },
+      40: { free: { type: RarePassRewardType.GP, amount: 250 }, premium: { type: RarePassRewardType.GP, amount: 500 } },
+      41: { free: { type: RarePassRewardType.SPIN, amount: 2 }, premium: { type: RarePassRewardType.SPIN, amount: 5 } },
+      42: { free: { type: RarePassRewardType.XP, amount: 200 }, premium: { type: RarePassRewardType.XP, amount: 400 } },
+      43: { free: { type: RarePassRewardType.FRAGMENT, amount: 2 }, premium: { type: RarePassRewardType.FRAGMENT, amount: 5 } },
+      44: { free: { type: RarePassRewardType.GP, amount: 300 }, premium: { type: RarePassRewardType.GP, amount: 600 } },
+      45: { free: { type: RarePassRewardType.XP, amount: 250 }, premium: { type: RarePassRewardType.XP, amount: 500 } },
+      46: { free: { type: RarePassRewardType.SPIN, amount: 3 }, premium: { type: RarePassRewardType.SPIN, amount: 6 } },
+      47: { free: { type: RarePassRewardType.GP, amount: 350 }, premium: { type: RarePassRewardType.GP, amount: 700 } },
+      48: { free: { type: RarePassRewardType.FRAGMENT, amount: 3 }, premium: { type: RarePassRewardType.FRAGMENT, amount: 10 } },
+      49: { free: { type: RarePassRewardType.XP, amount: 300 }, premium: { type: RarePassRewardType.XP, amount: 600 } },
+      50: { free: { type: RarePassRewardType.CARD, amount: 1 }, premium: { type: RarePassRewardType.CARD, amount: 1 } },
+    };
+
     let cumulativeXp = 0;
     for (let l = 1; l <= 50; l++) {
       if (l > 1) {
@@ -501,61 +554,27 @@ async function main() {
         },
       });
 
-      // Seed Free & Premium Rewards
-      if (l === 1) {
+      const rewardsForLevel = rewardsMap[l];
+      if (rewardsForLevel) {
         await prisma.rarePassReward.create({
-          data: { levelId: levelRecord.id, track: RarePassTrack.FREE, rewardType: RarePassRewardType.GP, amount: 50, sortOrder: 1 },
+          data: {
+            levelId: levelRecord.id,
+            track: RarePassTrack.FREE,
+            rewardType: rewardsForLevel.free.type,
+            amount: rewardsForLevel.free.amount ?? null,
+            metadata: rewardsForLevel.free.metadata ?? null,
+            sortOrder: 1,
+          },
         });
         await prisma.rarePassReward.create({
-          data: { levelId: levelRecord.id, track: RarePassTrack.PREMIUM, rewardType: RarePassRewardType.GP, amount: 100, sortOrder: 1 },
-        });
-      } else if (l === 5) {
-        await prisma.rarePassReward.create({
-          data: { levelId: levelRecord.id, track: RarePassTrack.FREE, rewardType: RarePassRewardType.GP, amount: 100, sortOrder: 1 },
-        });
-        await prisma.rarePassReward.create({
-          data: { levelId: levelRecord.id, track: RarePassTrack.FREE, rewardType: RarePassRewardType.AVATAR, amount: null, metadata: { variantId: explorerBasic.id }, sortOrder: 2 },
-        });
-        await prisma.rarePassReward.create({
-          data: { levelId: levelRecord.id, track: RarePassTrack.PREMIUM, rewardType: RarePassRewardType.GP, amount: 200, sortOrder: 1 },
-        });
-        await prisma.rarePassReward.create({
-          data: { levelId: levelRecord.id, track: RarePassTrack.PREMIUM, rewardType: RarePassRewardType.AVATAR, amount: null, metadata: { variantId: explorer3D.id }, sortOrder: 2 },
-        });
-      } else if (l === 10) {
-        await prisma.rarePassReward.create({
-          data: { levelId: levelRecord.id, track: RarePassTrack.FREE, rewardType: RarePassRewardType.FRAGMENT, amount: 3, sortOrder: 1 },
-        });
-        await prisma.rarePassReward.create({
-          data: { levelId: levelRecord.id, track: RarePassTrack.PREMIUM, rewardType: RarePassRewardType.FRAGMENT, amount: 10, sortOrder: 1 },
-        });
-      } else if (l === 15) {
-        await prisma.rarePassReward.create({
-          data: { levelId: levelRecord.id, track: RarePassTrack.FREE, rewardType: RarePassRewardType.CARD, amount: 1, sortOrder: 1 },
-        });
-        await prisma.rarePassReward.create({
-          data: { levelId: levelRecord.id, track: RarePassTrack.PREMIUM, rewardType: RarePassRewardType.CARD, amount: 1, sortOrder: 1 },
-        });
-      } else if (l === 25) {
-        await prisma.rarePassReward.create({
-          data: { levelId: levelRecord.id, track: RarePassTrack.FREE, rewardType: RarePassRewardType.FRAGMENT, amount: 5, sortOrder: 1 },
-        });
-        await prisma.rarePassReward.create({
-          data: { levelId: levelRecord.id, track: RarePassTrack.PREMIUM, rewardType: RarePassRewardType.FRAGMENT, amount: 15, sortOrder: 1 },
-        });
-      } else if (l === 30) {
-        await prisma.rarePassReward.create({
-          data: { levelId: levelRecord.id, track: RarePassTrack.FREE, rewardType: RarePassRewardType.CARD, amount: 1, sortOrder: 1 },
-        });
-        await prisma.rarePassReward.create({
-          data: { levelId: levelRecord.id, track: RarePassTrack.PREMIUM, rewardType: RarePassRewardType.CARD, amount: 1, sortOrder: 1 },
-        });
-      } else {
-        await prisma.rarePassReward.create({
-          data: { levelId: levelRecord.id, track: RarePassTrack.FREE, rewardType: RarePassRewardType.GP, amount: 10 + l, sortOrder: 1 },
-        });
-        await prisma.rarePassReward.create({
-          data: { levelId: levelRecord.id, track: RarePassTrack.PREMIUM, rewardType: RarePassRewardType.GP, amount: 30 + l * 2, sortOrder: 1 },
+          data: {
+            levelId: levelRecord.id,
+            track: RarePassTrack.PREMIUM,
+            rewardType: rewardsForLevel.premium.type,
+            amount: rewardsForLevel.premium.amount ?? null,
+            metadata: rewardsForLevel.premium.metadata ?? null,
+            sortOrder: 1,
+          },
         });
       }
     }

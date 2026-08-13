@@ -97,7 +97,7 @@ const HeaderStatusComponent: React.FC<HeaderStatusProps> = ({
               <div className="glass-pill px-3 py-1.5 sm:px-4 sm:py-2 flex items-center gap-2 shadow-md">
                 <div className="w-6 h-6 sm:w-7 sm:h-7 relative flex items-center justify-center shrink-0">
                   <img
-                    src="/optimized/coin.webp"
+                    src="/optimized/coin.avif"
                     alt="Gold Coins Badge"
                     width={28}
                     height={28}

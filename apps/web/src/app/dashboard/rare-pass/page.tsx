@@ -131,7 +131,7 @@ export default function RarePassPage() {
 
   /* Calculations */
   const seasonName = status?.season?.name || 'Season 01: Cosmic Origins';
-  const maxLevel = status?.season?.maxLevel ?? 30;
+  const maxLevel = status?.season?.maxLevel ?? 50;
   const currentLevel = status?.progression?.currentLevel ?? 1;
   const totalRpXp = status?.progression?.totalRpXp ?? 0;
   const xpInCurrentLevel = status?.progression?.xpInCurrentLevel ?? 0;
@@ -368,66 +368,66 @@ export default function RarePassPage() {
 
           {activeTab === 'missions' && missions && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {missions.map((mission: RarePassMission) => (
-              <div key={mission.id} className="daily-card-panel p-5 flex flex-col justify-between min-h-[200px] relative overflow-hidden group">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-600/10 rounded-full blur-2xl group-hover:bg-cyan-600/20 transition-all duration-500" />
+              {missions.map((mission: RarePassMission) => (
+                <div key={mission.id} className="daily-card-panel p-5 flex flex-col justify-between min-h-[200px] relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-600/10 rounded-full blur-2xl group-hover:bg-cyan-600/20 transition-all duration-500" />
 
-                <div className="flex-grow flex flex-col relative z-10">
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="text-white font-gilroyBold text-lg font-bold tracking-tight">{mission.name}</h3>
-                    <span className="text-xs px-2.5 py-1 rounded-md ml-2 whitespace-nowrap font-gilroyMedium border bg-cyan-500/10 text-cyan-300 border-cyan-500/20">
-                      {mission.type}
-                    </span>
-                  </div>
-
-                  <p className="text-sm text-gray-400 font-gilroyMedium mb-4 leading-relaxed">{mission.description}</p>
-
-                  <div className="flex flex-col gap-1 mb-3">
-                    <div className="flex justify-between text-xs text-gray-300 font-gilroyMedium">
-                      <span>Progress</span>
-                      <span className="text-cyan-300 font-gilroyBold">
-                        {mission.progress} / {mission.targetCount}
+                  <div className="flex-grow flex flex-col relative z-10">
+                    <div className="flex justify-between items-start mb-2">
+                      <h3 className="text-white font-gilroyBold text-lg font-bold tracking-tight">{mission.name}</h3>
+                      <span className="text-xs px-2.5 py-1 rounded-md ml-2 whitespace-nowrap font-gilroyMedium border bg-cyan-500/10 text-cyan-300 border-cyan-500/20">
+                        {mission.type}
                       </span>
                     </div>
-                    <div className="w-full h-2 bg-black/50 rounded-full overflow-hidden p-0.5 border border-white/10">
-                      <div
-                        className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-purple-500 transition-all duration-300"
-                        style={{ width: `${Math.min(100, Math.round((mission.progress / mission.targetCount) * 100))}%` }}
-                      />
+
+                    <p className="text-sm text-gray-400 font-gilroyMedium mb-4 leading-relaxed">{mission.description}</p>
+
+                    <div className="flex flex-col gap-1 mb-3">
+                      <div className="flex justify-between text-xs text-gray-300 font-gilroyMedium">
+                        <span>Progress</span>
+                        <span className="text-cyan-300 font-gilroyBold">
+                          {mission.progress} / {mission.targetCount}
+                        </span>
+                      </div>
+                      <div className="w-full h-2 bg-black/50 rounded-full overflow-hidden p-0.5 border border-white/10">
+                        <div
+                          className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-purple-500 transition-all duration-300"
+                          style={{ width: `${Math.min(100, Math.round((mission.progress / mission.targetCount) * 100))}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex items-center text-[#00F0FF] font-gilroyBold text-sm font-semibold tracking-wide mt-auto pt-1">
+                      <Sparkles className="w-4 h-4 mr-1.5 opacity-90" />
+                      +{mission.rpXpReward} RP XP
                     </div>
                   </div>
 
-                  <div className="flex items-center text-[#00F0FF] font-gilroyBold text-sm font-semibold tracking-wide mt-auto pt-1">
-                    <Sparkles className="w-4 h-4 mr-1.5 opacity-90" />
-                    +{mission.rpXpReward} RP XP
+                  <div className="mt-4 relative z-10">
+                    <button
+                      className={`w-full font-gilroyBold text-sm py-2.5 px-4 rounded-xl flex items-center justify-center transition-all duration-300 cursor-pointer ${mission.completed
+                        ? 'bg-black/40 text-gray-500 border border-white/5 cursor-not-allowed'
+                        : !mission.canClaim
+                          ? 'bg-cyan-900/20 text-cyan-400/50 border border-cyan-500/10 cursor-not-allowed'
+                          : 'glass-btn text-white hover:shadow-[0_0_15px_#00F0FF]'
+                        }`}
+                      disabled={mission.completed || claimingId === mission.id || !mission.canClaim}
+                      onClick={() => handleClaimMission(mission.id, mission.name)}
+                    >
+                      {claimingId === mission.id ? (
+                        <JLTLoader variant="inline" size="sm" text="Claiming..." />
+                      ) : mission.completed ? (
+                        'Completed'
+                      ) : !mission.canClaim ? (
+                        'In Progress'
+                      ) : (
+                        'Claim Mission'
+                      )}
+                    </button>
                   </div>
                 </div>
-
-                <div className="mt-4 relative z-10">
-                  <button
-                    className={`w-full font-gilroyBold text-sm py-2.5 px-4 rounded-xl flex items-center justify-center transition-all duration-300 cursor-pointer ${mission.completed
-                      ? 'bg-black/40 text-gray-500 border border-white/5 cursor-not-allowed'
-                      : !mission.canClaim
-                        ? 'bg-cyan-900/20 text-cyan-400/50 border border-cyan-500/10 cursor-not-allowed'
-                        : 'glass-btn text-white hover:shadow-[0_0_15px_#00F0FF]'
-                      }`}
-                    disabled={mission.completed || claimingId === mission.id || !mission.canClaim}
-                    onClick={() => handleClaimMission(mission.id, mission.name)}
-                  >
-                    {claimingId === mission.id ? (
-                      <JLTLoader variant="inline" size="sm" text="Claiming..." />
-                    ) : mission.completed ? (
-                      'Completed'
-                    ) : !mission.canClaim ? (
-                      'In Progress'
-                    ) : (
-                      'Claim Mission'
-                    )}
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
           )}
         </div>
       )}

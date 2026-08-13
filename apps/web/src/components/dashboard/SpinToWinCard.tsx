@@ -12,7 +12,7 @@ const PRIZES = [
   'Nothing',
   'Free Spin',
   '1 Fragment',
-  'Nothing',
+  '20 RP XP',
 ];
 
 const OUTCOME_TO_INDEX: Record<string, number> = {
@@ -22,7 +22,8 @@ const OUTCOME_TO_INDEX: Record<string, number> = {
   'GP_100': 3,
   'NOTHING': 4, 
   'FREE_SPIN_1': 5,
-  'FRAGMENT_1': 6
+  'FRAGMENT_1': 6,
+  'RP_XP_20': 7
 };
 
 const SpinToWinCardComponent: React.FC = () => {
@@ -55,9 +56,6 @@ const SpinToWinCardComponent: React.FC = () => {
       
       // 2. Map outcome to wheel index
       let prizeIndex = OUTCOME_TO_INDEX[result.outcome];
-      if (result.outcome === 'NOTHING' && Math.random() > 0.5) {
-        prizeIndex = 7;
-      }
       
       // 3. Calculate target rotation
       const targetDegree = ((8 - prizeIndex) % 8) * 45;
@@ -123,7 +121,7 @@ const SpinToWinCardComponent: React.FC = () => {
         {/* Decorative wheel for the card */}
         <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 w-[340px] h-[340px] flex items-center justify-center pointer-events-none opacity-80 group-hover:opacity-100 transition-opacity duration-300">
           <img
-            src="/optimized/spin.webp"
+            src="/optimized/spin.avif"
             alt="Spin to Win Wheel"
             width={340}
             height={340}

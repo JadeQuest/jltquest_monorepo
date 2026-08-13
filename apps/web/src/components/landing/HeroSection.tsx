@@ -209,7 +209,7 @@ export const HeroSection: React.FC = () => {
                 <div className="flex items-center gap-3">
                   <div className="relative">
                     <img
-                      src="/optimized/mascot.webp"
+                      src="/optimized/mascot.avif"
                       alt="JLT Mascot"
                       width={48}
                       height={48}
@@ -236,7 +236,7 @@ export const HeroSection: React.FC = () => {
 
                 {/* Coin Counter Pill */}
                 <div className="glass-pill px-3.5 py-1.5 flex items-center gap-2 border border-amber-500/40 bg-amber-500/10 relative shadow-[0_0_15px_rgba(251,191,36,0.2)]">
-                  <img src="/optimized/coin.webp" alt="Coin" width={20} height={20} className="w-5 h-5 object-contain animate-bounce" style={{ animationDuration: '2.5s' }} />
+                  <img src="/optimized/coin.avif" alt="Coin" width={20} height={20} className="w-5 h-5 object-contain animate-bounce" style={{ animationDuration: '2.5s' }} />
                   <span className="font-gilroyBold text-amber-300 text-sm tracking-wide">{coinsCount.toLocaleString()}</span>
                   
                   {/* Floating +150 Animation */}
@@ -315,13 +315,13 @@ export const HeroSection: React.FC = () => {
                 <span className="font-gilroyMedium text-xs text-gray-400">Unlockable Loot Passes:</span>
                 <div className="flex items-center gap-2.5">
                   <div className="group relative cursor-pointer" title="Mythic Pass">
-                    <img src="/optimized/collect-1.webp" alt="Pass 1" width={36} height={40} loading="lazy" decoding="async" className="w-9 h-9 object-contain transform group-hover:scale-125 transition-transform duration-200 drop-shadow-[0_0_8px_rgba(255,162,141,0.5)]" />
+                    <img src="/optimized/collect-1.avif" alt="Pass 1" width={36} height={40} loading="lazy" decoding="async" className="w-9 h-9 object-contain transform group-hover:scale-125 transition-transform duration-200 drop-shadow-[0_0_8px_rgba(255,162,141,0.5)]" />
                   </div>
                   <div className="group relative cursor-pointer" title="Rare Drop">
-                    <img src="/optimized/collect-2.webp" alt="Pass 2" width={36} height={44} loading="lazy" decoding="async" className="w-9 h-9 object-contain transform group-hover:scale-125 transition-transform duration-200 drop-shadow-[0_0_8px_rgba(123,44,191,0.5)]" />
+                    <img src="/optimized/collect-2.avif" alt="Pass 2" width={36} height={44} loading="lazy" decoding="async" className="w-9 h-9 object-contain transform group-hover:scale-125 transition-transform duration-200 drop-shadow-[0_0_8px_rgba(123,44,191,0.5)]" />
                   </div>
                   <div className="group relative cursor-pointer" title="Gold Pass">
-                    <img src="/optimized/collect-3.webp" alt="Pass 3" width={36} height={43} loading="lazy" decoding="async" className="w-9 h-9 object-contain transform group-hover:scale-125 transition-transform duration-200 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]" />
+                    <img src="/optimized/collect-3.avif" alt="Pass 3" width={36} height={43} loading="lazy" decoding="async" className="w-9 h-9 object-contain transform group-hover:scale-125 transition-transform duration-200 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]" />
                   </div>
                 </div>
               </div>

@@ -25,7 +25,7 @@ const RarePassCardComponent: React.FC = () => {
       {/* Full Background Official RarePassBG SVG */}
       <div className="absolute inset-0 w-full h-full z-0 pointer-events-none overflow-hidden rounded-[25px]">
         <img
-          src="/optimized/rare-pass-bg.webp"
+          src="/optimized/rare-pass-bg.avif"
           alt="Rare Pass Background"
           width={709}
           height={401}
@@ -44,16 +44,10 @@ const RarePassCardComponent: React.FC = () => {
 
       {/* Card Text Content */}
       <div className="flex flex-col gap-2 z-20 max-w-[360px]">
-        <div className="flex items-center gap-2">
-          <span className="text-[10px] sm:text-xs font-gilroyBold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-purple-500/20 text-[#00F0FF] border border-purple-500/30">
-            {isPremium ? 'Premium Pass Active' : 'Free Pass'}
-          </span>
-        </div>
-
         <h2 className="text-white font-gilroyBold text-2xl font-bold tracking-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.9)]">
           {seasonName}
         </h2>
-        
+
         <p className="text-purple-200 font-gilroyRegular text-xs sm:text-sm font-normal leading-relaxed opacity-95 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
           Earn RP XP from quests, check-ins & spins to level up your pass and unlock exclusive rewards.
         </p>
@@ -76,9 +70,8 @@ const RarePassCardComponent: React.FC = () => {
           </div>
         )}
 
-        {/* Action Button */}
         <div className="mt-3">
-          <Link href="/dashboard/quests">
+          <Link href="/dashboard/rare-pass">
             <button className="glass-btn px-5 py-2 rounded-xl text-white font-gilroyMedium text-sm font-semibold tracking-wide shadow-[0_0_20px_rgba(54,12,159,0.5)] hover:shadow-[0_0_25px_#FFA28D] transition-all">
               {isConnected && status ? 'View Pass & Missions →' : 'Explore Pass →'}
             </button>

@@ -102,7 +102,7 @@ export const ConvertGPModal: React.FC<ConvertGPModalProps> = ({ isOpen, onClose 
               <div className="flex flex-col">
                 <span className="text-xs text-purple-300 font-gilroyMedium">GP Balance</span>
                 <span className="text-xl font-gilroyBold text-amber-400 flex items-center gap-1.5 mt-0.5">
-                  <img src="/optimized/coin.webp" alt="GP" className="w-4 h-4 object-contain" />
+                  <img src="/optimized/coin.avif" alt="GP" className="w-4 h-4 object-contain" />
                   {userGp}
                 </span>
               </div>

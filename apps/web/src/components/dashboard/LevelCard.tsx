@@ -15,13 +15,13 @@ const LevelCardComponent: React.FC = () => {
   const nextLevelXp = (!isConnected || !address) ? 0 : (dashboardData?.leveling?.nextLevelXp ?? 0);
 
   const getLevelInfo = (lvl: number | string) => {
-    if (typeof lvl !== 'number') return { tier: 'Starter', badge: '/optimized/container-level.webp' };
-    if (lvl <= 5) return { tier: 'Starter', badge: '/optimized/container-level.webp' };
-    if (lvl <= 10) return { tier: 'Bronze', badge: '/optimized/bronze-badge.webp' };
-    if (lvl <= 15) return { tier: 'Silver', badge: '/optimized/silver-badge.webp' };
-    if (lvl <= 20) return { tier: 'Gold', badge: '/optimized/gold-badge.webp' };
-    if (lvl <= 25) return { tier: 'Platinum', badge: '/optimized/platinum-badge.webp' };
-    return { tier: 'Diamond', badge: '/optimized/diamond-badge.webp' };
+    if (typeof lvl !== 'number') return { tier: 'Starter', badge: '/optimized/container-level.avif' };
+    if (lvl <= 5) return { tier: 'Starter', badge: '/optimized/container-level.avif' };
+    if (lvl <= 10) return { tier: 'Bronze', badge: '/optimized/bronze-badge.avif' };
+    if (lvl <= 15) return { tier: 'Silver', badge: '/optimized/silver-badge.avif' };
+    if (lvl <= 20) return { tier: 'Gold', badge: '/optimized/gold-badge.avif' };
+    if (lvl <= 25) return { tier: 'Platinum', badge: '/optimized/platinum-badge.avif' };
+    return { tier: 'Diamond', badge: '/optimized/diamond-badge.avif' };
   };
 
   const { tier, badge } = getLevelInfo(level);
@@ -75,7 +75,7 @@ const LevelCardComponent: React.FC = () => {
             style={{ left: `${progress}%` }}
           >
             <img
-              src="/optimized/slide-coin.webp"
+              src="/optimized/slide-coin.avif"
               alt="Slide Coin Indicator"
               width={24}
               height={24}

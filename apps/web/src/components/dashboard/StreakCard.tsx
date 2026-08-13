@@ -27,7 +27,7 @@ const StreakCardComponent: React.FC = () => {
       {/* South-East Flame graphic - Slightly larger (w-[215px] h-[260px]) */}
       <div className="absolute -right-5 -bottom-7 w-[215px] h-[260px] flex items-center justify-center animate-flame z-10 pointer-events-none">
         <Image
-          src="/optimized/flame.webp"
+          src="/optimized/flame.avif"
           alt="Flame Badge"
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"

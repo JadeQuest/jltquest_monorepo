@@ -49,7 +49,7 @@ export class LeaderboardService {
       gp: u.gp,
       jlt: Number(u.jlt),
       currentStreak: u.streak?.currentDay || 0,
-      avatarUrl: u.activeAvatarVariant?.imageUrl || '/optimized/avatars/cosmic_explorer_basic.webp'
+      avatarUrl: u.activeAvatarVariant?.imageUrl || '/optimized/avatars/cosmic_explorer_basic.avif'
     }));
   }
 }

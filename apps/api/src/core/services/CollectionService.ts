@@ -22,6 +22,7 @@ export class CollectionService {
               id: true,
               name: true,
               imageUrl: true,
+              rarity: true,
             },
           },
         },
@@ -38,6 +39,7 @@ export class CollectionService {
         id: c.card.id,
         name: c.card.name,
         imageUrl: c.card.imageUrl,
+        rarity: c.card.rarity,
         quantity: c.quantity,
         acquiredAt: c.updatedAt
       }))
@@ -66,9 +68,34 @@ export class CollectionService {
         data: { fragments: { decrement: requiredFragments } }
       });
 
-      // Get all available rare cards
-      const allCards = await tx.rareCard.findMany();
-      if (allCards.length === 0) {
+      // Roll for card rarity first
+      const probabilities = APP_CONFIG.COLLECTION.RARITY_PROBABILITIES;
+      const roll = Math.random();
+      let targetRarity: 'COMMON' | 'RARE' | 'EPIC' | 'LEGENDARY' = 'COMMON';
+
+      if (roll < probabilities.COMMON) {
+        targetRarity = 'COMMON';
+      } else if (roll < probabilities.COMMON + probabilities.RARE) {
+        targetRarity = 'RARE';
+      } else if (roll < probabilities.COMMON + probabilities.RARE + probabilities.EPIC) {
+        targetRarity = 'EPIC';
+      } else {
+        targetRarity = 'LEGENDARY';
+      }
+
+      // Query cards matching targetRarity
+      let eligibleCards = await tx.rareCard.findMany({
+        where: { rarity: targetRarity }
+      });
+
+      // Fallback: if no cards of that rarity exist, select from all non-mythical cards
+      if (eligibleCards.length === 0) {
+        eligibleCards = await tx.rareCard.findMany({
+          where: { rarity: { not: 'MYTHICAL' } }
+        });
+      }
+
+      if (eligibleCards.length === 0) {
         throw new NotFoundError(
           ErrorMessages[ErrorCode.NO_CARDS_AVAILABLE],
           ErrorCode.NO_CARDS_AVAILABLE
@@ -76,8 +103,8 @@ export class CollectionService {
       }
 
       // Pick a random card
-      const randomIndex = Math.floor(Math.random() * allCards.length);
-      const selectedCard = allCards[randomIndex];
+      const randomIndex = Math.floor(Math.random() * eligibleCards.length);
+      const selectedCard = eligibleCards[randomIndex];
 
       // Add to user collection or increment quantity
       const existingUserCard = await tx.userCard.findUnique({
@@ -129,6 +156,7 @@ export class CollectionService {
           id: result.card.id,
           name: result.card.name,
           imageUrl: result.card.imageUrl,
+          rarity: result.card.rarity,
           quantity: result.quantity
         }
       };

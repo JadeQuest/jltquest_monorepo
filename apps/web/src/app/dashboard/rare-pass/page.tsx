@@ -24,10 +24,10 @@ import {
 
 const getRewardImage = (type: string) => {
   const t = type.toLowerCase();
-  if (t === 'gp') return '/icon/coin.avif';
-  if (t === 'xp') return '/icon/xp.avif';
-  if (t === 'spin') return '/icon/spinIcon.avif';
-  if (t === 'fragment') return '/icon/Fragment.avif';
+  if (t === 'gp') return '/icon/coin.webp';
+  if (t === 'xp') return '/icon/xp.webp';
+  if (t === 'spin') return '/icon/spinIcon.webp';
+  if (t === 'fragment') return '/icon/Fragment.webp';
   return null;
 };
 

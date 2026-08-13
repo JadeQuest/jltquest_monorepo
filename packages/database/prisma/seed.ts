@@ -8,6 +8,7 @@ import {
   RarePassRewardType,
   RarePassMissionType,
   AvatarVariantType,
+  CardRarity,
 } from '@prisma/client';
 
 const prisma = new PrismaClient();
@@ -309,23 +310,23 @@ async function main() {
 
   const explorerBasic = await prisma.avatarVariant.upsert({
     where: { id: 'var_cosmic_explorer_basic' },
-    update: {},
+    update: { imageUrl: '/avatars/cosmic_explorer_basic.webp' },
     create: {
       id: 'var_cosmic_explorer_basic',
       avatarId: cosmicExplorer.id,
       type: AvatarVariantType.BASIC,
-      imageUrl: '/avatars/cosmic_explorer_basic.avif',
+      imageUrl: '/avatars/cosmic_explorer_basic.webp',
     },
   });
 
   const explorer3D = await prisma.avatarVariant.upsert({
     where: { id: 'var_cosmic_explorer_3d' },
-    update: {},
+    update: { imageUrl: '/avatars/cosmic_explorer_3d.webp' },
     create: {
       id: 'var_cosmic_explorer_3d',
       avatarId: cosmicExplorer.id,
       type: AvatarVariantType.THREE_D,
-      imageUrl: '/avatars/cosmic_explorer_3d.avif',
+      imageUrl: '/avatars/cosmic_explorer_3d.webp',
     },
   });
 
@@ -341,23 +342,23 @@ async function main() {
 
   await prisma.avatarVariant.upsert({
     where: { id: 'var_space_ranger_basic' },
-    update: {},
+    update: { imageUrl: '/avatars/space_ranger_basic.webp' },
     create: {
       id: 'var_space_ranger_basic',
       avatarId: spaceRanger.id,
       type: AvatarVariantType.BASIC,
-      imageUrl: '/avatars/space_ranger_basic.avif',
+      imageUrl: '/avatars/space_ranger_basic.webp',
     },
   });
 
   await prisma.avatarVariant.upsert({
     where: { id: 'var_space_ranger_3d' },
-    update: {},
+    update: { imageUrl: '/avatars/space_ranger_3d.webp' },
     create: {
       id: 'var_space_ranger_3d',
       avatarId: spaceRanger.id,
       type: AvatarVariantType.THREE_D,
-      imageUrl: '/avatars/space_ranger_3d.avif',
+      imageUrl: '/avatars/space_ranger_3d.webp',
     },
   });
 
@@ -448,18 +449,102 @@ async function main() {
 
   // ── 5. Seed Rare Cards ──────────────────────────
   console.log('Seeding Rare Cards...');
-  const existingCardsCount = await prisma.rareCard.count();
-  if (existingCardsCount === 0) {
-    const rareCardsData = Array.from({ length: 16 }).map((_, i) => ({
-      name: `Card ${i + 1}`,
-      imageUrl: `/card/collect-${i + 1}.avif`,
-    }));
-    await prisma.rareCard.createMany({
-      data: rareCardsData,
+  const totalCards = 30;
+  let seededNewCount = 0;
+
+  const cardNames = [
+    // Common (1-12)
+    "Stardust Bot",
+    "Forest Sage",
+    "Novice Wizard",
+    "Astro Explorer",
+    "Cyber Coder",
+    "Pirate Captain",
+    "Deep Sea Diver",
+    "Master Chef",
+    "Jungle Explorer",
+    "Dragon Tamer",
+    "Clockwork Tinkerer",
+    "Cosmic Monarch",
+    // Rare (13-20)
+    "Super Mascot",
+    "Cherry Blossom Samurai",
+    "Northern Explorer",
+    "Desert Nomad",
+    "Noir Detective",
+    "Starry Artist",
+    "Fire Rescue Hero",
+    "Sky Aviator",
+    // Epic (21-25)
+    "Neon Racer",
+    "Stardust Gardener",
+    "Ghost Hunter",
+    "Viking Raider",
+    "Pharaoh King",
+    // Legendary (26-28)
+    "Time Traveler",
+    "Rave DJ",
+    "Summit Climber",
+    // Mythical (29-30)
+    "Rune Blacksmith",
+    "Venetian Gondolier"
+  ];
+
+  const getRarityForIndex = (i: number): CardRarity => {
+    if (i < 12) return CardRarity.COMMON;
+    if (i < 20) return CardRarity.RARE;
+    if (i < 25) return CardRarity.EPIC;
+    if (i < 28) return CardRarity.LEGENDARY;
+    return CardRarity.MYTHICAL;
+  };
+
+  for (let i = 0; i < totalCards; i++) {
+    const cardName = cardNames[i] || `Card ${i + 1}`;
+    const cardUrl = `/card/collect-${i + 1}.webp`;
+    
+    // Check if card already exists under any variant of its path
+    const existingCard = await prisma.rareCard.findFirst({
+      where: {
+        imageUrl: {
+          in: [
+            cardUrl,
+            `/card/collect-${i + 1}.avif`,
+            `/optimized/collect-${i + 1}.avif`,
+            `/optimized/collect-${i + 1}.webp`
+          ]
+        }
+      }
     });
-    console.log('Seeded 16 Rare Cards.');
+
+    if (!existingCard) {
+      await prisma.rareCard.create({
+        data: {
+          name: cardName,
+          imageUrl: cardUrl,
+          rarity: getRarityForIndex(i),
+        }
+      });
+      seededNewCount++;
+    } else {
+      const newUrl = existingCard.imageUrl && (existingCard.imageUrl.endsWith('.avif') || existingCard.imageUrl.includes('/optimized/'))
+        ? existingCard.imageUrl.replace(/\.avif$/, '.webp').replace('/optimized/', '/card/')
+        : existingCard.imageUrl;
+
+      await prisma.rareCard.update({
+        where: { id: existingCard.id },
+        data: { 
+          name: cardName,
+          imageUrl: newUrl,
+          rarity: getRarityForIndex(i)
+        },
+      });
+    }
+  }
+
+  if (seededNewCount > 0) {
+    console.log(`Seeded ${seededNewCount} new Rare Cards (out of ${totalCards} total).`);
   } else {
-    console.log(`Rare Cards already seeded (${existingCardsCount} existing).`);
+    console.log(`All ${totalCards} Rare Cards are already seeded and up-to-date.`);
   }
 
   // ── 6. Seed Rare Pass Season, Levels, Rewards, and Missions ──────────────────────────

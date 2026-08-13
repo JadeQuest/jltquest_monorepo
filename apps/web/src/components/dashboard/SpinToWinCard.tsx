@@ -121,7 +121,7 @@ const SpinToWinCardComponent: React.FC = () => {
         {/* Decorative wheel for the card */}
         <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 w-[340px] h-[340px] flex items-center justify-center pointer-events-none opacity-80 group-hover:opacity-100 transition-opacity duration-300">
           <img
-            src="/icon/spin.avif"
+            src="/icon/spin.webp"
             alt="Spin to Win Wheel"
             width={340}
             height={340}

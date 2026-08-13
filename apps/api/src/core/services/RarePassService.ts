@@ -1,6 +1,6 @@
 import { BadRequestError, ConflictError, NotFoundError } from '../errors/AppError';
 import { ErrorCode, ErrorMessages, APP_CONFIG } from '@jlt/constants';
-import { RarePassSeasonStatus, RarePassTrack, RarePassRewardType, RpXpSource, RarePassMissionType, LedgerSource } from '@jlt/database';
+import { RarePassSeasonStatus, RarePassTrack, RarePassRewardType, RpXpSource, RarePassMissionType, LedgerSource, CardRarity } from '@jlt/database';
 
 export class RarePassService {
   constructor(private prisma: any) {}
@@ -241,15 +241,29 @@ export class RarePassService {
         // Pick a random card or specific if defined in metadata
         let cardId = reward.metadata && (reward.metadata as any).cardId;
         if (!cardId) {
-          const allCards = await tx.rareCard.findMany();
-          if (allCards.length === 0) {
+          let eligibleCards;
+          if (reward.track === RarePassTrack.PREMIUM) {
+            // Premium track card reward can award any card (including mythical)
+            eligibleCards = await tx.rareCard.findMany();
+          } else {
+            // Free track card reward can only award non-mythical cards
+            eligibleCards = await tx.rareCard.findMany({
+              where: {
+                rarity: {
+                  not: CardRarity.MYTHICAL
+                }
+              }
+            });
+          }
+
+          if (eligibleCards.length === 0) {
             throw new NotFoundError(
               ErrorMessages[ErrorCode.NO_CARDS_AVAILABLE],
               ErrorCode.NO_CARDS_AVAILABLE
             );
           }
-          const randomIndex = Math.floor(Math.random() * allCards.length);
-          cardId = allCards[randomIndex].id;
+          const randomIndex = Math.floor(Math.random() * eligibleCards.length);
+          cardId = eligibleCards[randomIndex].id;
         }
 
         const existingUserCard = await tx.userCard.findUnique({
@@ -272,7 +286,8 @@ export class RarePassService {
         grantDetails.card = {
           id: cardResult.card.id,
           name: cardResult.card.name,
-          imageUrl: cardResult.card.imageUrl
+          imageUrl: cardResult.card.imageUrl,
+          rarity: cardResult.card.rarity
         };
       } else if (reward.rewardType === RarePassRewardType.AVATAR) {
         const variantId = reward.metadata && (reward.metadata as any).variantId;

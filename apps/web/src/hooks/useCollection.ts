@@ -7,6 +7,7 @@ export interface Card {
   id: string;
   name: string;
   imageUrl: string;
+  rarity?: string;
   quantity: number;
   acquiredAt: string;
 }

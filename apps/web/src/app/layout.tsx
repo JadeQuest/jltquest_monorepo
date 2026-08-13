@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     type: 'website',
     images: [
       {
-        url: '/dashboard-bg.avif',
+        url: '/dashboard-bg.webp',
         width: 1200,
         height: 630,
         alt: 'JLTQuest rewards dashboard',
@@ -40,7 +40,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'JLTQuest — Play Daily & Earn Real Perks',
     description: 'Complete quick daily missions, spin for rare passes, and build your reward streak.',
-    images: ['/dashboard-bg.avif'],
+    images: ['/dashboard-bg.webp'],
   },
   icons: {
     icon: [{ url: '/jlt.svg', type: 'image/svg+xml' }],
@@ -62,7 +62,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`${plusJakartaSans.variable} dark`} style={{ background: '#080411' }} suppressHydrationWarning>
       <head>
         {/* Preload critical assets for instant splash rendering */}
-        <link rel="preload" href="/icon/mascot.avif" as="image" type="image/webp" fetchPriority="high" />
+        <link rel="preload" href="/icon/mascot.webp" as="image" type="image/webp" fetchPriority="high" />
         <link rel="preload" href="/jlt.svg" as="image" type="image/svg+xml" />
       </head>
       <body

@@ -112,6 +112,12 @@ export const APP_CONFIG = {
   },
   COLLECTION: {
     MERGE_FRAGMENTS_REQUIRED: 10,
+    RARITY_PROBABILITIES: {
+      COMMON: 0.60,
+      RARE: 0.25,
+      EPIC: 0.12,
+      LEGENDARY: 0.03,
+    },
   },
   INVITE: {
     INVITER_GP_REWARD: 100,

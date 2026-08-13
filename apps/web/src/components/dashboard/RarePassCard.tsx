@@ -25,7 +25,7 @@ const RarePassCardComponent: React.FC = () => {
       {/* Full Background Official RarePassBG SVG */}
       <div className="absolute inset-0 w-full h-full z-0 pointer-events-none overflow-hidden rounded-[25px]">
         <img
-          src="/rare-pass-bg.avif"
+          src="/rare-pass-bg.webp"
           alt="Rare Pass Background"
           width={709}
           height={401}

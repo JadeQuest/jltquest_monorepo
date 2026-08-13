@@ -113,6 +113,15 @@ enum AvatarVariantType {
   THREE_D
 }
 
+enum CardRarity {
+  COMMON
+  RARE
+  EPIC
+  LEGENDARY
+  MYTHICAL
+}
+
+
 // ─────────────────────────────────────────────
 // Core User & Progression
 // ─────────────────────────────────────────────
@@ -496,11 +505,12 @@ model SystemConfig {
 // ─────────────────────────────────────────────
 
 model RareCard {
-  id        String   @id @default(uuid())
+  id        String     @id @default(uuid())
   name      String
   imageUrl  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  rarity    CardRarity @default(COMMON)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 
   userCards UserCard[]
 

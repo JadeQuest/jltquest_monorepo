@@ -22,6 +22,15 @@ import {
   Clock,
 } from 'lucide-react';
 
+const getRewardImage = (type: string) => {
+  const t = type.toLowerCase();
+  if (t === 'gp') return '/icon/coin.avif';
+  if (t === 'xp') return '/icon/xp.avif';
+  if (t === 'spin') return '/icon/spinIcon.avif';
+  if (t === 'fragment') return '/icon/Fragment.avif';
+  return null;
+};
+
 export default function RarePassPage() {
   const { isConnected } = useAccount();
   const {
@@ -323,9 +332,20 @@ export default function RarePassPage() {
                           <span>Free Reward</span>
                           {freeReward?.isClaimed && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />}
                         </div>
-                        <p className="text-sm font-gilroyBold text-white">
-                          {freeReward ? `${freeReward.rewardType} ${freeReward.amount ? `(${freeReward.amount})` : ''}` : 'No Reward'}
-                        </p>
+                        <div className="flex items-center gap-2">
+                          {freeReward ? (
+                            <>
+                              {getRewardImage(freeReward.rewardType) && (
+                                <img src={getRewardImage(freeReward.rewardType)!} alt={freeReward.rewardType} className="w-6 h-6 object-contain drop-shadow-md" />
+                              )}
+                              <p className="text-sm font-gilroyBold text-white">
+                                {freeReward.rewardType} {freeReward.amount ? `(${freeReward.amount})` : ''}
+                              </p>
+                            </>
+                          ) : (
+                            <p className="text-sm font-gilroyBold text-white">No Reward</p>
+                          )}
+                        </div>
                         {freeReward && !freeReward.isClaimed && freeReward.isClaimable && (
                           <button
                             onClick={() => handleClaimReward(freeReward.id, `${freeReward.rewardType} (${freeReward.amount || 1})`)}
@@ -346,9 +366,20 @@ export default function RarePassPage() {
                           {premiumReward?.isClaimed && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />}
                           {!isPremium && <Lock className="w-3.5 h-3.5 text-gray-500" />}
                         </div>
-                        <p className="text-sm font-gilroyBold text-amber-100">
-                          {premiumReward ? `${premiumReward.rewardType} ${premiumReward.amount ? `(${premiumReward.amount})` : ''}` : 'Exclusive Bonus'}
-                        </p>
+                        <div className="flex items-center gap-2">
+                          {premiumReward ? (
+                            <>
+                              {getRewardImage(premiumReward.rewardType) && (
+                                <img src={getRewardImage(premiumReward.rewardType)!} alt={premiumReward.rewardType} className="w-6 h-6 object-contain drop-shadow-md" />
+                              )}
+                              <p className="text-sm font-gilroyBold text-amber-100">
+                                {premiumReward.rewardType} {premiumReward.amount ? `(${premiumReward.amount})` : ''}
+                              </p>
+                            </>
+                          ) : (
+                            <p className="text-sm font-gilroyBold text-amber-100">Exclusive Bonus</p>
+                          )}
+                        </div>
                         {isPremium && premiumReward && !premiumReward.isClaimed && premiumReward.isClaimable && (
                           <button
                             onClick={() => handleClaimReward(premiumReward.id, `Premium ${premiumReward.rewardType}`)}

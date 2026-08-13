@@ -296,7 +296,7 @@ async function main() {
 
   // ── 1. Seed Avatars & Variants ──────────────────────────
   console.log('Seeding Avatars...');
-  
+
   // Cosmic Explorer
   const cosmicExplorer = await prisma.avatar.upsert({
     where: { characterKey: 'cosmic_explorer' },
@@ -314,7 +314,7 @@ async function main() {
       id: 'var_cosmic_explorer_basic',
       avatarId: cosmicExplorer.id,
       type: AvatarVariantType.BASIC,
-      imageUrl: '/optimized/avatars/cosmic_explorer_basic.avif',
+      imageUrl: '/avatars/cosmic_explorer_basic.avif',
     },
   });
 
@@ -325,7 +325,7 @@ async function main() {
       id: 'var_cosmic_explorer_3d',
       avatarId: cosmicExplorer.id,
       type: AvatarVariantType.THREE_D,
-      imageUrl: '/optimized/avatars/cosmic_explorer_3d.avif',
+      imageUrl: '/avatars/cosmic_explorer_3d.avif',
     },
   });
 
@@ -346,7 +346,7 @@ async function main() {
       id: 'var_space_ranger_basic',
       avatarId: spaceRanger.id,
       type: AvatarVariantType.BASIC,
-      imageUrl: '/optimized/avatars/space_ranger_basic.avif',
+      imageUrl: '/avatars/space_ranger_basic.avif',
     },
   });
 
@@ -357,7 +357,7 @@ async function main() {
       id: 'var_space_ranger_3d',
       avatarId: spaceRanger.id,
       type: AvatarVariantType.THREE_D,
-      imageUrl: '/optimized/avatars/space_ranger_3d.avif',
+      imageUrl: '/avatars/space_ranger_3d.avif',
     },
   });
 
@@ -452,7 +452,7 @@ async function main() {
   if (existingCardsCount === 0) {
     const rareCardsData = Array.from({ length: 16 }).map((_, i) => ({
       name: `Card ${i + 1}`,
-      imageUrl: `/optimized/collect-${i + 1}.avif`,
+      imageUrl: `/card/collect-${i + 1}.avif`,
     }));
     await prisma.rareCard.createMany({
       data: rareCardsData,

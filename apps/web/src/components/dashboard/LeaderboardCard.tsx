@@ -4,12 +4,12 @@ import { Trophy, Medal, Star, Flame, Zap, ShieldAlert } from 'lucide-react';
 import { JLTLoader } from '@/components/common/JLTLoader';
 
 const getLevelInfo = (lvl: number) => {
-  if (lvl <= 5) return { tier: 'Starter', badge: '/optimized/container-level.avif', color: 'text-gray-400 border-gray-400/30 bg-gray-900/30' };
-  if (lvl <= 10) return { tier: 'Bronze', badge: '/optimized/bronze-badge.avif', color: 'text-amber-600 border-amber-600/30 bg-amber-950/20' };
-  if (lvl <= 15) return { tier: 'Silver', badge: '/optimized/silver-badge.avif', color: 'text-gray-300 border-gray-300/30 bg-gray-900/30' };
-  if (lvl <= 20) return { tier: 'Gold', badge: '/optimized/gold-badge.avif', color: 'text-yellow-400 border-yellow-400/40 bg-yellow-950/30' };
-  if (lvl <= 25) return { tier: 'Platinum', badge: '/optimized/platinum-badge.avif', color: 'text-cyan-300 border-cyan-400/40 bg-cyan-950/30' };
-  return { tier: 'Diamond', badge: '/optimized/diamond-badge.avif', color: 'text-purple-300 border-purple-400/40 bg-purple-950/30' };
+  if (lvl <= 5) return { tier: 'Starter', badge: '/badge/starter-badge.avif', color: 'text-gray-400 border-gray-400/30 bg-gray-900/30' };
+  if (lvl <= 10) return { tier: 'Bronze', badge: '/badge/bronze-badge.avif', color: 'text-amber-600 border-amber-600/30 bg-amber-950/20' };
+  if (lvl <= 15) return { tier: 'Silver', badge: '/badge/silver-badge.avif', color: 'text-gray-300 border-gray-300/30 bg-gray-900/30' };
+  if (lvl <= 20) return { tier: 'Gold', badge: '/badge/gold-badge.avif', color: 'text-yellow-400 border-yellow-400/40 bg-yellow-950/30' };
+  if (lvl <= 25) return { tier: 'Platinum', badge: '/badge/platinum-badge.avif', color: 'text-cyan-300 border-cyan-400/40 bg-cyan-950/30' };
+  return { tier: 'Diamond', badge: '/badge/diamond-badge.avif', color: 'text-purple-300 border-purple-400/40 bg-purple-950/30' };
 };
 
 export const LeaderboardCardComponent: React.FC = () => {

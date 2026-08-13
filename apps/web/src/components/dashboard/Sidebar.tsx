@@ -101,7 +101,7 @@ const SidebarComponent: React.FC<SidebarProps> = ({
         <div className="absolute inset-0 bg-gradient-to-tr from-[#340073]/40 via-[#7B2CBF]/30 to-transparent blur-2xl rounded-full scale-125 -z-10 group-hover:scale-150 transition-transform duration-500" />
         <div className="relative w-full h-[180px] sm:h-[240px] xl:h-[280px] flex items-center justify-center animate-float">
           <img
-            src="/optimized/mascot.avif"
+            src="/icon/mascot.avif"
             alt="JLT Mascot"
             width={280}
             height={280}

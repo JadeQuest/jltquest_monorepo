@@ -15,13 +15,13 @@ const LevelCardComponent: React.FC = () => {
   const nextLevelXp = (!isConnected || !address) ? 0 : (dashboardData?.leveling?.nextLevelXp ?? 0);
 
   const getLevelInfo = (lvl: number | string) => {
-    if (typeof lvl !== 'number') return { tier: 'Starter', badge: '/optimized/container-level.avif' };
-    if (lvl <= 5) return { tier: 'Starter', badge: '/optimized/container-level.avif' };
-    if (lvl <= 10) return { tier: 'Bronze', badge: '/optimized/bronze-badge.avif' };
-    if (lvl <= 15) return { tier: 'Silver', badge: '/optimized/silver-badge.avif' };
-    if (lvl <= 20) return { tier: 'Gold', badge: '/optimized/gold-badge.avif' };
-    if (lvl <= 25) return { tier: 'Platinum', badge: '/optimized/platinum-badge.avif' };
-    return { tier: 'Diamond', badge: '/optimized/diamond-badge.avif' };
+    if (typeof lvl !== 'number') return { tier: 'Starter', badge: '/badge/starter-badge.avif' };
+    if (lvl <= 5) return { tier: 'Starter', badge: '/badge/starter-badge.avif' };
+    if (lvl <= 10) return { tier: 'Bronze', badge: '/badge/bronze-badge.avif' };
+    if (lvl <= 15) return { tier: 'Silver', badge: '/badge/silver-badge.avif' };
+    if (lvl <= 20) return { tier: 'Gold', badge: '/badge/gold-badge.avif' };
+    if (lvl <= 25) return { tier: 'Platinum', badge: '/badge/platinum-badge.avif' };
+    return { tier: 'Diamond', badge: '/badge/diamond-badge.avif' };
   };
 
   const { tier, badge } = getLevelInfo(level);
@@ -44,28 +44,28 @@ const LevelCardComponent: React.FC = () => {
         <div className="flex flex-col gap-1 justify-center">
           {level !== '-' ? (
             <>
-              <div className="text-white font-gilroyBold text-4xl font-extrabold tracking-tight">
-                Lv. {level}
-              </div>
-              <div className="text-[#00F0FF] font-gilroyBold text-base font-semibold tracking-wide uppercase">
-                {tier} Tier
-              </div>
+              <span className="text-[#9D4EDD] text-xs font-semibold tracking-wider uppercase font-gilroySemiBold">Current Tier</span>
+              <h2 className="text-white text-2xl font-bold tracking-tight font-gilroyBold leading-none">{tier} Tier</h2>
+              <span className="text-gray-400 text-sm font-medium font-gilroyMedium">Level {level}</span>
             </>
           ) : (
-            <div className="text-white font-gilroyBold text-2xl font-bold tracking-tight">
-              Starter Tier
-            </div>
+            <>
+              <span className="text-gray-500 text-xs font-semibold tracking-wider uppercase font-gilroySemiBold">Status</span>
+              <h2 className="text-gray-400 text-2xl font-bold tracking-tight font-gilroyBold leading-none">Not Connected</h2>
+              <span className="text-gray-500 text-sm font-medium font-gilroyMedium">Connect wallet to view level</span>
+            </>
           )}
         </div>
       </div>
 
-      <div className="w-full flex flex-col gap-2 mt-auto">
-        <div className="flex justify-between items-center px-1 text-xs sm:text-sm text-gray-400 font-gilroyMedium tracking-wide">
-          <span>0 XP</span>
-          <span className="text-white/80">{currentXp} XP</span>
-          <span>{nextLevelXp} XP</span>
+      <div className="flex flex-col gap-2 mt-4">
+        <div className="flex justify-between items-center text-xs font-medium">
+          <span className="text-gray-400 font-gilroyMedium">Progress to next level</span>
+          <span className="text-white font-semibold font-gilroySemiBold">
+            {level !== '-' ? `${currentXp} / ${nextLevelXp} XP` : '-'}
+          </span>
         </div>
-        <div className="w-full h-3.5 bg-black/40 rounded-full p-0.5 relative overflow-visible border border-white/10">
+        <div className="h-2 bg-gray-800 rounded-full relative">
           <div
             className="h-full bg-gradient-to-r from-[#360C9F] via-[#7B2CBF] to-[#FFA28D] rounded-full shadow-[0_0_10px_#FFA28D]"
             style={{ width: `${progress}%` }}
@@ -75,7 +75,7 @@ const LevelCardComponent: React.FC = () => {
             style={{ left: `${progress}%` }}
           >
             <img
-              src="/optimized/slide-coin.avif"
+              src="/icon/slide-coin.avif"
               alt="Slide Coin Indicator"
               width={24}
               height={24}

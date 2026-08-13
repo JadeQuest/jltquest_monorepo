@@ -49,7 +49,7 @@ const steps: StepProps[] = [
     step: 3,
     title: 'Collect Rares',
     description: 'Use your coins to spin, collect, and upgrade rare passes and NFTs.',
-    icon: '/optimized/spin.avif',
+    icon: '/icon/spin.avif',
     iconAlt: 'Collect Rares',
   },
   {
@@ -74,7 +74,7 @@ export const HowItWorksSection: React.FC = () => {
         {/* Section Header */}
         <div className="flex flex-col items-center gap-4 text-center">
           <div className="glass-pill px-5 py-2 inline-flex items-center gap-2">
-            <img src="/optimized/coin.avif" alt="JLT Coin" width={20} height={20} loading="lazy" decoding="async" className="w-5 h-5 object-contain animate-sparkle" />
+            <img src="/icon/coin.avif" alt="JLT Coin" width={20} height={20} loading="lazy" decoding="async" className="w-5 h-5 object-contain animate-sparkle" />
             <span className="font-gilroyMedium text-sm text-white/90 tracking-wider uppercase">Simple Steps</span>
           </div>
           <h2 className="font-gilroyBold text-5xl text-white tracking-tight leading-tight">

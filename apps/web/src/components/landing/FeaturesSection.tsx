@@ -40,7 +40,7 @@ const features: FeatureCardProps[] = [
     delay: '0.1s',
   },
   {
-    icon: '/optimized/spin.avif',
+    icon: '/icon/spin.avif',
     iconAlt: 'Spin to Win',
     title: 'Spin to Win',
     description: 'Try your luck with the daily spin wheel. Land on rare passes, coin multipliers, and exclusive loot.',
@@ -68,7 +68,7 @@ const features: FeatureCardProps[] = [
     delay: '0.5s',
   },
   {
-    icon: '/optimized/flame.avif',
+    icon: '/icon/flame.avif',
     iconAlt: 'Daily Streak',
     title: 'Daily Streaks',
     description: 'Log in every day to build your streak. The longer the streak, the bigger the rewards — stay consistent.',

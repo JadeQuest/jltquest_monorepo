@@ -1,6 +1,21 @@
 const CACHE_NAME = 'jltquest-static-v1';
 const CACHE_PREFIX = 'jltquest-static-';
-const CACHEABLE_PATHS = ['/optimized/', '/jlt.svg', '/jltcolor.svg'];
+const CACHEABLE_PATHS = [
+  '/badge/',
+  '/icon/',
+  '/card/',
+  '/pass/',
+  '/dashboard-bg.avif',
+  '/dashboard-bg.webp',
+  '/level.avif',
+  '/level.webp',
+  '/top-level.avif',
+  '/top-level.webp',
+  '/rare-pass-bg.avif',
+  '/rare-pass-bg.webp',
+  '/jlt.svg',
+  '/jltcolor.svg',
+];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(self.skipWaiting());

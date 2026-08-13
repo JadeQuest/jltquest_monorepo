@@ -595,7 +595,7 @@ export default function Splash({ onClick, onStartTransition, onComplete }: Splas
       {/* ─── Mascot (Full Character Intact) ─── */}
       <img
         ref={mascotFullRef}
-        src="/optimized/mascot.avif"
+        src="/icon/mascot.avif"
         alt="JLT Quest Mascot"
         aria-label="JLT Quest Mascot character"
         width={780}
@@ -616,7 +616,7 @@ export default function Splash({ onClick, onStartTransition, onComplete }: Splas
         <div
           className="mascot-part absolute inset-0 bg-no-repeat bg-contain"
           style={{
-            backgroundImage: 'url(/optimized/mascot.avif)',
+            backgroundImage: 'url(/icon/mascot.avif)',
             clipPath: 'polygon(24% 0%, 76% 0%, 76% 32%, 24% 32%)',
             transformOrigin: '50% 16%',
             willChange: 'transform, opacity',
@@ -626,7 +626,7 @@ export default function Splash({ onClick, onStartTransition, onComplete }: Splas
         <div
           className="mascot-part absolute inset-0 bg-no-repeat bg-contain"
           style={{
-            backgroundImage: 'url(/optimized/mascot.avif)',
+            backgroundImage: 'url(/icon/mascot.avif)',
             clipPath: 'polygon(0% 0%, 28% 0%, 28% 30%, 0% 30%)',
             transformOrigin: '14% 15%',
             willChange: 'transform, opacity',
@@ -636,7 +636,7 @@ export default function Splash({ onClick, onStartTransition, onComplete }: Splas
         <div
           className="mascot-part absolute inset-0 bg-no-repeat bg-contain"
           style={{
-            backgroundImage: 'url(/optimized/mascot.avif)',
+            backgroundImage: 'url(/icon/mascot.avif)',
             clipPath: 'polygon(72% 0%, 100% 0%, 100% 30%, 72% 30%)',
             transformOrigin: '86% 15%',
             willChange: 'transform, opacity',
@@ -646,7 +646,7 @@ export default function Splash({ onClick, onStartTransition, onComplete }: Splas
         <div
           className="mascot-part absolute inset-0 bg-no-repeat bg-contain"
           style={{
-            backgroundImage: 'url(/optimized/mascot.avif)',
+            backgroundImage: 'url(/icon/mascot.avif)',
             clipPath: 'polygon(0% 30%, 35% 30%, 35% 65%, 0% 65%)',
             transformOrigin: '17% 48%',
             willChange: 'transform, opacity',
@@ -656,7 +656,7 @@ export default function Splash({ onClick, onStartTransition, onComplete }: Splas
         <div
           className="mascot-part absolute inset-0 bg-no-repeat bg-contain"
           style={{
-            backgroundImage: 'url(/optimized/mascot.avif)',
+            backgroundImage: 'url(/icon/mascot.avif)',
             clipPath: 'polygon(65% 30%, 100% 30%, 100% 65%, 65% 65%)',
             transformOrigin: '83% 48%',
             willChange: 'transform, opacity',
@@ -666,7 +666,7 @@ export default function Splash({ onClick, onStartTransition, onComplete }: Splas
         <div
           className="mascot-part absolute inset-0 bg-no-repeat bg-contain"
           style={{
-            backgroundImage: 'url(/optimized/mascot.avif)',
+            backgroundImage: 'url(/icon/mascot.avif)',
             clipPath: 'polygon(25% 30%, 75% 30%, 100% 100%, 0% 100%)',
             transformOrigin: '50% 65%',
             willChange: 'transform, opacity',

@@ -172,7 +172,7 @@ export default function CollectionPage() {
             <div className="relative w-36 h-36 sm:w-44 sm:h-44 flex items-center justify-center animate-float">
               <div className="absolute inset-0 bg-purple-600/20 rounded-full blur-2xl -z-10" />
               <Image
-                src="/optimized/mascot.avif"
+                src="/icon/mascot.avif"
                 alt="JLT Mascot"
                 width={176}
                 height={176}
@@ -217,7 +217,7 @@ export default function CollectionPage() {
                   {/* Aspect ratio 3:4 card image container */}
                   <div className="relative aspect-[3/4] w-full overflow-hidden bg-purple-950/40">
                     <Image
-                      src={card.imageUrl || `/optimized/collect-${(idx % 16) + 1}.avif`}
+                      src={card.imageUrl || `/card/collect-${(idx % 16) + 1}.avif`}
                       alt={card.name}
                       fill
                       sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 16vw"
@@ -274,7 +274,7 @@ export default function CollectionPage() {
             {/* Glowing Card Preview */}
             <div className="relative w-48 h-64 rounded-2xl overflow-hidden border-2 border-purple-300/50 shadow-[0_0_40px_rgba(123,44,191,0.6)] my-3 group">
               <Image
-                src={newCard.imageUrl || '/optimized/collect-1.avif'}
+                src={newCard.imageUrl || '/card/collect-1.avif'}
                 alt={newCard.name}
                 fill
                 className="object-cover"

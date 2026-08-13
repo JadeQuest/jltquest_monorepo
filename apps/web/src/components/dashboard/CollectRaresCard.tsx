@@ -28,7 +28,7 @@ const CollectRaresCardComponent: React.FC = () => {
           style={{ boxShadow: '2px 6px 4.5px 0px rgba(0, 0, 0, 0.7)' }}
         >
           <img
-            src="/optimized/collect-3.avif"
+            src="/card/collect-3.avif"
             alt="Collect Rare 3"
             width={121}
             height={166}
@@ -49,7 +49,7 @@ const CollectRaresCardComponent: React.FC = () => {
           style={{ boxShadow: '2px 6px 4.5px 0px rgba(0, 0, 0, 0.7)' }}
         >
           <img
-            src="/optimized/collect-2.avif"
+            src="/card/collect-2.avif"
             alt="Collect Rare 2"
             width={121}
             height={166}
@@ -70,7 +70,7 @@ const CollectRaresCardComponent: React.FC = () => {
           style={{ boxShadow: '2px 6px 4.5px 0px rgba(0, 0, 0, 0.7)' }}
         >
           <img
-            src="/optimized/collect-1.avif"
+            src="/card/collect-1.avif"
             alt="Collect Rare 1"
             width={121}
             height={166}

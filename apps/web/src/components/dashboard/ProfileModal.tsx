@@ -118,7 +118,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, das
                   <button
                     key={variant.id}
                     onClick={() => {
-                      if (variant.isUnlocked) {
+                      if (variant.unlocked) {
                         setSelectedVariantId(variant.id);
                       }
                     }}

@@ -1,6 +1,6 @@
 import { BadRequestError, NotFoundError } from '../errors/AppError';
 import { ErrorCode, ErrorMessages } from '@jlt/constants';
-import { LedgerSource, LedgerType } from '@prisma/client';
+import { LedgerSource, LedgerType } from '@jlt/database';
 
 export class AvatarService {
   constructor(private prisma: any) {}
@@ -113,7 +113,7 @@ export class AvatarService {
       }
 
       if (!variant.isPurchasable) {
-        throw new BadRequestError('This avatar cannot be purchased directly.');
+        throw new BadRequestError(ErrorMessages[ErrorCode.REQUIREMENTS_NOT_MET], ErrorCode.REQUIREMENTS_NOT_MET);
       }
 
       const existingAvatar = await tx.userAvatar.findUnique({
@@ -121,7 +121,7 @@ export class AvatarService {
       });
 
       if (existingAvatar) {
-        throw new BadRequestError('Avatar already unlocked.');
+        throw new BadRequestError(ErrorMessages[ErrorCode.ALREADY_CLAIMED], ErrorCode.ALREADY_CLAIMED);
       }
 
       const user = await tx.user.findUnique({
@@ -131,7 +131,7 @@ export class AvatarService {
       const costJltNum = variant.costJlt ? parseFloat(variant.costJlt.toString()) : 0;
 
       if (user.gp < variant.costGp || parseFloat(user.jlt.toString()) < costJltNum) {
-        throw new BadRequestError('Insufficient GP or JLT balance.');
+        throw new BadRequestError(ErrorMessages[ErrorCode.INSUFFICIENT_GP], ErrorCode.INSUFFICIENT_GP);
       }
 
       // Deduct GP and log

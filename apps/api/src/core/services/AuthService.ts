@@ -3,26 +3,32 @@ import { verifyMessage } from 'viem';
 import { UserRepository } from '../../infrastructure/database/repositories/UserRepository';
 import { prisma } from '../../infrastructure/database/prisma';
 import { BadRequestError, UnauthorizedError } from '../errors/AppError';
-import { ErrorCode, APP_CONFIG } from '@jlt/constants';
+import { ErrorCode, ErrorMessages, AuthMessages, APP_CONFIG } from '@jlt/constants';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'mock_secret';
 
+/**
+ * Service handling authentication, Web3 signature validation, and JWT token rotation.
+ */
 export class AuthService {
   constructor(private userRepository: UserRepository = new UserRepository()) {}
 
+  // ───────────────────────────────────────────────────────────────────────────
+  // 1. LOGIN & SIGNATURE VERIFICATION
+  // ───────────────────────────────────────────────────────────────────────────
   async login(walletAddress?: string, signature?: string, message?: string) {
     if (!walletAddress || !signature || !message) {
       throw new BadRequestError(
-        'walletAddress, signature, and message are required for login',
+        AuthMessages.MISSING_LOGIN_PARAMS,
         ErrorCode.INVALID_INPUT
       );
     }
 
-    // 1. Verify message timestamp to prevent signature replay attacks
+    // 1.1 Verify message timestamp to prevent signature replay attacks
     const timestampMatch = message.match(/Timestamp:\s*(\d+)/i);
     if (!timestampMatch) {
       throw new BadRequestError(
-        'Message must contain a valid Timestamp value.',
+        AuthMessages.MISSING_TIMESTAMP,
         ErrorCode.INVALID_INPUT
       );
     }
@@ -33,12 +39,12 @@ export class AuthService {
 
     if (Math.abs(now - timestamp) > fiveMinutes) {
       throw new BadRequestError(
-        'Signature challenge expired. Please re-sign.',
+        ErrorMessages[ErrorCode.SIGNATURE_EXPIRED],
         ErrorCode.SIGNATURE_EXPIRED
       );
     }
 
-    // 2. Cryptographic signature check
+    // 1.2 Cryptographic signature verification using viem
     try {
       const isVerified = await verifyMessage({
         address: walletAddress as `0x${string}`,
@@ -48,24 +54,24 @@ export class AuthService {
 
       if (!isVerified) {
         throw new BadRequestError(
-          'Cryptographic verification failed: wallet signature does not match address.',
+          AuthMessages.SIGNATURE_VERIFICATION_FAILED,
           ErrorCode.INVALID_SIGNATURE
         );
       }
     } catch (e: any) {
       throw new BadRequestError(
-        `Failed to verify signature: ${e.message || e}`,
+        `${AuthMessages.SIGNATURE_VERIFICATION_FAILED} (${e.message || e})`,
         ErrorCode.INVALID_SIGNATURE
       );
     }
 
-    // 3. Upsert user
+    // 1.3 Upsert user in database repository
     const user = await this.userRepository.upsertByWallet(prisma, walletAddress);
 
-    // 4. Generate Access and Refresh Tokens
+    // 1.4 Generate access and refresh token pair
     const { token, refreshToken } = await this.generateTokenPair(user.id, user.walletAddress || '', user.role);
 
-    // Log login success
+    // Audit log login success
     await prisma.auditLog.create({
       data: {
         userId: user.id,
@@ -91,9 +97,12 @@ export class AuthService {
     };
   }
 
+  // ───────────────────────────────────────────────────────────────────────────
+  // 2. TOKEN REFRESH & ROTATION
+  // ───────────────────────────────────────────────────────────────────────────
   async refresh(refreshToken: string) {
     if (!refreshToken) {
-      throw new BadRequestError('Refresh token is required', ErrorCode.INVALID_INPUT);
+      throw new BadRequestError(AuthMessages.REFRESH_TOKEN_REQUIRED, ErrorCode.INVALID_INPUT);
     }
 
     // Look up refresh token in database
@@ -103,12 +112,35 @@ export class AuthService {
     });
 
     if (!storedToken) {
-      throw new UnauthorizedError('Invalid refresh token', ErrorCode.INVALID_REFRESH_TOKEN);
+      throw new UnauthorizedError(ErrorMessages[ErrorCode.INVALID_REFRESH_TOKEN], ErrorCode.INVALID_REFRESH_TOKEN);
     }
 
-    // Token reuse detection: if token is already revoked, it suggests token theft.
-    // Revoke all sessions for this user for security.
+    // 2.1 Token reuse detection with 10-second grace window for concurrent requests
     if (storedToken.isRevoked) {
+      const GRACE_PERIOD_MS = 10000;
+      if (storedToken.createdAt && (Date.now() - new Date(storedToken.createdAt).getTime() < GRACE_PERIOD_MS)) {
+        const latestToken = await prisma.refreshToken.findFirst({
+          where: { userId: storedToken.userId, isRevoked: false },
+          orderBy: { createdAt: 'desc' }
+        });
+        if (latestToken) {
+          const newAccessToken = jwt.sign(
+            { userId: storedToken.userId, walletAddress: storedToken.user.walletAddress, role: storedToken.user.role },
+            JWT_SECRET,
+            {
+              expiresIn: APP_CONFIG.AUTH.TOKEN_EXPIRES_IN_STR as any,
+              issuer: 'JLTQuest-Issuer',
+              audience: 'JLTQuest-Audience'
+            }
+          );
+          return {
+            token: newAccessToken,
+            refreshToken: latestToken.token,
+            expiresIn: APP_CONFIG.AUTH.TOKEN_EXPIRES_IN_SECONDS
+          };
+        }
+      }
+
       await prisma.refreshToken.updateMany({
         where: { userId: storedToken.userId },
         data: { isRevoked: true }
@@ -120,19 +152,19 @@ export class AuthService {
           metadata: { token: refreshToken }
         }
       });
-      throw new UnauthorizedError('Session revoked due to token reuse detection', ErrorCode.REFRESH_TOKEN_REVOKED);
+      throw new UnauthorizedError(AuthMessages.TOKEN_REUSE_REVOKED, ErrorCode.REFRESH_TOKEN_REVOKED);
     }
 
-    // Check expiration
+    // 2.2 Check token expiration
     if (storedToken.expiresAt < new Date()) {
       await prisma.refreshToken.update({
         where: { id: storedToken.id },
         data: { isRevoked: true }
       });
-      throw new UnauthorizedError('Refresh token expired', ErrorCode.REFRESH_TOKEN_EXPIRED);
+      throw new UnauthorizedError(ErrorMessages[ErrorCode.REFRESH_TOKEN_EXPIRED], ErrorCode.REFRESH_TOKEN_EXPIRED);
     }
 
-    // Revoke current refresh token (one-time use)
+    // 2.3 Revoke current refresh token (one-time use rotation)
     await prisma.refreshToken.update({
       where: { id: storedToken.id },
       data: { isRevoked: true }
@@ -148,10 +180,12 @@ export class AuthService {
     };
   }
 
+  // ───────────────────────────────────────────────────────────────────────────
+  // 3. USER LOGOUT
+  // ───────────────────────────────────────────────────────────────────────────
   async logout(refreshToken: string) {
     if (!refreshToken) return;
     
-    // Revoke token in DB
     try {
       const storedToken = await prisma.refreshToken.update({
         where: { token: refreshToken },

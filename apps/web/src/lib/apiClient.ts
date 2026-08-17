@@ -22,6 +22,9 @@ interface FetchOptions extends RequestInit {
 // In-flight request deduplication store
 const inFlightRequests = new Map<string, Promise<any>>();
 
+// Module-level deduplication for token refresh requests
+let globalRefreshPromise: Promise<string> | null = null;
+
 /**
  * Perform fetch with automatic deduplication, retry exponential backoff, and auth header injection
  */
@@ -34,8 +37,6 @@ export async function fetchWithRetry<T = any>(url: string, options: FetchOptions
   if (dedupe && inFlightRequests.has(requestKey)) {
     return inFlightRequests.get(requestKey) as Promise<T>;
   }
-
-  let refreshPromise: Promise<string> | null = null;
 
   const executeFetch = async (attempt: number): Promise<T> => {
     try {
@@ -56,29 +57,34 @@ export async function fetchWithRetry<T = any>(url: string, options: FetchOptions
       // Token Refresh Interceptor
       if (response.status === 401 && !url.includes('/auth/login') && !url.includes('/auth/refresh')) {
         try {
-          if (!refreshPromise) {
-            refreshPromise = (async () => {
-              const res = await fetch(`${getApiUrl()}/auth/refresh`, {
-                method: 'POST',
-                credentials: options.credentials || 'include',
-                headers: { 'Content-Type': 'application/json' },
-              });
-              if (!res.ok) {
-                deleteCookie('jlt_auth_token');
-                throw new Error('Session expired');
+          if (!globalRefreshPromise) {
+            globalRefreshPromise = (async () => {
+              try {
+                const res = await fetch(`${getApiUrl()}/auth/refresh`, {
+                  method: 'POST',
+                  credentials: options.credentials || 'include',
+                  headers: { 'Content-Type': 'application/json' },
+                });
+                if (!res.ok) {
+                  deleteCookie('jlt_auth_token');
+                  deleteCookie('jlt_refresh_token');
+                  throw new Error('Session expired');
+                }
+                const result = await res.json();
+                if (!result.success || !result.data?.token) {
+                  deleteCookie('jlt_auth_token');
+                  deleteCookie('jlt_refresh_token');
+                  throw new Error('Session expired');
+                }
+                setCookie('jlt_auth_token', result.data.token, { days: 7 });
+                return result.data.token;
+              } finally {
+                globalRefreshPromise = null;
               }
-              const result = await res.json();
-              if (!result.success || !result.data?.token) {
-                deleteCookie('jlt_auth_token');
-                throw new Error('Session expired');
-              }
-              setCookie('jlt_auth_token', result.data.token, { days: 7 });
-              return result.data.token;
             })();
           }
 
-          const newToken = await refreshPromise;
-          refreshPromise = null;
+          const newToken = await globalRefreshPromise;
 
           // Retry the request with the new access token
           reqHeaders['Authorization'] = `Bearer ${newToken}`;
@@ -88,12 +94,9 @@ export async function fetchWithRetry<T = any>(url: string, options: FetchOptions
             headers: reqHeaders,
           });
         } catch (refreshError) {
-          refreshPromise = null;
+          globalRefreshPromise = null;
           deleteCookie('jlt_auth_token');
-          // Invalidate React Query cache if window exists
-          if (typeof window !== 'undefined') {
-            window.location.reload();
-          }
+          deleteCookie('jlt_refresh_token');
           throw new Error('Session expired. Please reconnect your wallet.');
         }
       }

@@ -79,15 +79,18 @@ export class CheckInService {
           }
 
           newStreakValue = diffDays > 1 ? 1 : streak.currentDay + 1;
+          const currentLongest = (streak as any).longestStreak || streak.currentDay || 0;
+          const newLongest = Math.max(currentLongest, newStreakValue);
 
           await this.streakRepository.update(tx, userId, {
             currentDay: newStreakValue,
+            longestStreak: newLongest,
             lastCheckInDate: now,
-            lastCheckInAt: now
+            lastCheckInAt: now,
           });
         } else {
           await tx.streak.create({
-            data: { userId, currentDay: 1, lastCheckInDate: now, lastCheckInAt: now }
+            data: { userId, currentDay: 1, longestStreak: 1, lastCheckInDate: now, lastCheckInAt: now },
           });
         }
 

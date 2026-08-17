@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { useLeaderboard, LeaderboardEntry } from '@/hooks/useLeaderboard';
-import { Trophy, Medal, Star, Flame, Zap, ShieldAlert } from 'lucide-react';
+import { useLeaderboard, LeaderboardEntry, LeaderboardCategory } from '@/hooks/useLeaderboard';
+import { Trophy, Star, Flame, Zap, Award } from 'lucide-react';
 import { JLTLoader } from '@/components/common/JLTLoader';
 
 const getLevelInfo = (lvl: number) => {
@@ -12,42 +12,41 @@ const getLevelInfo = (lvl: number) => {
   return { tier: 'Diamond', badge: '/badge/diamond-badge.webp', color: 'text-purple-300 border-purple-400/40 bg-purple-950/30' };
 };
 
+const LEADERBOARD_TABS: { id: LeaderboardCategory; label: string }[] = [
+  { id: 'gp', label: 'GP' },
+  { id: 'jlt', label: 'JLT' },
+  { id: 'level', label: 'Level' },
+  { id: 'streak', label: 'Streak' },
+  { id: 'pass', label: 'Pass' },
+];
+
 export const LeaderboardCardComponent: React.FC = () => {
-  const [activeType, setActiveType] = useState<'gp' | 'xp' | 'streak'>('gp');
-  const { leaderboard, isLoading } = useLeaderboard(activeType, 10);
+  const [activeType, setActiveType] = useState<LeaderboardCategory>('gp');
+  const { leaderboard, isLoading } = useLeaderboard(activeType, 20);
 
   return (
-    <div className="daily-card-panel p-6 flex flex-col justify-between min-h-[420px] relative overflow-hidden select-none shadow-2xl border border-white/10">
+    <div className="daily-card-panel p-4 sm:p-6 flex flex-col justify-between min-h-[460px] relative overflow-hidden select-none shadow-2xl border border-white/10">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-white/10 pb-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0">
-            <Trophy className="w-5 h-5 text-amber-400" />
-          </div>
           <div>
             <h3 className="text-white font-gilroyBold text-xl font-bold tracking-tight">Global Leaderboard</h3>
-            <p className="text-purple-300 font-gilroyMedium text-xs">Top JLTQuest adventurers & level tiers</p>
           </div>
         </div>
 
         {/* Tab Filters */}
-        <div className="flex bg-black/40 border border-white/10 rounded-xl p-1 gap-1 w-fit">
-          {[
-            { id: 'gp', label: 'GP Earned', icon: <Medal className="w-3.5 h-3.5" /> },
-            { id: 'xp', label: 'Level XP', icon: <Star className="w-3.5 h-3.5" /> },
-            { id: 'streak', label: 'Streak 🔥', icon: <Flame className="w-3.5 h-3.5" /> },
-          ].map((tab) => (
+        <div className="flex flex-wrap bg-black/40 border border-white/10 rounded-xl p-1 gap-1 w-fit">
+          {LEADERBOARD_TABS.map((tab) => (
             <button
               key={tab.id}
               type="button"
-              onClick={() => setActiveType(tab.id as any)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-gilroyBold transition-all flex items-center gap-1.5 cursor-pointer ${
+              onClick={() => setActiveType(tab.id)}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-gilroyBold transition-all cursor-pointer ${
                 activeType === tab.id
-                  ? 'bg-purple-500/30 text-white border border-purple-400/40 shadow-[0_0_10px_#7B2CBF]'
-                  : 'text-gray-400 hover:text-white'
+                  ? 'bg-purple-500/30 text-white border border-purple-400/40 shadow-[0_0_12px_#7B2CBF]'
+                  : 'text-gray-400 hover:text-white hover:bg-white/5'
               }`}
             >
-              {tab.icon}
               {tab.label}
             </button>
           ))}
@@ -57,7 +56,7 @@ export const LeaderboardCardComponent: React.FC = () => {
       {/* Leaderboard List */}
       <div className="mt-4 flex-grow flex flex-col gap-2.5">
         {isLoading ? (
-          <div className="py-12 flex justify-center">
+          <div className="py-16 flex justify-center">
             <JLTLoader variant="inline" size="md" text="Loading leaderboard..." />
           </div>
         ) : leaderboard.length > 0 ? (
@@ -67,12 +66,12 @@ export const LeaderboardCardComponent: React.FC = () => {
             return (
               <div
                 key={user.id}
-                className="flex items-center justify-between p-3 rounded-xl bg-black/30 border border-white/5 hover:border-purple-500/30 transition-all hover:bg-white/5"
+                className="flex items-center justify-between p-3 rounded-xl bg-black/30 border border-white/5 hover:border-purple-500/30 transition-all hover:bg-white/5 gap-3"
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 min-w-0">
                   {/* Rank Badge */}
                   <span
-                    className={`w-7 h-7 rounded-lg flex items-center justify-center font-gilroyBold text-xs font-bold ${
+                    className={`w-7 h-7 shrink-0 rounded-lg flex items-center justify-center font-gilroyBold text-xs font-bold ${
                       user.rank === 1
                         ? 'bg-amber-400 text-black shadow-[0_0_10px_#F59E0B]'
                         : user.rank === 2
@@ -88,19 +87,22 @@ export const LeaderboardCardComponent: React.FC = () => {
                   {/* Avatar */}
                   <img
                     src={user.avatarUrl}
+                    onError={(e) => {
+                      e.currentTarget.src = '/avatar.webp';
+                    }}
                     alt="User Avatar"
                     className="w-9 h-9 rounded-lg object-cover border border-white/10 shrink-0"
                   />
 
-                  {/* User Address & Level */}
-                  <div className="flex items-center gap-3">
-                    <span className="text-white font-gilroyBold text-sm tracking-wide">
+                  {/* User Address & Level Details */}
+                  <div className="flex items-center gap-2 sm:gap-3 truncate">
+                    <span className="text-white font-gilroyBold text-xs sm:text-sm tracking-wide truncate">
                       {user.maskedAddress}
                     </span>
-                    <span className="text-purple-300 font-gilroyMedium text-xs border-l border-white/10 pl-3">
-                      Level {user.level}
+                    <span className="text-purple-300 font-gilroyMedium text-[11px] sm:text-xs border-l border-white/10 pl-2 sm:pl-3 shrink-0">
+                      Lvl {user.level}
                     </span>
-                    <span className={`text-[10px] font-gilroyBold px-1.5 py-0.5 rounded border flex items-center gap-1 ${tierColor}`}>
+                    <span className={`text-[10px] font-gilroyBold px-1.5 py-0.5 rounded border hidden sm:flex items-center gap-1 shrink-0 ${tierColor}`}>
                       <img src={tierBadge} alt={tierName} className="w-3.5 h-3.5 object-contain drop-shadow-sm" />
                       {tierName}
                     </span>
@@ -108,23 +110,35 @@ export const LeaderboardCardComponent: React.FC = () => {
                 </div>
 
                 {/* Score Column */}
-                <div className="flex items-center gap-3">
-                  {activeType === 'gp' && (
-                    <span className="text-amber-400 font-gilroyBold text-sm flex items-center gap-1">
-                      <Zap className="w-3.5 h-3.5 text-amber-400" />
-                      {user.gp} GP
+                <div className="flex items-center gap-2 shrink-0">
+                  {(activeType === 'gp' || activeType === 'total_gp') && (
+                    <span className="text-amber-400 font-gilroyBold text-xs sm:text-sm flex items-center gap-1.5">
+                      <img src="/icon/coin.webp" alt="GP" className="w-4 h-4 object-contain shrink-0" />
+                      {user.totalGp.toLocaleString()} GP
                     </span>
                   )}
-                  {activeType === 'xp' && (
-                    <span className="text-[#00F0FF] font-gilroyBold text-sm flex items-center gap-1">
-                      <Star className="w-3.5 h-3.5 text-[#00F0FF]" />
-                      {user.xp} XP
+                  {(activeType === 'jlt' || activeType === 'total_jlt') && (
+                    <span className="text-[#00F0FF] font-gilroyBold text-xs sm:text-sm flex items-center gap-1.5">
+                      <img src="/jltcolor.svg" alt="JLT" className="w-4 h-4 object-contain shrink-0" />
+                      {user.totalJlt.toLocaleString()} JLT
                     </span>
                   )}
-                  {activeType === 'streak' && (
-                    <span className="text-orange-400 font-gilroyBold text-sm flex items-center gap-1">
-                      <Flame className="w-3.5 h-3.5 text-orange-400" />
-                      {user.currentStreak} Days
+                  {activeType === 'level' && (
+                    <span className="text-cyan-300 font-gilroyBold text-xs sm:text-sm flex items-center gap-1.5">
+                      <img src="/Level.svg" alt="Level" className="w-4 h-4 object-contain shrink-0" />
+                      {user.totalLifetimeXp.toLocaleString()} XP
+                    </span>
+                  )}
+                  {(activeType === 'streak' || activeType === 'highest_streak') && (
+                    <span className="text-orange-400 font-gilroyBold text-xs sm:text-sm flex items-center gap-1.5">
+                      <img src="/Flame.svg" alt="Streak" className="w-4 h-4 object-contain shrink-0" />
+                      {user.longestStreak} Days
+                    </span>
+                  )}
+                  {(activeType === 'pass' || activeType === 'season_rank') && (
+                    <span className="text-purple-300 font-gilroyBold text-xs sm:text-sm flex items-center gap-1.5">
+                      <img src="/Push Pass.svg" alt="Pass" className="w-4 h-4 object-contain shrink-0" />
+                      {user.seasonRpXp.toLocaleString()} RP XP
                     </span>
                   )}
                 </div>
@@ -132,8 +146,8 @@ export const LeaderboardCardComponent: React.FC = () => {
             );
           })
         ) : (
-          <div className="py-12 text-center text-gray-500 font-gilroyMedium">
-            No rankings available yet.
+          <div className="py-16 text-center text-gray-500 font-gilroyMedium">
+            No rankings recorded yet for this category.
           </div>
         )}
       </div>

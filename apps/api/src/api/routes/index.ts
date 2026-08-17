@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { authenticate } from '../middlewares/auth';
 import { loginRateLimiter, transactionRateLimiter } from '../middlewares/rateLimiter';
 import { validateRequest } from '../middlewares/validation';
-import { loginSchema, claimQuestSchema, selectAvatarSchema, convertGpSchema } from '@jlt/validation';
+import { loginSchema, claimQuestSchema, selectAvatarSchema, unlockAvatarSchema, convertGpSchema } from '@jlt/validation';
 import { 
   authController, 
   userController, 
@@ -77,5 +77,6 @@ router.post('/rarepass/buy-premium', transactionRateLimiter, rarePassController.
 // Avatars
 router.get('/avatars', avatarController.list.bind(avatarController));
 router.post('/avatars/select', validateRequest(selectAvatarSchema), avatarController.select.bind(avatarController));
+router.post('/avatars/unlock', transactionRateLimiter, validateRequest(unlockAvatarSchema), avatarController.unlock.bind(avatarController));
 
 export default router;

@@ -18,6 +18,10 @@ export const selectAvatarSchema = z.object({
   variantId: z.string().uuid('Invalid variant ID format'),
 });
 
+export const unlockAvatarSchema = z.object({
+  variantId: z.string().uuid('Invalid variant ID format'),
+});
+
 export const socialCallbackSchema = z.object({
   platform: z.enum(['x', 'twitter', 'discord', 'telegram', 'linkedin', 'whatsapp', 'email']),
   payload: z.object({
@@ -37,4 +41,5 @@ export const convertGpSchema = z.object({
 export type LoginInput = z.infer<typeof loginSchema>;
 export type ClaimQuestInput = z.infer<typeof claimQuestSchema>;
 export type SelectAvatarInput = z.infer<typeof selectAvatarSchema>;
+export type UnlockAvatarInput = z.infer<typeof unlockAvatarSchema>;
 export type ConvertGpInput = z.infer<typeof convertGpSchema>;

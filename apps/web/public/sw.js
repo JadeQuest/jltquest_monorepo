@@ -5,6 +5,7 @@ const CACHEABLE_PATHS = [
   '/icon/',
   '/card/',
   '/pass/',
+  '/avatar.webp',
   '/dashboard-bg.avif',
   '/dashboard-bg.webp',
   '/level.avif',

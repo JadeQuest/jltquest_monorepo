@@ -7,7 +7,8 @@ import { useDashboard } from '@/hooks/useDashboard';
 import { isUserRejectedError } from '@/lib/web3Error';
 import { getCookie } from '@/lib/authCookie';
 import { ConvertGPModal } from './ConvertGPModal';
-import { RefreshCw, Sparkles } from 'lucide-react';
+import { ProfileModal } from './ProfileModal';
+import { RefreshCw, Sparkles, User, Wallet } from 'lucide-react';
 
 interface HeaderStatusProps {
   coins?: number;
@@ -37,6 +38,8 @@ const HeaderStatusComponent: React.FC<HeaderStatusProps> = ({
   const { data: dashboardData } = useDashboard();
   
   const [isConvertModalOpen, setIsConvertModalOpen] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const isSigningRef = React.useRef(false);
 
   useEffect(() => {
@@ -145,7 +148,7 @@ const HeaderStatusComponent: React.FC<HeaderStatusProps> = ({
               className="glass-pill px-3 py-1.5 sm:px-5 sm:py-2.5 flex items-center gap-2 sm:gap-3 cursor-pointer hover:border-purple-400/50 hover:bg-white/10 transition-all shadow-lg"
             >
               <img
-                src="/Rectangle 11989.svg"
+                src={dashboardData?.user?.activeAvatar?.imageUrl || "/avatar.webp"}
                 alt="Wallet Icon"
                 width={28}
                 height={28}
@@ -156,30 +159,71 @@ const HeaderStatusComponent: React.FC<HeaderStatusProps> = ({
               </span>
             </button>
           ) : (
-            <button
-              onClick={onConnectClick}
-              type="button"
-              className="glass-pill px-3 py-1.5 sm:px-5 sm:py-2.5 flex items-center gap-2 sm:gap-3 cursor-pointer hover:border-purple-400/50 transition-all shadow-lg"
-            >
-              <img
-                src="/Rectangle 11989.svg"
-                alt="Wallet Avatar"
-                width={28}
-                height={28}
-                className="w-5 h-5 sm:w-7 sm:h-7 rounded-md object-cover"
-              />
-              <span className="text-white font-gilroyMedium text-xs sm:text-base font-medium tracking-wide">
-                {formatAddress(address || '')}
-              </span>
-              {chain && (
-                <span className="hidden md:inline text-purple-300 font-gilroyRegular text-xs sm:text-sm">
-                  ({chain.name})
+            <div className="relative">
+              <button
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                type="button"
+                className="glass-pill px-3 py-1.5 sm:px-5 sm:py-2.5 flex items-center gap-2 sm:gap-3 cursor-pointer hover:border-purple-400/50 transition-all shadow-lg"
+              >
+                <img
+                  src={dashboardData?.user?.activeAvatar?.imageUrl || "/avatar.webp"}
+                  alt="Wallet Avatar"
+                  width={28}
+                  height={28}
+                  className="w-5 h-5 sm:w-7 sm:h-7 rounded-md object-cover"
+                />
+                <span className="text-white font-gilroyMedium text-xs sm:text-base font-medium tracking-wide">
+                  {formatAddress(address || '')}
                 </span>
+                {chain && (
+                  <span className="hidden md:inline text-purple-300 font-gilroyRegular text-xs sm:text-sm">
+                    ({chain.name})
+                  </span>
+                )}
+              </button>
+
+              {/* Dropdown Menu */}
+              {isDropdownOpen && (
+                <>
+                  <div 
+                    className="fixed inset-0 z-40" 
+                    onClick={() => setIsDropdownOpen(false)}
+                  />
+                  <div className="absolute right-0 mt-2 w-48 rounded-xl bg-indigo-950/95 backdrop-blur-md border border-white/10 shadow-2xl z-50 overflow-hidden flex flex-col py-1">
+                    <button
+                      onClick={() => {
+                        setIsDropdownOpen(false);
+                        setIsProfileModalOpen(true);
+                      }}
+                      className="flex items-center gap-3 px-4 py-3 text-white hover:bg-white/10 transition-colors w-full text-left"
+                    >
+                      <User className="w-4 h-4 text-purple-400" />
+                      <span className="font-gilroyMedium text-sm">Profile</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsDropdownOpen(false);
+                        if (onConnectClick) onConnectClick();
+                      }}
+                      className="flex items-center gap-3 px-4 py-3 text-white hover:bg-white/10 transition-colors w-full text-left"
+                    >
+                      <Wallet className="w-4 h-4 text-blue-400" />
+                      <span className="font-gilroyMedium text-sm">Wallet</span>
+                    </button>
+                  </div>
+                </>
               )}
-            </button>
+            </div>
           )}
         </div>
       </header>
+
+      {/* Profile Modal */}
+      <ProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+        dashboardData={dashboardData}
+      />
 
       {/* GP to JLT Conversion Modal */}
       {isConvertModalOpen && (

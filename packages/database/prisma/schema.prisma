@@ -668,14 +668,18 @@ model Avatar {
 }
 
 model AvatarVariant {
-  id          String          @id @default(uuid())
-  avatarId    String
-  type        AvatarVariantType
-  imageUrl    String?
-  modelUrl    String?
-  avatar      Avatar          @relation(fields: [avatarId], references: [id], onDelete: Cascade)
-  userAvatars UserAvatar[]
-  usersActive User[]          @relation("ActiveAvatar")
+  id                String          @id @default(uuid())
+  avatarId          String
+  type              AvatarVariantType
+  imageUrl          String?
+  modelUrl          String?
+  unlockDescription String?
+  isPurchasable     Boolean         @default(false)
+  costGp            Int             @default(0)
+  costJlt           Decimal         @default(0) @db.Decimal(18, 6)
+  avatar            Avatar          @relation(fields: [avatarId], references: [id], onDelete: Cascade)
+  userAvatars       UserAvatar[]
+  usersActive       User[]          @relation("ActiveAvatar")
 
   @@map("avatar_variants")
 }

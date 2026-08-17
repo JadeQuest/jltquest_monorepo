@@ -310,23 +310,25 @@ async function main() {
 
   const explorerBasic = await prisma.avatarVariant.upsert({
     where: { id: 'var_cosmic_explorer_basic' },
-    update: { imageUrl: '/avatars/cosmic_explorer_basic.webp' },
+    update: { imageUrl: '/avatars/cosmic_explorer_basic.webp', unlockDescription: 'Rare Pass Season 1 Free track level 10' },
     create: {
       id: 'var_cosmic_explorer_basic',
       avatarId: cosmicExplorer.id,
       type: AvatarVariantType.BASIC,
       imageUrl: '/avatars/cosmic_explorer_basic.webp',
+      unlockDescription: 'Rare Pass Season 1 Free track level 10',
     },
   });
 
   const explorer3D = await prisma.avatarVariant.upsert({
     where: { id: 'var_cosmic_explorer_3d' },
-    update: { imageUrl: '/avatars/cosmic_explorer_3d.webp' },
+    update: { imageUrl: '/avatars/cosmic_explorer_3d.webp', unlockDescription: 'Rare Pass Season 1 Premium track level 10' },
     create: {
       id: 'var_cosmic_explorer_3d',
       avatarId: cosmicExplorer.id,
       type: AvatarVariantType.THREE_D,
       imageUrl: '/avatars/cosmic_explorer_3d.webp',
+      unlockDescription: 'Rare Pass Season 1 Premium track level 10',
     },
   });
 
@@ -342,25 +344,65 @@ async function main() {
 
   await prisma.avatarVariant.upsert({
     where: { id: 'var_space_ranger_basic' },
-    update: { imageUrl: '/avatars/space_ranger_basic.webp' },
+    update: { imageUrl: '/avatars/space_ranger_basic.webp', unlockDescription: 'Rare Pass Season 1 Free track level 50' },
     create: {
       id: 'var_space_ranger_basic',
       avatarId: spaceRanger.id,
       type: AvatarVariantType.BASIC,
       imageUrl: '/avatars/space_ranger_basic.webp',
+      unlockDescription: 'Rare Pass Season 1 Free track level 50',
     },
   });
 
   await prisma.avatarVariant.upsert({
     where: { id: 'var_space_ranger_3d' },
-    update: { imageUrl: '/avatars/space_ranger_3d.webp' },
+    update: { imageUrl: '/avatars/space_ranger_3d.webp', unlockDescription: 'Rare Pass Season 1 Premium track level 50' },
     create: {
       id: 'var_space_ranger_3d',
       avatarId: spaceRanger.id,
       type: AvatarVariantType.THREE_D,
       imageUrl: '/avatars/space_ranger_3d.webp',
+      unlockDescription: 'Rare Pass Season 1 Premium track level 50',
     },
   });
+
+  // 5 New Purchasable Avatars
+  console.log('Seeding Purchasable Avatars...');
+  
+  const purchasableAvatars = [
+    { name: 'Shadow Ninja', key: 'shadow_ninja', costGp: 500, costJlt: 0 },
+    { name: 'Arcane Wizard', key: 'arcane_wizard', costGp: 800, costJlt: 0 },
+    { name: 'Radiant Knight', key: 'radiant_knight', costGp: 1000, costJlt: 0 },
+    { name: 'Mecha Robot', key: 'mecha_robot', costGp: 0, costJlt: 10 },
+    { name: 'Void Alien', key: 'void_alien', costGp: 0, costJlt: 20 },
+  ];
+
+  for (const pa of purchasableAvatars) {
+    const avatar = await prisma.avatar.upsert({
+      where: { characterKey: pa.key },
+      update: {},
+      create: { name: pa.name, characterKey: pa.key },
+    });
+
+    await prisma.avatarVariant.upsert({
+      where: { id: `var_${pa.key}_basic` },
+      update: { 
+        imageUrl: `/avatars/${pa.key}_basic.webp`, 
+        isPurchasable: true, 
+        costGp: pa.costGp, 
+        costJlt: pa.costJlt 
+      },
+      create: {
+        id: `var_${pa.key}_basic`,
+        avatarId: avatar.id,
+        type: AvatarVariantType.BASIC,
+        imageUrl: `/avatars/${pa.key}_basic.webp`,
+        isPurchasable: true,
+        costGp: pa.costGp,
+        costJlt: pa.costJlt,
+      },
+    });
+  }
 
   // ── 2. Seed Quests ──────────────────────────
   await seedQuests();
@@ -452,54 +494,41 @@ async function main() {
   const totalCards = 30;
   let seededNewCount = 0;
 
-  const cardNames = [
-    // Common (1-12)
-    "Stardust Bot",
-    "Forest Sage",
-    "Novice Wizard",
-    "Astro Explorer",
-    "Cyber Coder",
-    "Pirate Captain",
-    "Deep Sea Diver",
-    "Master Chef",
-    "Jungle Explorer",
-    "Dragon Tamer",
-    "Clockwork Tinkerer",
-    "Cosmic Monarch",
-    // Rare (13-20)
-    "Super Mascot",
-    "Cherry Blossom Samurai",
-    "Northern Explorer",
-    "Desert Nomad",
-    "Noir Detective",
-    "Starry Artist",
-    "Fire Rescue Hero",
-    "Sky Aviator",
-    // Epic (21-25)
-    "Neon Racer",
-    "Stardust Gardener",
-    "Ghost Hunter",
-    "Viking Raider",
-    "Pharaoh King",
-    // Legendary (26-28)
-    "Time Traveler",
-    "Rave DJ",
-    "Summit Climber",
-    // Mythical (29-30)
-    "Rune Blacksmith",
-    "Venetian Gondolier"
+  const cardsData = [
+    { name: "Cosmic Drone", rarity: CardRarity.RARE },
+    { name: "Forest Druid", rarity: CardRarity.RARE },
+    { name: "Apprentice Mage", rarity: CardRarity.COMMON },
+    { name: "Astronaut", rarity: CardRarity.RARE },
+    { name: "Hacker", rarity: CardRarity.COMMON },
+    { name: "Pirate Captain", rarity: CardRarity.COMMON },
+    { name: "Deep Sea Diver", rarity: CardRarity.COMMON },
+    { name: "Master Chef", rarity: CardRarity.COMMON },
+    { name: "Jungle Explorer", rarity: CardRarity.COMMON },
+    { name: "Dragon Rider", rarity: CardRarity.LEGENDARY },
+    { name: "Inventor", rarity: CardRarity.EPIC },
+    { name: "Cosmic Monarch", rarity: CardRarity.MYTHICAL },
+    { name: "City Defender", rarity: CardRarity.LEGENDARY },
+    { name: "Samurai", rarity: CardRarity.EPIC },
+    { name: "Arctic Explorer", rarity: CardRarity.COMMON },
+    { name: "Desert Nomad", rarity: CardRarity.COMMON },
+    { name: "Private Detective", rarity: CardRarity.RARE },
+    { name: "Painter", rarity: CardRarity.RARE },
+    { name: "Firefighter", rarity: CardRarity.COMMON },
+    { name: "Pilot", rarity: CardRarity.COMMON },
+    { name: "Cyberpunk Racer", rarity: CardRarity.EPIC },
+    { name: "Cosmic Gardener", rarity: CardRarity.RARE },
+    { name: "Ghost Hunter", rarity: CardRarity.EPIC },
+    { name: "Viking Warrior", rarity: CardRarity.RARE },
+    { name: "Pharaoh", rarity: CardRarity.EPIC },
+    { name: "Time Traveler", rarity: CardRarity.MYTHICAL },
+    { name: "DJ", rarity: CardRarity.EPIC },
+    { name: "Mountain Climber", rarity: CardRarity.RARE },
+    { name: "Rune Smith", rarity: CardRarity.LEGENDARY },
+    { name: "Gondolier", rarity: CardRarity.COMMON }
   ];
 
-  const getRarityForIndex = (i: number): CardRarity => {
-    if (i < 12) return CardRarity.COMMON;
-    if (i < 20) return CardRarity.RARE;
-    if (i < 25) return CardRarity.EPIC;
-    if (i < 28) return CardRarity.LEGENDARY;
-    return CardRarity.MYTHICAL;
-  };
-
   for (let i = 0; i < totalCards; i++) {
-    const cardName = cardNames[i] || `Card ${i + 1}`;
+    const cardData = cardsData[i] || { name: `Card ${i + 1}`, rarity: CardRarity.COMMON };
     const cardUrl = `/card/collect-${i + 1}.webp`;
     
     // Check if card already exists under any variant of its path
@@ -519,9 +548,9 @@ async function main() {
     if (!existingCard) {
       await prisma.rareCard.create({
         data: {
-          name: cardName,
+          name: cardData.name,
           imageUrl: cardUrl,
-          rarity: getRarityForIndex(i),
+          rarity: cardData.rarity,
         }
       });
       seededNewCount++;
@@ -533,9 +562,9 @@ async function main() {
       await prisma.rareCard.update({
         where: { id: existingCard.id },
         data: { 
-          name: cardName,
+          name: cardData.name,
           imageUrl: newUrl,
-          rarity: getRarityForIndex(i)
+          rarity: cardData.rarity
         },
       });
     }

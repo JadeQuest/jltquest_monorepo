@@ -13,6 +13,13 @@ export interface DashboardData {
     gp: number;
     jlt: number;
     streak: number;
+    activeAvatar?: {
+      variantId: string;
+      type: string;
+      imageUrl: string;
+      name: string;
+      characterKey: string;
+    };
   };
   leveling: {
     currentXp: number;

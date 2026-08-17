@@ -286,7 +286,7 @@ export default function CollectionPage() {
 
           return (
             /* Cards Grid */
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 gap-4 sm:gap-6">
               {filteredCards.map((card, idx) => {
                 const rStyle = getRarityStyle(card.rarity);
                 return (
@@ -304,14 +304,6 @@ export default function CollectionPage() {
                         sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 16vw"
                         className="object-cover transition-transform duration-500 ease-out group-hover:scale-110 will-change-transform"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#080411] via-transparent to-black/30 pointer-events-none" />
-
-                      {/* Rarity Tag floating top-left */}
-                      <div className="absolute top-2.5 left-2.5 z-10">
-                        <span className={`px-2 py-0.5 rounded-md text-[10px] font-gilroyBold text-white uppercase tracking-wider ${rStyle.bg} shadow-md`}>
-                          {rStyle.label}
-                        </span>
-                      </div>
 
                       {/* Quantity Badge floating top-right */}
                       {card.quantity > 1 && (
@@ -375,14 +367,6 @@ export default function CollectionPage() {
                   fill
                   className="object-cover"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                
-                {/* Float tag on card modal */}
-                <div className="absolute top-2.5 left-2.5">
-                  <span className={`px-2 py-0.5 rounded-md text-[9px] font-gilroyBold text-white uppercase tracking-wider ${rStyle.bg}`}>
-                    {rStyle.label}
-                  </span>
-                </div>
               </div>
 
               <h2 className="text-2xl font-gilroyBold text-white tracking-tight mt-2 mb-1">

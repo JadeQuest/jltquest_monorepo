@@ -80,10 +80,10 @@ const sepolia = defineChain({
 
 export const config = createConfig({
   ssr: true,
+  multiInjectedProviderDiscovery: true,
   chains: [mainnet, polygon, optimism, arbitrum, base, sepolia],
   connectors: isBrowser
     ? [
-        metaMask(),
         injected({ shimDisconnect: true }),
         coinbaseWallet({ appName: 'JLTQuest' }),
         walletConnect({

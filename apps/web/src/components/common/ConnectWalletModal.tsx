@@ -13,9 +13,16 @@ interface ConnectWalletModalProps {
 // Icon mapping & fallback icons for popular Web3 wallets
 const WALLET_ICONS: Record<string, string> = {
   metamask: 'https://raw.githubusercontent.com/MetaMask/brand-resources/master/SVG/metamask-fox.svg',
+  'io.metamask': 'https://raw.githubusercontent.com/MetaMask/brand-resources/master/SVG/metamask-fox.svg',
   coinbasewalletsdk: 'https://raw.githubusercontent.com/rainbow-me/rainbowkit/main/packages/rainbowkit/src/wallets/walletConnectors/coinbaseWallet/coinbaseWallet.svg',
+  'com.coinbase.wallet': 'https://raw.githubusercontent.com/rainbow-me/rainbowkit/main/packages/rainbowkit/src/wallets/walletConnectors/coinbaseWallet/coinbaseWallet.svg',
   walletconnect: 'https://raw.githubusercontent.com/rainbow-me/rainbowkit/main/packages/rainbowkit/src/wallets/walletConnectors/walletConnectWallet/walletConnectWallet.svg',
   rainbow: 'https://raw.githubusercontent.com/rainbow-me/rainbowkit/main/packages/rainbowkit/src/wallets/walletConnectors/rainbowWallet/rainbowWallet.svg',
+  'me.rainbow': 'https://raw.githubusercontent.com/rainbow-me/rainbowkit/main/packages/rainbowkit/src/wallets/walletConnectors/rainbowWallet/rainbowWallet.svg',
+  phantom: 'https://raw.githubusercontent.com/rainbow-me/rainbowkit/main/packages/rainbowkit/src/wallets/walletConnectors/phantomWallet/phantomWallet.svg',
+  'app.phantom': 'https://raw.githubusercontent.com/rainbow-me/rainbowkit/main/packages/rainbowkit/src/wallets/walletConnectors/phantomWallet/phantomWallet.svg',
+  rabby: 'https://raw.githubusercontent.com/rainbow-me/rainbowkit/main/packages/rainbowkit/src/wallets/walletConnectors/rabbyWallet/rabbyWallet.svg',
+  'io.rabby': 'https://raw.githubusercontent.com/rainbow-me/rainbowkit/main/packages/rainbowkit/src/wallets/walletConnectors/rabbyWallet/rabbyWallet.svg',
   injected: '/Rectangle 11989.svg',
 };
 
@@ -26,6 +33,7 @@ export const ConnectWalletModal: React.FC<ConnectWalletModalProps> = ({ isOpen, 
 
   const [copied, setCopied] = useState(false);
   const [connectingId, setConnectingId] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const copyTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
   // Close on Escape key press
@@ -62,14 +70,28 @@ export const ConnectWalletModal: React.FC<ConnectWalletModalProps> = ({ isOpen, 
 
   const handleConnect = async (connector: Connector) => {
     try {
+      setErrorMessage(null);
       setConnectingId(connector.id);
       await connectAsync({ connector });
       onClose();
     } catch (err: unknown) {
       if (isUserRejectedError(err)) {
         console.log('User cancelled wallet connection prompt.');
-      } else if (process.env.NODE_ENV !== 'production') {
-        console.error('Wallet connection error:', err);
+      } else {
+        const errObj = err as { message?: string; code?: number };
+        const msg = errObj?.message || String(err);
+        if (
+          msg.includes('Failed to connect to MetaMask') ||
+          msg.includes('-32002') ||
+          msg.includes('already pending') ||
+          msg.includes('Resource unavailable')
+        ) {
+          setErrorMessage(
+            'MetaMask has a pending approval request or is locked. Please open your MetaMask extension icon to unlock and approve the connection.'
+          );
+        } else {
+          setErrorMessage(msg || 'Failed to connect. Please try again.');
+        }
       }
     } finally {
       setConnectingId(null);
@@ -169,16 +191,16 @@ export const ConnectWalletModal: React.FC<ConnectWalletModalProps> = ({ isOpen, 
               Choose your Web3 wallet provider to log in and unlock daily quests:
             </p>
 
-            {connectError && !isUserRejectedError(connectError) && (
-              <div className="glass-pill p-3 rounded-xl border border-red-500/30 bg-red-500/10 flex items-center gap-2 text-xs text-red-300">
-                <AlertCircle className="w-4 h-4 shrink-0" />
-                <span>{connectError.message || 'Failed to connect. Please try again.'}</span>
+            {(errorMessage || (connectError && !isUserRejectedError(connectError))) && (
+              <div className="glass-pill p-3 rounded-xl border border-red-500/30 bg-red-500/10 flex items-start gap-2.5 text-xs text-red-200">
+                <AlertCircle className="w-4 h-4 shrink-0 text-red-400 mt-0.5" />
+                <span className="leading-relaxed">{errorMessage || connectError?.message || 'Failed to connect. Please try again.'}</span>
               </div>
             )}
 
             <div className="flex flex-col gap-2.5 max-h-[260px] overflow-y-auto pr-1">
               {connectors.map((connector) => {
-                const iconUrl = WALLET_ICONS[connector.id.toLowerCase()] || WALLET_ICONS.injected;
+                const iconUrl = connector.icon || WALLET_ICONS[connector.id.toLowerCase()] || WALLET_ICONS[connector.name.toLowerCase()] || WALLET_ICONS.injected;
                 const isConnecting = connectingId === connector.id;
 
                 return (

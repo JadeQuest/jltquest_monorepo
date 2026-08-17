@@ -1,6 +1,16 @@
 'use client';
 
-import React from 'react';
+import React, { useRef, useEffect, useLayoutEffect } from 'react';
+import {
+  gsap,
+  createHeaderReveal,
+  createReversibleReveal,
+  prefersReducedMotion,
+  ReversibleToggleActions,
+  MotionEases,
+} from '@/lib/animations';
+
+const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 interface StepProps {
   step: number;
@@ -11,20 +21,20 @@ interface StepProps {
 }
 
 const Step: React.FC<StepProps> = React.memo(({ step, title, description, icon, iconAlt }) => (
-  <div className="flex flex-col items-center gap-5 text-center group">
+  <div className="hiw-step flex flex-col items-center gap-5 text-center group relative z-10">
     {/* Step circle */}
     <div className="relative flex items-center justify-center">
-      <div className="w-24 h-24 rounded-full glass-panel flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+      <div className="w-24 h-24 rounded-full bg-[#0E061F] border border-white/15 shadow-[0_0_25px_rgba(54,12,159,0.35)] flex items-center justify-center group-hover:scale-105 group-hover:border-[#FFA28D]/50 transition-all duration-300">
         <img src={icon} alt={iconAlt} width={48} height={48} loading="lazy" decoding="async" className="w-12 h-12 object-contain" />
       </div>
-      <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-gradient-to-br from-[#360C9F] to-[#FFA28D] flex items-center justify-center shadow-[0_0_12px_rgba(255,162,141,0.5)]">
+      <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-gradient-to-br from-[#360C9F] to-[#FFA28D] flex items-center justify-center shadow-[0_0_12px_rgba(255,162,141,0.5)] z-20">
         <span className="font-gilroyBold text-white text-xs">{step}</span>
       </div>
     </div>
 
     {/* Text */}
     <div className="flex flex-col gap-2 max-w-[220px]">
-      <h4 className="font-gilroyBold text-white text-lg tracking-wide">{title}</h4>
+      <h4 className="font-gilroyBold text-white text-lg tracking-wide group-hover:text-[#FFA28D] transition-colors duration-200">{title}</h4>
       <p className="font-gilroyRegular text-gray-400 text-sm leading-relaxed">{description}</p>
     </div>
   </div>
@@ -62,10 +72,75 @@ const steps: StepProps[] = [
 ];
 
 export const HowItWorksSection: React.FC = () => {
+  const sectionRef = useRef<HTMLElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useIsomorphicLayoutEffect(() => {
+    if (prefersReducedMotion()) return;
+
+    const ctx = gsap.context(() => {
+      // Reversible Divider Line
+      gsap.fromTo(
+        '.hiw-divider-line',
+        { scaleX: 0, opacity: 0 },
+        {
+          scaleX: 1,
+          opacity: 1,
+          transformOrigin: 'center',
+          duration: 0.7,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: 'top 90%',
+            toggleActions: ReversibleToggleActions,
+          },
+        }
+      );
+
+      // Reversible Header Elements Reveal
+      createHeaderReveal('.hiw-badge', '.hiw-title', '.hiw-desc', sectionRef.current!, {
+        start: 'top 85%',
+        toggleActions: ReversibleToggleActions,
+      });
+
+      // Scrubbed Journey Progress Line (Smoothly scrubs forward AND backward)
+      gsap.fromTo(
+        '.hiw-connector-line',
+        { scaleX: 0, transformOrigin: 'left center' },
+        {
+          scaleX: 1,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: containerRef.current,
+            start: 'top 80%',
+            end: 'bottom 70%',
+            scrub: 0.5,
+          },
+        }
+      );
+
+      // Reversible Step Reveals (plays on enter, reverses smoothly on leaveBack)
+      const stepElements = gsap.utils.toArray<HTMLElement>('.hiw-step');
+      stepElements.forEach((step) => {
+        createReversibleReveal(step, {
+          trigger: step,
+          start: 'top 86%',
+          scale: 0.85,
+          y: 24,
+          duration: 0.6,
+          ease: MotionEases.backOut,
+          toggleActions: ReversibleToggleActions,
+        });
+      });
+    }, sectionRef);
+
+    return () => ctx.revert();
+  }, []);
+
   return (
-    <section id="how-it-works" className="relative w-full py-24 px-6 overflow-hidden">
+    <section id="how-it-works" ref={sectionRef} className="relative w-full py-24 px-6 overflow-hidden">
       {/* Section Separator Line */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[75%] max-w-5xl h-[1.5px] bg-gradient-to-r from-transparent via-[#FFA28D] via-[#00F0FF] to-transparent bg-[size:200%_100%] animate-[borderGradientRotate_4s_ease_infinite] pointer-events-none" />
+      <div className="hiw-divider-line absolute top-0 left-1/2 -translate-x-1/2 w-[75%] max-w-5xl h-[1.5px] bg-gradient-to-r from-transparent via-[#FFA28D] via-[#00F0FF] to-transparent pointer-events-none" />
 
       {/* Background blur */}
       <div className="absolute bottom-0 right-0 w-[600px] h-[500px] rounded-full bg-radial from-[#FFA28D]/15 via-transparent to-transparent blur-[120px] pointer-events-none" />
@@ -73,22 +148,32 @@ export const HowItWorksSection: React.FC = () => {
       <div className="max-w-7xl mx-auto flex flex-col gap-16">
         {/* Section Header */}
         <div className="flex flex-col items-center gap-4 text-center">
-          <div className="glass-pill px-5 py-2 inline-flex items-center gap-2">
+          <div className="hiw-badge glass-pill px-5 py-2 inline-flex items-center gap-2">
             <img src="/icon/coin.webp" alt="JLT Coin" width={20} height={20} loading="lazy" decoding="async" className="w-5 h-5 object-contain animate-sparkle" />
             <span className="font-gilroyMedium text-sm text-white/90 tracking-wider uppercase">Simple Steps</span>
           </div>
-          <h2 className="font-gilroyBold text-5xl text-white tracking-tight leading-tight">
+          <h2 className="hiw-title font-gilroyBold text-5xl text-white tracking-tight leading-tight">
             How It Works
           </h2>
-          <p className="font-gilroyRegular text-gray-400 text-lg max-w-[480px] leading-relaxed">
+          <p className="hiw-desc font-gilroyRegular text-gray-400 text-lg max-w-[480px] leading-relaxed">
             Get started in minutes. JLTQuest is designed to be fun and intuitive from day one.
           </p>
         </div>
 
-        {/* Steps with connector */}
-        <div className="relative flex flex-col md:flex-row items-center justify-between gap-10 md:gap-4">
-          {/* Connector line (desktop only) */}
-          <div className="hidden md:block absolute top-12 left-[12%] right-[12%] h-0.5 bg-gradient-to-r from-[#FFA28D] via-[#7B2CBF] via-[#00F0FF] to-[#FF007F] bg-[length:300%_100%] animate-[borderGradientRotate_5s_ease_infinite]" />
+        {/* Steps with perfectly aligned connector line */}
+        <div ref={containerRef} className="hiw-steps-container relative grid grid-cols-1 md:grid-cols-4 gap-10 md:gap-6">
+          {/* Desktop Connector Track & Animated Line */}
+          <div className="hidden md:block absolute top-[48px] -translate-y-1/2 left-[12.5%] right-[12.5%] h-[2px] z-0 pointer-events-none">
+            {/* Subtle Track Background */}
+            <div className="absolute inset-0 bg-white/10 rounded-full" />
+            {/* Active Animated Gradient Fill */}
+            <div className="hiw-connector-line absolute inset-0 bg-gradient-to-r from-[#FFA28D] via-[#7B2CBF] via-[#00F0FF] to-[#FF007F] shadow-[0_0_12px_rgba(255,162,141,0.7)] origin-left rounded-full" />
+          </div>
+
+          {/* Mobile Connector Track (Vertical) */}
+          <div className="md:hidden absolute top-[48px] bottom-[48px] left-1/2 -translate-x-1/2 w-[2px] z-0 pointer-events-none">
+            <div className="absolute inset-0 bg-gradient-to-b from-[#FFA28D] via-[#7B2CBF] to-[#00F0FF] opacity-35 rounded-full" />
+          </div>
 
           {steps.map((step) => (
             <Step key={step.step} {...step} />

@@ -1,13 +1,109 @@
 'use client';
 
-import React from 'react';
+import React, { useRef, useEffect, useLayoutEffect } from 'react';
 import Link from 'next/link';
+import {
+  gsap,
+  prefersReducedMotion,
+  ReversibleToggleActions,
+  MotionEases,
+} from '@/lib/animations';
+import { useMagneticButton } from './useMagneticButton';
+
+const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 export const CTASection: React.FC = () => {
+  const sectionRef = useRef<HTMLElement>(null);
+  const mascotRef = useRef<HTMLDivElement>(null);
+  const ctaBtnRef = useMagneticButton<HTMLAnchorElement>({ maxDistance: 14, strength: 0.28 });
+
+  useIsomorphicLayoutEffect(() => {
+    if (prefersReducedMotion()) return;
+
+    const ctx = gsap.context(() => {
+      // Reversible Divider Line
+      gsap.fromTo(
+        '.cta-divider-line',
+        { scaleX: 0, opacity: 0 },
+        {
+          scaleX: 1,
+          opacity: 1,
+          transformOrigin: 'center',
+          duration: 0.7,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: 'top 90%',
+            toggleActions: ReversibleToggleActions,
+          },
+        }
+      );
+
+      // Reversible Master Entrance Sequence
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: 'top 80%',
+          toggleActions: ReversibleToggleActions,
+        },
+      });
+
+      tl.fromTo(
+        '.cta-mascot-container',
+        { scale: 0.88, y: 35, opacity: 0 },
+        { scale: 1, y: 0, opacity: 1, duration: 0.7, ease: MotionEases.powerOut }
+      )
+        .fromTo(
+          '.cta-heading-block',
+          { y: 25, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.6, ease: MotionEases.powerOut },
+          '-=0.35'
+        )
+        .fromTo(
+          '.cta-desc',
+          { y: 15, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.5, ease: MotionEases.powerOut },
+          '-=0.3'
+        )
+        .fromTo(
+          '.cta-badge',
+          { y: 10, scale: 0.96, opacity: 0 },
+          { y: 0, scale: 1, opacity: 1, stagger: 0.08, duration: 0.45, ease: MotionEases.powerOut },
+          '-=0.25'
+        )
+        .fromTo(
+          '#cta-enter-app-btn',
+          { y: 15, scale: 0.97, opacity: 0 },
+          { y: 0, scale: 1, opacity: 1, duration: 0.5, ease: MotionEases.powerOut },
+          '-=0.2'
+        )
+        .fromTo(
+          '.cta-subtext',
+          { y: 10, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.4, ease: MotionEases.powerOut },
+          '-=0.25'
+        );
+
+      // Mascot Ambient Floating Loop
+      if (mascotRef.current) {
+        gsap.to(mascotRef.current, {
+          y: -6,
+          duration: 3.2,
+          repeat: -1,
+          yoyo: true,
+          ease: 'sine.inOut',
+          delay: 0.8,
+        });
+      }
+    }, sectionRef);
+
+    return () => ctx.revert();
+  }, []);
+
   return (
-    <section id="rewards" className="relative w-full py-24 px-6 overflow-hidden bg-[#080411]">
+    <section id="rewards" ref={sectionRef} className="relative w-full py-24 px-6 overflow-hidden bg-[#080411]">
       {/* Section Separator Line */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[75%] max-w-5xl h-[1.5px] bg-gradient-to-r from-transparent via-[#FF007F] via-[#00F0FF] to-transparent bg-[size:200%_100%] animate-[borderGradientRotate_4s_ease_infinite] pointer-events-none" />
+      <div className="cta-divider-line absolute top-0 left-1/2 -translate-x-1/2 w-[75%] max-w-5xl h-[1.5px] bg-gradient-to-r from-transparent via-[#FF007F] via-[#00F0FF] to-transparent pointer-events-none" />
 
       {/* Ambient blurs */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -17,7 +113,7 @@ export const CTASection: React.FC = () => {
 
       <div className="max-w-4xl mx-auto flex flex-col items-center gap-10 text-center relative z-10">
         {/* Mascot decorative */}
-        <div className="relative w-40 h-40 flex items-center justify-center">
+        <div ref={mascotRef} className="cta-mascot-container relative w-40 h-40 flex items-center justify-center">
           <div className="absolute inset-0 rounded-full bg-radial from-[#360C9F]/60 via-[#7B2CBF]/30 to-transparent blur-2xl scale-150" />
           <img
             src="/icon/mascot.webp"
@@ -26,33 +122,32 @@ export const CTASection: React.FC = () => {
             height={144}
             loading="lazy"
             decoding="async"
-            className="relative w-36 h-36 object-contain drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)] animate-float"
+            className="relative w-36 h-36 object-contain drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)]"
           />
         </div>
 
         {/* Heading */}
-        <div className="flex flex-col gap-3">
-          <h2 className="font-gilroyBold text-6xl text-white tracking-tight leading-tight">
+        <div className="cta-heading-block flex flex-col gap-3">
+          <h2 className="font-gilroyBold text-4xl sm:text-6xl text-white tracking-tight leading-tight">
             Ready to Start Your
           </h2>
-          <h2 className="font-gilroyBold text-6xl tracking-tight leading-tight">
+          <h2 className="font-gilroyBold text-4xl sm:text-6xl tracking-tight leading-tight">
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FFA28D] via-[#CC66FF] to-[#360C9F]">
               Quest Journey?
             </span>
           </h2>
         </div>
 
-        <p className="font-gilroyRegular text-gray-400 text-xl max-w-[520px] leading-relaxed">
+        <p className="cta-desc font-gilroyRegular text-gray-400 text-lg sm:text-xl max-w-[520px] leading-relaxed">
           Join thousands of players already earning JLT coins inside the JaxMart ecosystem. Your quests await.
         </p>
 
         {/* Coin counter decoration */}
-        <div className="flex items-center gap-6">
+        <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
           {[1, 2, 3].map((i) => (
             <div
               key={i}
-              className="glass-pill px-5 py-2.5 flex items-center gap-2.5 animate-float"
-              style={{ animationDelay: `${i * 0.4}s` }}
+              className="cta-badge glass-pill px-5 py-2.5 flex items-center gap-2.5 shadow-lg"
             >
               <img src="/icon/coin.webp" alt="JLT Coin" width={24} height={24} loading="lazy" decoding="async" className="w-6 h-6 object-contain animate-sparkle" style={{ animationDelay: `${i * 0.3}s` }} />
               <span className="font-gilroyBold text-white text-sm">
@@ -62,13 +157,14 @@ export const CTASection: React.FC = () => {
           ))}
         </div>
 
-        {/* CTA Button */}
+        {/* CTA Button with Magnetic interaction */}
         <Link
+          ref={ctaBtnRef}
           href="/dashboard"
           id="cta-enter-app-btn"
-          className="glass-btn px-12 py-5 rounded-2xl font-gilroyBold text-white text-xl tracking-wide shadow-[0_0_40px_rgba(54,12,159,0.6)] flex items-center gap-3 group hover:shadow-[0_0_60px_rgba(255,162,141,0.4)] transition-shadow duration-300"
+          className="glass-btn gsap-magnetic-btn px-10 py-4 sm:px-12 sm:py-5 rounded-2xl font-gilroyBold text-white text-lg sm:text-xl tracking-wide shadow-[0_0_40px_rgba(54,12,159,0.6)] flex items-center gap-3 group hover:shadow-[0_0_60px_rgba(255,162,141,0.4)] hover:scale-[1.025] active:scale-[0.98] transition-all duration-200"
         >
-          Enter JLTQuest
+          <span>Enter JLTQuest</span>
           <svg
             className="w-6 h-6 group-hover:translate-x-1.5 transition-transform duration-200"
             fill="none"
@@ -80,7 +176,7 @@ export const CTASection: React.FC = () => {
           </svg>
         </Link>
 
-        <p className="font-gilroyRegular text-gray-600 text-sm">
+        <p className="cta-subtext font-gilroyRegular text-gray-600 text-sm">
           Free to play · No downloads required · Powered by JaxMart
         </p>
       </div>

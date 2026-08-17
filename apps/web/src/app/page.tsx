@@ -53,7 +53,7 @@ export default function HomePage() {
   }, []);
 
   return (
-    <main className="relative w-full min-h-screen bg-black overflow-hidden">
+    <main className={`relative w-full min-h-screen bg-[#080411] ${viewState === 'landing' ? '' : 'overflow-hidden'}`}>
       {/* Landing page mounts ONLY when transitioning or active */}
       {(viewState === 'transitioning' || viewState === 'landing') && (
         <div className={viewState === 'transitioning' ? 'fixed inset-0 z-0 overflow-hidden pointer-events-none' : 'w-full min-h-screen'}>
@@ -63,7 +63,7 @@ export default function HomePage() {
 
       {/* Splash overlay active strictly during splash and transitioning states */}
       {viewState !== 'landing' && (
-        <div className="fixed inset-0 z-50 overflow-hidden bg-black">
+        <div className="fixed inset-0 z-50 overflow-hidden">
           <Splash
             onStartTransition={handleStartTransition}
             onComplete={handleTransitionComplete}

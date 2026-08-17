@@ -2,6 +2,7 @@ import './globals.css';
 import type { Metadata, Viewport } from 'next';
 import { CookieConsentLoader } from '@/components/common/CookieConsentLoader';
 import { ServiceWorkerRegistration } from '@/components/common/ServiceWorkerRegistration';
+import { WalletExtensionErrorHandler } from '@/components/common/WalletExtensionErrorHandler';
 // Plus Jakarta Sans standard CSS variable fallback for Turbopack compatibility
 const fontVariable = '--font-plus-jakarta-sans';
 
@@ -54,6 +55,47 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className="dark" style={{ background: '#080411' }} suppressHydrationWarning>
       <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                function shouldIgnore(msg, url, err) {
+                  var str = (msg || '') + ' ' + (url || '') + ' ' + (err && (err.stack || err.message) || '');
+                  return str.indexOf('Failed to connect to MetaMask') !== -1 ||
+                         str.indexOf('nkbihfbeogaeaoehlefnkodbefgpgknn') !== -1 ||
+                         str.indexOf('chrome-extension://') !== -1 ||
+                         str.indexOf('moz-extension://') !== -1 ||
+                         str.indexOf('UserRejectedRequestError') !== -1 ||
+                         str.indexOf('User rejected') !== -1 ||
+                         str.indexOf('-32002') !== -1 ||
+                         str.indexOf('4001') !== -1;
+                }
+                var origOnError = window.onerror;
+                window.onerror = function(msg, url, line, col, error) {
+                  if (shouldIgnore(msg, url, error)) {
+                    console.warn('[Handled Extension Error]:', msg);
+                    return true;
+                  }
+                  if (origOnError) return origOnError.apply(this, arguments);
+                };
+                window.addEventListener('error', function(e) {
+                  if (shouldIgnore(e.message, e.filename, e.error)) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                  }
+                }, true);
+                window.addEventListener('unhandledrejection', function(e) {
+                  var r = e.reason;
+                  var m = r && (r.message || r.stack || String(r)) || '';
+                  if (shouldIgnore(m, '', r)) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                  }
+                }, true);
+              })();
+            `,
+          }}
+        />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -65,6 +107,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         className="bg-[#080411] text-white antialiased selection:bg-[#FFA28D]/30 selection:text-white"
         style={{ fontFamily: 'var(--font-plus-jakarta-sans), system-ui, sans-serif' }}
       >
+        <WalletExtensionErrorHandler />
         {children}
         <CookieConsentLoader />
         <ServiceWorkerRegistration />

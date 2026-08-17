@@ -2,15 +2,8 @@ import './globals.css';
 import type { Metadata, Viewport } from 'next';
 import { CookieConsentLoader } from '@/components/common/CookieConsentLoader';
 import { ServiceWorkerRegistration } from '@/components/common/ServiceWorkerRegistration';
-import { Plus_Jakarta_Sans } from 'next/font/google';
-
-// Optimized Font Loading
-const plusJakartaSans = Plus_Jakarta_Sans({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-plus-jakarta-sans',
-  weight: ['300', '400', '500', '600', '700', '800'],
-});
+// Plus Jakarta Sans standard CSS variable fallback for Turbopack compatibility
+const fontVariable = '--font-plus-jakarta-sans';
 
 export const metadata: Metadata = {
   title: 'JLTQuest — Play Daily, Earn Real Perks & Collect Rares',
@@ -59,8 +52,11 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${plusJakartaSans.variable} dark`} style={{ background: '#080411' }} suppressHydrationWarning>
+    <html lang="en" className="dark" style={{ background: '#080411' }} suppressHydrationWarning>
       <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
         {/* Preload critical assets for instant splash rendering */}
         <link rel="preload" href="/icon/mascot.webp" as="image" type="image/webp" fetchPriority="high" />
         <link rel="preload" href="/jlt.svg" as="image" type="image/svg+xml" />

@@ -75,13 +75,23 @@ export const ErrorMessages: Record<ErrorCode, string> = {
   [ErrorCode.MISSION_ALREADY_COMPLETED]: 'Rare Pass mission already completed.',
   [ErrorCode.AVATAR_VARIANT_NOT_FOUND]: 'Avatar variant not found.',
   [ErrorCode.AVATAR_NOT_UNLOCKED]: 'Avatar variant not unlocked for this user.',
-  [ErrorCode.INVALID_SIGNATURE]: 'Invalid wallet signature.',
-  [ErrorCode.SIGNATURE_EXPIRED]: 'Signature has expired.',
+  [ErrorCode.INVALID_SIGNATURE]: 'Cryptographic verification failed: wallet signature does not match address.',
+  [ErrorCode.SIGNATURE_EXPIRED]: 'Signature challenge expired. Please re-sign.',
   [ErrorCode.REFRESH_TOKEN_EXPIRED]: 'Refresh token has expired.',
-  [ErrorCode.REFRESH_TOKEN_REVOKED]: 'Refresh token has been revoked.',
-  [ErrorCode.INVALID_REFRESH_TOKEN]: 'Invalid refresh token.',
+  [ErrorCode.REFRESH_TOKEN_REVOKED]: 'Session revoked due to token reuse detection.',
+  [ErrorCode.INVALID_REFRESH_TOKEN]: 'Invalid refresh token provided.',
   [ErrorCode.UNAUTHORIZED_ROLE]: 'Unauthorized role access.',
   [ErrorCode.CSRF_TOKEN_INVALID]: 'Invalid or missing CSRF token.',
+};
+
+export const AuthMessages = {
+  MISSING_LOGIN_PARAMS: 'walletAddress, signature, and message are required for login',
+  MISSING_TIMESTAMP: 'Message must contain a valid Timestamp value.',
+  SIGNATURE_VERIFICATION_FAILED: 'Cryptographic verification failed: wallet signature does not match address.',
+  REFRESH_TOKEN_REQUIRED: 'Refresh token is required.',
+  SESSION_EXPIRED_RECONNECT: 'Session expired. Please reconnect your wallet.',
+  TOKEN_REUSE_REVOKED: 'Session revoked due to token reuse detection.',
+  LOGOUT_SUCCESS: 'Logged out successfully',
 };
 
 export const APP_CONFIG = {

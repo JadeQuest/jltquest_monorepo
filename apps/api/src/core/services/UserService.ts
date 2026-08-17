@@ -71,10 +71,10 @@ export class UserService {
 
   async convertGp(userId: string, gpAmount: number) {
     if (!gpAmount || gpAmount < 100) {
-      throw new BadRequestError('Minimum 100 GP required for conversion', ErrorCode.INVALID_INPUT);
+      throw new BadRequestError(ErrorMessages[ErrorCode.INVALID_INPUT], ErrorCode.INVALID_INPUT);
     }
     if (gpAmount % 100 !== 0) {
-      throw new BadRequestError('GP amount must be a multiple of 100', ErrorCode.INVALID_INPUT);
+      throw new BadRequestError(ErrorMessages[ErrorCode.INVALID_INPUT], ErrorCode.INVALID_INPUT);
     }
 
     const jltToAdd = gpAmount / 100;

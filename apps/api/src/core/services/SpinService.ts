@@ -93,7 +93,7 @@ export class SpinService {
           const purchasedAvailable = spinState.purchasedSpinsAvailable || 0;
           if (purchasedAvailable <= 0) {
             throw new BadRequestError(
-              'No purchased spins available. Please purchase one with GP first.',
+              ErrorMessages[ErrorCode.INSUFFICIENT_SPINS],
               ErrorCode.INSUFFICIENT_SPINS
             );
           }

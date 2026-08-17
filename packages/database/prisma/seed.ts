@@ -298,10 +298,80 @@ async function main() {
   // ── 1. Seed Avatars & Variants ──────────────────────────
   console.log('Seeding Avatars...');
 
-  // Cosmic Explorer
+  // ── 1. Seed Exact 5 Avatars (3 Free, 2 from Pass) ──────────────────────────
+  console.log('Seeding Avatars (3 Free, 2 Pass)...');
+
+  // 1. Cosmic Mascot (Default Free)
+  const defaultAvatar = await prisma.avatar.upsert({
+    where: { characterKey: 'default' },
+    update: { name: 'Cosmic Mascot' },
+    create: {
+      name: 'Cosmic Mascot',
+      characterKey: 'default',
+    },
+  });
+
+  const defaultVariant = await prisma.avatarVariant.upsert({
+    where: { id: 'var_default_avatar' },
+    update: { imageUrl: '/avatar/avatar.webp', unlockDescription: 'Default Starter Avatar' },
+    create: {
+      id: 'var_default_avatar',
+      avatarId: defaultAvatar.id,
+      type: AvatarVariantType.BASIC,
+      imageUrl: '/avatar/avatar.webp',
+      unlockDescription: 'Default Starter Avatar',
+    },
+  });
+
+  // 2. Star Cadet (Free 1)
+  const starCadet = await prisma.avatar.upsert({
+    where: { characterKey: 'star_cadet' },
+    update: { name: 'Star Cadet' },
+    create: {
+      name: 'Star Cadet',
+      characterKey: 'star_cadet',
+    },
+  });
+
+  const starCadetVariant = await prisma.avatarVariant.upsert({
+    where: { id: 'var_star_cadet' },
+    update: { imageUrl: '/avatar/1.webp', unlockDescription: 'Free Starter Avatar' },
+    create: {
+      id: 'var_star_cadet',
+      avatarId: starCadet.id,
+      type: AvatarVariantType.BASIC,
+      imageUrl: '/avatar/1.webp',
+      unlockDescription: 'Free Starter Avatar',
+    },
+  });
+
+  // 3. Nova Pilot (Free 2)
+  const novaPilot = await prisma.avatar.upsert({
+    where: { characterKey: 'nova_pilot' },
+    update: { name: 'Nova Pilot' },
+    create: {
+      name: 'Nova Pilot',
+
+      characterKey: 'nova_pilot',
+    },
+  });
+
+  const novaPilotVariant = await prisma.avatarVariant.upsert({
+    where: { id: 'var_nova_pilot' },
+    update: { imageUrl: '/avatar/2.webp', unlockDescription: 'Free Starter Avatar' },
+    create: {
+      id: 'var_nova_pilot',
+      avatarId: novaPilot.id,
+      type: AvatarVariantType.BASIC,
+      imageUrl: '/avatar/2.webp',
+      unlockDescription: 'Free Starter Avatar',
+    },
+  });
+
+  // 4 & 5. Cosmic Explorer (Season 01 Pass - Free Lv 10 & Premium Lv 10)
   const cosmicExplorer = await prisma.avatar.upsert({
     where: { characterKey: 'cosmic_explorer' },
-    update: {},
+    update: { name: 'Cosmic Explorer' },
     create: {
       name: 'Cosmic Explorer',
       characterKey: 'cosmic_explorer',
@@ -310,98 +380,45 @@ async function main() {
 
   const explorerBasic = await prisma.avatarVariant.upsert({
     where: { id: 'var_cosmic_explorer_basic' },
-    update: { imageUrl: '/avatars/cosmic_explorer_basic.webp', unlockDescription: 'Rare Pass Season 1 Free track level 10' },
+    update: { imageUrl: '/avatar/pass/s1/s1b.webp', unlockDescription: 'Rare Pass Season 1 Free track level 10' },
     create: {
       id: 'var_cosmic_explorer_basic',
       avatarId: cosmicExplorer.id,
       type: AvatarVariantType.BASIC,
-      imageUrl: '/avatars/cosmic_explorer_basic.webp',
+      imageUrl: '/avatar/pass/s1/s1b.webp',
       unlockDescription: 'Rare Pass Season 1 Free track level 10',
     },
   });
 
   const explorer3D = await prisma.avatarVariant.upsert({
     where: { id: 'var_cosmic_explorer_3d' },
-    update: { imageUrl: '/avatars/cosmic_explorer_3d.webp', unlockDescription: 'Rare Pass Season 1 Premium track level 10' },
+    update: { imageUrl: '/avatar/pass/s1/s1p.webp', unlockDescription: 'Rare Pass Season 1 Premium track level 10' },
     create: {
       id: 'var_cosmic_explorer_3d',
       avatarId: cosmicExplorer.id,
       type: AvatarVariantType.THREE_D,
-      imageUrl: '/avatars/cosmic_explorer_3d.webp',
+      imageUrl: '/avatar/pass/s1/s1p.webp',
       unlockDescription: 'Rare Pass Season 1 Premium track level 10',
     },
   });
 
-  // Space Ranger
-  const spaceRanger = await prisma.avatar.upsert({
-    where: { characterKey: 'space_ranger' },
-    update: {},
-    create: {
-      name: 'Space Ranger',
-      characterKey: 'space_ranger',
-    },
-  });
-
-  await prisma.avatarVariant.upsert({
-    where: { id: 'var_space_ranger_basic' },
-    update: { imageUrl: '/avatars/space_ranger_basic.webp', unlockDescription: 'Rare Pass Season 1 Free track level 50' },
-    create: {
-      id: 'var_space_ranger_basic',
-      avatarId: spaceRanger.id,
-      type: AvatarVariantType.BASIC,
-      imageUrl: '/avatars/space_ranger_basic.webp',
-      unlockDescription: 'Rare Pass Season 1 Free track level 50',
-    },
-  });
-
-  await prisma.avatarVariant.upsert({
-    where: { id: 'var_space_ranger_3d' },
-    update: { imageUrl: '/avatars/space_ranger_3d.webp', unlockDescription: 'Rare Pass Season 1 Premium track level 50' },
-    create: {
-      id: 'var_space_ranger_3d',
-      avatarId: spaceRanger.id,
-      type: AvatarVariantType.THREE_D,
-      imageUrl: '/avatars/space_ranger_3d.webp',
-      unlockDescription: 'Rare Pass Season 1 Premium track level 50',
-    },
-  });
-
-  // 5 New Purchasable Avatars
-  console.log('Seeding Purchasable Avatars...');
-  
-  const purchasableAvatars = [
-    { name: 'Shadow Ninja', key: 'shadow_ninja', costGp: 500, costJlt: 0 },
-    { name: 'Arcane Wizard', key: 'arcane_wizard', costGp: 800, costJlt: 0 },
-    { name: 'Radiant Knight', key: 'radiant_knight', costGp: 1000, costJlt: 0 },
-    { name: 'Mecha Robot', key: 'mecha_robot', costGp: 0, costJlt: 10 },
-    { name: 'Void Alien', key: 'void_alien', costGp: 0, costJlt: 20 },
-  ];
-
-  for (const pa of purchasableAvatars) {
-    const avatar = await prisma.avatar.upsert({
-      where: { characterKey: pa.key },
-      update: {},
-      create: { name: pa.name, characterKey: pa.key },
-    });
-
-    await prisma.avatarVariant.upsert({
-      where: { id: `var_${pa.key}_basic` },
-      update: { 
-        imageUrl: `/avatars/${pa.key}_basic.webp`, 
-        isPurchasable: true, 
-        costGp: pa.costGp, 
-        costJlt: pa.costJlt 
-      },
-      create: {
-        id: `var_${pa.key}_basic`,
-        avatarId: avatar.id,
-        type: AvatarVariantType.BASIC,
-        imageUrl: `/avatars/${pa.key}_basic.webp`,
-        isPurchasable: true,
-        costGp: pa.costGp,
-        costJlt: pa.costJlt,
-      },
-    });
+  // Unlock the 3 free starter avatars for all existing users
+  const allUsers = await prisma.user.findMany({ select: { id: true, activeAvatarVariantId: true } });
+  for (const u of allUsers) {
+    const starterVariantIds = [defaultVariant.id, starCadetVariant.id, novaPilotVariant.id];
+    for (const vId of starterVariantIds) {
+      await prisma.userAvatar.upsert({
+        where: { userId_variantId: { userId: u.id, variantId: vId } },
+        update: {},
+        create: { userId: u.id, variantId: vId },
+      });
+    }
+    if (!u.activeAvatarVariantId) {
+      await prisma.user.update({
+        where: { id: u.id },
+        data: { activeAvatarVariantId: defaultVariant.id },
+      });
+    }
   }
 
   // ── 2. Seed Quests ──────────────────────────
@@ -530,7 +547,7 @@ async function main() {
   for (let i = 0; i < totalCards; i++) {
     const cardData = cardsData[i] || { name: `Card ${i + 1}`, rarity: CardRarity.COMMON };
     const cardUrl = `/card/collect-${i + 1}.webp`;
-    
+
     // Check if card already exists under any variant of its path
     const existingCard = await prisma.rareCard.findFirst({
       where: {
@@ -561,7 +578,7 @@ async function main() {
 
       await prisma.rareCard.update({
         where: { id: existingCard.id },
-        data: { 
+        data: {
           name: cardData.name,
           imageUrl: newUrl,
           rarity: cardData.rarity
@@ -654,17 +671,14 @@ async function main() {
       50: { free: { type: RarePassRewardType.CARD, amount: 1 }, premium: { type: RarePassRewardType.CARD, amount: 1 } },
     };
 
-    let cumulativeXp = 0;
     for (let l = 1; l <= 50; l++) {
-      if (l > 1) {
-        cumulativeXp += 100 + 20 * (l - 2);
-      }
+      const requiredRpXp = (l - 1) * 100;
 
       const levelRecord = await prisma.rarePassLevel.create({
         data: {
           seasonId: season.id,
           level: l,
-          requiredRpXp: cumulativeXp,
+          requiredRpXp,
         },
       });
 

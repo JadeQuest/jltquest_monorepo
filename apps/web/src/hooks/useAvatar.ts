@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useAccount } from 'wagmi';
 import { fetchWithRetry, getApiUrl } from '@/lib/apiClient';
 
 export interface AvatarVariant {
@@ -22,14 +23,16 @@ export interface Avatar {
 }
 
 export function useAvatar() {
+  const { address } = useAccount();
   const queryClient = useQueryClient();
 
   const avatarsQuery = useQuery({
-    queryKey: ['avatars'],
+    queryKey: ['avatars', address],
     queryFn: async () => {
       const response = await fetchWithRetry<{ success: boolean; data: Avatar[] }>(`${getApiUrl()}/avatars`);
       return response.data;
     },
+    enabled: !!address,
   });
 
   const selectAvatarMutation = useMutation({
@@ -43,7 +46,83 @@ export function useAvatar() {
       }
       return response.data;
     },
-    onSuccess: () => {
+    onMutate: async (variantId: string) => {
+      await queryClient.cancelQueries({ queryKey: ['dashboard'] });
+      await queryClient.cancelQueries({ queryKey: ['avatars'] });
+
+      const prevDashboard = queryClient.getQueryData(['dashboard', address]);
+      const prevAvatars = queryClient.getQueryData<Avatar[]>(['avatars']);
+
+      // Find the chosen variant from current cache
+      let targetVariant: AvatarVariant | undefined;
+      let targetAvatarName: string = 'Avatar';
+      if (prevAvatars) {
+        for (const av of prevAvatars) {
+          const match = av.variants.find((v) => v.id === variantId);
+          if (match) {
+            targetVariant = match;
+            targetAvatarName = av.name;
+            break;
+          }
+        }
+      }
+
+      // Optimistically update all matching dashboard queries immediately
+      if (targetVariant) {
+        queryClient.setQueriesData({ queryKey: ['dashboard'] }, (old: any) => {
+          if (!old) return old;
+          return {
+            ...old,
+            user: {
+              ...old.user,
+              activeAvatar: {
+                variantId: targetVariant!.id,
+                type: targetVariant!.type,
+                imageUrl: targetVariant!.imageUrl,
+                modelUrl: targetVariant!.modelUrl,
+                name: targetAvatarName,
+                characterKey: targetVariant!.type || 'avatar',
+              },
+            },
+          };
+        });
+      }
+
+      // Optimistically update avatars cache
+      queryClient.setQueriesData({ queryKey: ['avatars'] }, (old: any) => {
+        if (!old || !Array.isArray(old)) return old;
+        return old.map((avatar: Avatar) => ({
+          ...avatar,
+          variants: avatar.variants.map((v) => ({
+            ...v,
+            active: v.id === variantId,
+          })),
+        }));
+      });
+
+      return { prevDashboard, prevAvatars };
+    },
+    onError: (_err, _variantId, context) => {
+      if (context?.prevDashboard) {
+        queryClient.setQueriesData({ queryKey: ['dashboard'] }, context.prevDashboard);
+      }
+      if (context?.prevAvatars) {
+        queryClient.setQueriesData({ queryKey: ['avatars'] }, context.prevAvatars);
+      }
+    },
+    onSuccess: (data) => {
+      if (data?.activeAvatar) {
+        queryClient.setQueriesData({ queryKey: ['dashboard'] }, (old: any) => {
+          if (!old) return old;
+          return {
+            ...old,
+            user: {
+              ...old.user,
+              activeAvatar: data.activeAvatar,
+            },
+          };
+        });
+      }
       queryClient.invalidateQueries({ queryKey: ['avatars'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
     },

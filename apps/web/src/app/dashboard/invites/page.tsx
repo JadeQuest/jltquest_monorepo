@@ -1,21 +1,31 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useInvites } from '@/hooks/useInvites';
-import { Users, Copy, Check, Gift, Star, ShieldCheck, Sparkles, UserPlus } from 'lucide-react';
+import { Users, Copy, Check, Gift, Star, ShieldCheck, Sparkles, UserPlus, CheckCircle2 } from 'lucide-react';
 import { JLTLoader } from '@/components/common/JLTLoader';
 
 export default function InvitesPage() {
+  const searchParams = useSearchParams();
   const { invites, isLoading, redeemInvite, isRedeeming } = useInvites();
   const [redeemInput, setRedeemInput] = useState('');
   const [copiedCode, setCopiedCode] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const [statusMsg, setStatusMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
+  useEffect(() => {
+    const refParam = searchParams.get('ref');
+    if (refParam) {
+      setRedeemInput(refParam);
+    }
+  }, [searchParams]);
+
   const inviteData = (invites as any) || {};
   const inviteCode = inviteData.inviteCode || 'LOADING...';
   const totalInvited = inviteData.totalInvited || 0;
   const gpEarned = inviteData.gpEarnedFromInvites || 0;
+  const hasRedeemed = !!inviteData.hasRedeemed;
 
   const handleCopyCode = () => {
     if (!inviteData.inviteCode) return;
@@ -156,45 +166,59 @@ export default function InvitesPage() {
               Were you invited by a friend? Enter their referral code below to claim your welcome bonus GP instantly!
             </p>
 
-            <form onSubmit={handleRedeem} className="flex flex-col gap-4">
-              <div className="flex flex-col gap-2">
-                <input
-                  type="text"
-                  placeholder="e.g. JLT_9A8B7C"
-                  value={redeemInput}
-                  onChange={(e) => setRedeemInput(e.target.value)}
-                  className="w-full px-4 py-3.5 rounded-xl bg-black/50 border border-white/10 text-white font-mono uppercase tracking-wider focus:outline-none focus:border-purple-500/50 transition-colors"
-                />
+            {hasRedeemed ? (
+              <div className="p-5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-start gap-4">
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center shrink-0 mt-0.5">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <span className="text-white font-gilroyBold text-base">Referral Bonus Claimed</span>
+                  <p className="text-gray-400 font-gilroyMedium text-xs leading-relaxed">
+                    You have already redeemed an invite code and received your welcome GP bonus on this account.
+                  </p>
+                </div>
               </div>
+            ) : (
+              <form onSubmit={handleRedeem} className="flex flex-col gap-4">
+                <div className="flex flex-col gap-2">
+                  <input
+                    type="text"
+                    placeholder="e.g. JLT_9A8B7C"
+                    value={redeemInput}
+                    onChange={(e) => setRedeemInput(e.target.value)}
+                    className="w-full px-4 py-3.5 rounded-xl bg-black/50 border border-white/10 text-white font-mono uppercase tracking-wider focus:outline-none focus:border-purple-500/50 transition-colors"
+                  />
+                </div>
 
-              {statusMsg && (
-                <div
-                  className={`p-3 rounded-xl text-xs font-gilroyMedium border ${
-                    statusMsg.type === 'success'
-                      ? 'bg-emerald-950/30 border-emerald-500/40 text-emerald-300'
-                      : 'bg-red-950/30 border-red-500/40 text-red-300'
+                {statusMsg && (
+                  <div
+                    className={`p-3 rounded-xl text-xs font-gilroyMedium border ${
+                      statusMsg.type === 'success'
+                        ? 'bg-emerald-950/30 border-emerald-500/40 text-emerald-300'
+                        : 'bg-red-950/30 border-red-500/40 text-red-300'
+                    }`}
+                  >
+                    {statusMsg.text}
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={isRedeeming || !redeemInput.trim()}
+                  className={`w-full py-3.5 px-6 rounded-xl font-gilroyBold text-base flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                    !redeemInput.trim()
+                      ? 'bg-black/40 text-gray-500 border border-white/10 cursor-not-allowed'
+                      : 'glass-btn text-white shadow-[0_0_20px_#7B2CBF]'
                   }`}
                 >
-                  {statusMsg.text}
-                </div>
-              )}
-
-              <button
-                type="submit"
-                disabled={isRedeeming || !redeemInput.trim()}
-                className={`w-full py-3.5 px-6 rounded-xl font-gilroyBold text-base flex items-center justify-center gap-2 transition-all cursor-pointer ${
-                  !redeemInput.trim()
-                    ? 'bg-black/40 text-gray-500 border border-white/10 cursor-not-allowed'
-                    : 'glass-btn text-white shadow-[0_0_20px_#7B2CBF]'
-                }`}
-              >
-                {isRedeeming ? (
-                  <JLTLoader variant="inline" size="sm" text="Redeeming Code..." />
-                ) : (
-                  'Redeem Referral Code'
-                )}
-              </button>
-            </form>
+                  {isRedeeming ? (
+                    <JLTLoader variant="inline" size="sm" text="Redeeming Code..." />
+                  ) : (
+                    'Redeem Referral Code'
+                  )}
+                </button>
+              </form>
+            )}
           </div>
         </div>
       </div>

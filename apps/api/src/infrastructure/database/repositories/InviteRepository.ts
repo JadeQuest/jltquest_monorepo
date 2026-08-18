@@ -22,8 +22,13 @@ export class InviteRepository {
 
   async findByCode(tx: any, code: string) {
     const db = tx || prisma;
-    return db.invite.findUnique({
-      where: { code },
+    return db.invite.findFirst({
+      where: {
+        code: {
+          equals: code,
+          mode: 'insensitive'
+        }
+      },
       include: { redemptions: true }
     });
   }

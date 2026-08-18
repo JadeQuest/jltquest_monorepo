@@ -38,10 +38,15 @@ export class InviteService {
     const totalInvited = invite.redemptions?.length || 0;
     const gpEarnedFromInvites = invite.redemptions?.reduce((acc: number, r: any) => acc + (r.inviterGpAwarded || 0), 0) || 0;
 
+    const userRedemption = await this.prisma.inviteRedemption.findUnique({
+      where: { redeemedByUserId: userId }
+    });
+
     return {
       inviteCode: invite.code,
       totalInvited,
       gpEarnedFromInvites,
+      hasRedeemed: !!userRedemption,
       redemptions: invite.redemptions || []
     };
   }
@@ -49,32 +54,59 @@ export class InviteService {
   async redeem(rawInviteCode: string, newUserId: string) {
     return await this.prisma.$transaction(
       async (tx: any) => {
-        if (!rawInviteCode) {
+        if (!rawInviteCode || typeof rawInviteCode !== 'string' || !rawInviteCode.trim()) {
           throw new BadRequestError(
             ErrorMessages[ErrorCode.INVITE_CODE_INVALID],
             ErrorCode.INVITE_CODE_INVALID
           );
         }
 
-        const inviteCode = rawInviteCode.trim().toUpperCase();
+        let inviteCode = rawInviteCode.trim();
+
+        // If URL or query param was passed, extract the ref parameter
+        if (inviteCode.includes('ref=')) {
+          const match = inviteCode.match(/ref=([a-zA-Z0-9_-]+)/i);
+          if (match && match[1]) {
+            inviteCode = match[1];
+          }
+        } else if (inviteCode.startsWith('http://') || inviteCode.startsWith('https://')) {
+          const parts = inviteCode.split('/');
+          inviteCode = parts[parts.length - 1] || inviteCode;
+        }
+
+        inviteCode = inviteCode.toUpperCase().replace(/^JLT-/, 'JLT_');
+
+        // Prepend JLT_ if user supplied just the 8-char hex code
+        if (/^[A-F0-9]{8}$/i.test(inviteCode)) {
+          inviteCode = `JLT_${inviteCode}`;
+        }
 
         let invite = await this.inviteRepository.findByCode(tx, inviteCode);
         
         // Lazy creation if inviter hasn't visited their dashboard yet
-        if (!invite && inviteCode.startsWith('JLT_') && inviteCode.length === 12) {
+        if (!invite && inviteCode.startsWith('JLT_')) {
           const shortId = inviteCode.substring(4).toLowerCase();
           const inviterUser = await tx.user.findFirst({
             where: { id: { startsWith: shortId } }
           });
 
           if (inviterUser) {
-            invite = await tx.invite.create({
-              data: {
-                inviterId: inviterUser.id,
-                code: inviteCode
-              },
+            const existingInvite = await tx.invite.findFirst({
+              where: { inviterId: inviterUser.id },
               include: { redemptions: true }
             });
+
+            if (existingInvite) {
+              invite = existingInvite;
+            } else {
+              invite = await tx.invite.create({
+                data: {
+                  inviterId: inviterUser.id,
+                  code: inviteCode
+                },
+                include: { redemptions: true }
+              });
+            }
           }
         }
 

@@ -10,7 +10,7 @@ export class InviteController {
   };
 
   redeem = async (req: Request, res: Response) => {
-    const { inviteCode } = req.body;
+    const inviteCode = req.body.inviteCode || req.body.code;
     const data = await this.inviteService.redeem(inviteCode, req.user!.userId);
     res.json({ success: true, data, error: null });
   };

@@ -24,7 +24,7 @@ export function useInvites() {
     mutationFn: async (code: string) => {
       const response = await fetchWithRetry<{ success: boolean; data: any; error?: any }>(`${getApiUrl()}/invites/redeem`, {
         method: 'POST',
-        body: JSON.stringify({ code }),
+        body: JSON.stringify({ inviteCode: code, code }),
       });
       if (!response.success) {
         throw new Error(response.error?.message || response.error || 'Redeem failed');

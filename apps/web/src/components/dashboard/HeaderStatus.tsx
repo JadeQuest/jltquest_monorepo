@@ -140,7 +140,7 @@ const HeaderStatusComponent: React.FC<HeaderStatusProps> = ({
               className="glass-pill px-3 py-1.5 sm:px-5 sm:py-2.5 flex items-center gap-2 sm:gap-3 cursor-pointer hover:border-purple-400/50 hover:bg-white/10 transition-all shadow-lg"
             >
               <img
-                src={dashboardData?.user?.activeAvatar?.imageUrl || "/avatar.webp"}
+                src={dashboardData?.user?.activeAvatar?.imageUrl || "/avatar/avatar.webp"}
                 alt="Wallet Icon"
                 width={28}
                 height={28}
@@ -160,9 +160,9 @@ const HeaderStatusComponent: React.FC<HeaderStatusProps> = ({
               >
                 <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full overflow-hidden border border-purple-400/50 shadow-[0_0_12px_rgba(168,85,247,0.4)]">
                   <img
-                    src={dashboardData?.user?.activeAvatar?.imageUrl || '/avatar.webp'}
+                    src={dashboardData?.user?.activeAvatar?.imageUrl || '/avatar/avatar.webp'}
                     onError={(e) => {
-                      e.currentTarget.src = '/avatar.webp';
+                      e.currentTarget.src = '/avatar/avatar.webp';
                     }}
                     alt="User Avatar"
                     className="w-full h-full object-cover"

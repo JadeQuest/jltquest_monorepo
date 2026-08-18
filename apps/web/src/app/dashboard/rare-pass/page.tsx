@@ -422,8 +422,8 @@ export default function RarePassPage() {
                 <div className="hidden sm:flex flex-col justify-between w-[150px] shrink-0 select-none py-1">
                   {/* Top: Premium Header */}
                   <div className={`h-[145px] p-3 rounded-2xl flex flex-col justify-between items-center text-center transition-all relative overflow-hidden ${isPremium
-                      ? 'glass-panel bg-amber-500/15 border border-amber-400/40 shadow-[0_0_20px_rgba(245,158,11,0.25)]'
-                      : 'glass-panel opacity-90'
+                    ? 'glass-panel bg-amber-500/15 border border-amber-400/40 shadow-[0_0_20px_rgba(245,158,11,0.25)]'
+                    : 'glass-panel opacity-90'
                     }`}>
                     <div className="w-10 h-10 rounded-full bg-amber-500/20 border border-amber-400/40 flex items-center justify-center shadow-[0_0_15px_rgba(245,158,11,0.3)]">
                       <Crown className="w-5 h-5 text-amber-300 animate-bounce" />
@@ -497,8 +497,8 @@ export default function RarePassPage() {
                           {/* ══ TOP ROW: PREMIUM REWARD CARD ══ */}
                           <div
                             className={`h-[145px] w-full p-2.5 rounded-2xl flex flex-col justify-between items-center text-center relative transition-all duration-300 ${isPremium && isLevelUnlocked
-                                ? 'glass-panel bg-amber-500/10 border-amber-400/30 shadow-[0_0_15px_rgba(245,158,11,0.15)]'
-                                : 'glass-panel opacity-70'
+                              ? 'glass-panel bg-amber-500/10 border-amber-400/30 shadow-[0_0_15px_rgba(245,158,11,0.15)]'
+                              : 'glass-panel opacity-70'
                               }`}
                           >
                             <div className="flex flex-col items-center gap-1 my-auto pt-1">
@@ -563,8 +563,8 @@ export default function RarePassPage() {
                             {isLevelUnlocked && (
                               <div
                                 className={`absolute top-1/2 -translate-y-1/2 left-0 h-1.5 z-0 ${isCurrentLevel
-                                    ? 'right-1/2 bg-gradient-to-r from-[#00F0FF] via-[#7B2CBF] to-[#FFA28D] shadow-[0_0_8px_#00F0FF]'
-                                    : 'right-0 bg-gradient-to-r from-[#00F0FF] via-[#7B2CBF] to-[#FFA28D]'
+                                  ? 'right-1/2 bg-gradient-to-r from-[#00F0FF] via-[#7B2CBF] to-[#FFA28D] shadow-[0_0_8px_#00F0FF]'
+                                  : 'right-0 bg-gradient-to-r from-[#00F0FF] via-[#7B2CBF] to-[#FFA28D]'
                                   }`}
                               />
                             )}
@@ -572,10 +572,10 @@ export default function RarePassPage() {
                             {/* Milestone Circle Node - Displaying Level Only */}
                             <div
                               className={`w-9 h-9 rounded-full flex items-center justify-center font-gilroyBold text-xs z-10 relative transition-all duration-300 ${isCurrentLevel
-                                  ? 'bg-gradient-to-br from-[#00F0FF] to-[#7B2CBF] text-white ring-4 ring-cyan-400/40 shadow-[0_0_18px_#00F0FF] scale-110'
-                                  : isLevelUnlocked
-                                    ? 'bg-[#360C9F] text-cyan-200 border-2 border-cyan-400 shadow-[0_0_10px_rgba(0,240,255,0.3)]'
-                                    : 'bg-black/90 text-gray-400 border-2 border-white/15'
+                                ? 'bg-gradient-to-br from-[#00F0FF] to-[#7B2CBF] text-white ring-4 ring-cyan-400/40 shadow-[0_0_18px_#00F0FF] scale-110'
+                                : isLevelUnlocked
+                                  ? 'bg-[#360C9F] text-cyan-200 border-2 border-cyan-400 shadow-[0_0_10px_rgba(0,240,255,0.3)]'
+                                  : 'bg-black/90 text-gray-400 border-2 border-white/15'
                                 }`}
                             >
                               {levelConfig.level}
@@ -585,8 +585,8 @@ export default function RarePassPage() {
                           {/* ══ BOTTOM ROW: FREE REWARD CARD ══ */}
                           <div
                             className={`h-[145px] w-full p-2.5 rounded-2xl flex flex-col justify-between items-center text-center relative transition-all duration-300 ${isLevelUnlocked
-                                ? 'glass-panel shadow-[0_0_15px_rgba(0,240,255,0.1)]'
-                                : 'glass-panel opacity-70'
+                              ? 'glass-panel shadow-[0_0_15px_rgba(0,240,255,0.1)]'
+                              : 'glass-panel opacity-70'
                               }`}
                           >
                             <div className="flex flex-col items-center gap-1 my-auto pt-1">

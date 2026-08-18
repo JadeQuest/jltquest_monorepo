@@ -17,7 +17,7 @@ export class AvatarService {
       }),
       this.prisma.user.findUnique({
         where: { id: userId },
-        select: { activeAvatarVariantId: true }
+        select: { activeAvatarVariantId: true, level: true }
       })
     ]);
 
@@ -29,7 +29,26 @@ export class AvatarService {
     }
 
     const activeId = user.activeAvatarVariantId;
+    const userLevel = user.level || 1;
     const unlockedIds = new Set(userAvatars.map((ua: any) => ua.variantId));
+
+    // Retroactively unlock level-based avatars if the user meets the requirement
+    const missingUnlocks = [];
+    for (const avatar of avatars) {
+      for (const v of avatar.variants) {
+        if (v.unlockLevel && userLevel >= v.unlockLevel && !unlockedIds.has(v.id)) {
+          unlockedIds.add(v.id);
+          missingUnlocks.push({ userId, variantId: v.id });
+        }
+      }
+    }
+
+    if (missingUnlocks.length > 0) {
+      await this.prisma.userAvatar.createMany({
+        data: missingUnlocks,
+        skipDuplicates: true
+      });
+    }
 
     return avatars.map((avatar: any) => {
       return {

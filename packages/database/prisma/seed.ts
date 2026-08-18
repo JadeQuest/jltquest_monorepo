@@ -199,6 +199,17 @@ export async function seedQuests() {
       frequency: QuestFrequency.ONE_TIME,
       category: QuestCategory.MILESTONE,
     },
+    {
+      code: 'quest_invite_5_level_6',
+      name: '5 Successful Referrals',
+      description: 'Have 5 referred users reach Level 6.',
+      gpReward: 1000,
+      xpReward: 0,
+      rpXpReward: 0,
+      fragmentReward: 0,
+      frequency: QuestFrequency.ONE_TIME,
+      category: QuestCategory.REFERRAL,
+    },
 
     // Achievement Quests
     {
@@ -313,13 +324,14 @@ async function main() {
 
   const defaultVariant = await prisma.avatarVariant.upsert({
     where: { id: 'var_default_avatar' },
-    update: { imageUrl: '/avatar/avatar.webp', unlockDescription: 'Default Starter Avatar' },
+    update: { imageUrl: '/avatar/avatar.webp', unlockDescription: 'Default Starter Avatar', unlockLevel: 1 },
     create: {
       id: 'var_default_avatar',
       avatarId: defaultAvatar.id,
       type: AvatarVariantType.BASIC,
       imageUrl: '/avatar/avatar.webp',
       unlockDescription: 'Default Starter Avatar',
+      unlockLevel: 1,
     },
   });
 
@@ -335,40 +347,18 @@ async function main() {
 
   const starCadetVariant = await prisma.avatarVariant.upsert({
     where: { id: 'var_star_cadet' },
-    update: { imageUrl: '/avatar/1.webp', unlockDescription: 'Free Starter Avatar' },
+    update: { imageUrl: '/avatar/1.webp?v=2', unlockDescription: 'Free Starter Avatar', unlockLevel: 1 },
     create: {
       id: 'var_star_cadet',
       avatarId: starCadet.id,
       type: AvatarVariantType.BASIC,
-      imageUrl: '/avatar/1.webp',
+      imageUrl: '/avatar/1.webp?v=2',
       unlockDescription: 'Free Starter Avatar',
+      unlockLevel: 1,
     },
   });
 
-  // 3. Nova Pilot (Free 2)
-  const novaPilot = await prisma.avatar.upsert({
-    where: { characterKey: 'nova_pilot' },
-    update: { name: 'Nova Pilot' },
-    create: {
-      name: 'Nova Pilot',
-
-      characterKey: 'nova_pilot',
-    },
-  });
-
-  const novaPilotVariant = await prisma.avatarVariant.upsert({
-    where: { id: 'var_nova_pilot' },
-    update: { imageUrl: '/avatar/2.webp', unlockDescription: 'Free Starter Avatar' },
-    create: {
-      id: 'var_nova_pilot',
-      avatarId: novaPilot.id,
-      type: AvatarVariantType.BASIC,
-      imageUrl: '/avatar/2.webp',
-      unlockDescription: 'Free Starter Avatar',
-    },
-  });
-
-  // 4 & 5. Cosmic Explorer (Season 01 Pass - Free Lv 10 & Premium Lv 10)
+  // 4. Cosmic Explorer (Season 01 Pass - Free Lv 10)
   const cosmicExplorer = await prisma.avatar.upsert({
     where: { characterKey: 'cosmic_explorer' },
     update: { name: 'Cosmic Explorer' },
@@ -390,22 +380,61 @@ async function main() {
     },
   });
 
+  // 5. Cosmic Explorer 3D (Season 01 Pass - Premium Lv 10)
+  const cosmicExplorer3D = await prisma.avatar.upsert({
+    where: { characterKey: 'cosmic_explorer_3d' },
+    update: { name: 'Cosmic Explorer 3D' },
+    create: {
+      name: 'Cosmic Explorer 3D',
+      characterKey: 'cosmic_explorer_3d',
+    },
+  });
+
   const explorer3D = await prisma.avatarVariant.upsert({
     where: { id: 'var_cosmic_explorer_3d' },
-    update: { imageUrl: '/avatar/pass/s1/s1p.webp', unlockDescription: 'Rare Pass Season 1 Premium track level 10' },
+    update: { avatarId: cosmicExplorer3D.id, imageUrl: '/avatar/pass/s1/s1p.webp', unlockDescription: 'Rare Pass Season 1 Premium track level 10' },
     create: {
       id: 'var_cosmic_explorer_3d',
-      avatarId: cosmicExplorer.id,
+      avatarId: cosmicExplorer3D.id,
       type: AvatarVariantType.THREE_D,
       imageUrl: '/avatar/pass/s1/s1p.webp',
       unlockDescription: 'Rare Pass Season 1 Premium track level 10',
     },
   });
 
-  // Unlock the 3 free starter avatars for all existing users
+  // Level-Based Avatars
+  const tieredAvatars = [
+    { key: 'bronze', name: 'Bronze Rank', url: '/avatar/bronze-avatar.webp', level: 6 },
+    { key: 'silver', name: 'Silver Rank', url: '/avatar/silver-avatar.webp', level: 11 },
+    { key: 'gold', name: 'Gold Rank', url: '/avatar/gold-avatar.webp', level: 16 },
+    { key: 'platinum', name: 'Platinum Rank', url: '/avatar/platinum-avatar.webp', level: 21 },
+    { key: 'diamond', name: 'Diamond Rank', url: '/avatar/diamond-avatar.webp', level: 26 },
+  ];
+
+  for (const tier of tieredAvatars) {
+    const avatar = await prisma.avatar.upsert({
+      where: { characterKey: `tier_${tier.key}` },
+      update: { name: tier.name },
+      create: { name: tier.name, characterKey: `tier_${tier.key}` },
+    });
+
+    await prisma.avatarVariant.upsert({
+      where: { id: `var_tier_${tier.key}` },
+      update: { imageUrl: tier.url, unlockDescription: `Unlocked at Level ${tier.level}`, unlockLevel: tier.level },
+      create: {
+        id: `var_tier_${tier.key}`,
+        avatarId: avatar.id,
+        type: AvatarVariantType.BASIC,
+        imageUrl: tier.url,
+        unlockDescription: `Unlocked at Level ${tier.level}`,
+        unlockLevel: tier.level,
+      },
+    });
+  }
+
   const allUsers = await prisma.user.findMany({ select: { id: true, activeAvatarVariantId: true } });
   for (const u of allUsers) {
-    const starterVariantIds = [defaultVariant.id, starCadetVariant.id, novaPilotVariant.id];
+    const starterVariantIds = [defaultVariant.id, starCadetVariant.id];
     for (const vId of starterVariantIds) {
       await prisma.userAvatar.upsert({
         where: { userId_variantId: { userId: u.id, variantId: vId } },

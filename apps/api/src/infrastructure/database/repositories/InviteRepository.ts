@@ -6,7 +6,16 @@ export class InviteRepository {
     return db.invite.findFirst({
       where: { inviterId: userId },
       include: {
-        redemptions: true
+        redemptions: {
+          include: {
+            redeemedByUser: {
+              select: {
+                level: true,
+                displayName: true
+              }
+            }
+          }
+        }
       }
     });
   }

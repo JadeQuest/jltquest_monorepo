@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useAccount } from 'wagmi';
 import { useSpin } from '@/hooks/useSpin';
+import { showError } from '@/components/common/AlertModal';
 
 const PRIZES = [
   '50 GP',
@@ -70,10 +71,10 @@ const SpinToWinCardComponent: React.FC = () => {
         setPrize(PRIZES[prizeIndex]);
       }, 3500);
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Spin failed', error);
       setIsSpinning(false);
-      alert('Failed to spin. Please try again.');
+      showError(error?.message || 'Failed to spin. Please try again.', 'Spin Failed');
     }
   }, [isSpinning, isSpinMutating, spinStatus, spin, rotation]);
 

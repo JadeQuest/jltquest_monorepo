@@ -199,3 +199,76 @@ html.lenis body {
 .animate-grid-drift {
   animation: gridDrift 45s linear infinite;
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   QUEST ACTIVATION MOTION UTILITIES
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* Moving Light Sweep Flare for Masked Headline */
+@keyframes lightSweepAcross {
+  0% {
+    transform: translateX(-150%) skewX(-20deg);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.85;
+  }
+  80% {
+    opacity: 0.85;
+  }
+  100% {
+    transform: translateX(250%) skewX(-20deg);
+    opacity: 0;
+  }
+}
+
+.animate-light-sweep {
+  animation: lightSweepAcross 2.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Continuous Progress Bar Light Shimmer */
+@keyframes progressShimmerSweep {
+  0% {
+    transform: translateX(-100%);
+  }
+  50%, 100% {
+    transform: translateX(300%);
+  }
+}
+
+.animate-progress-shimmer {
+  animation: progressShimmerSweep 3.2s ease-in-out infinite;
+}
+
+/* Quest Shockwave Pulse Ring */
+@keyframes questPulseShockwave {
+  0% {
+    transform: translate(-50%, -50%) scale(0.35);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(2.8);
+    opacity: 0;
+  }
+}
+
+.animate-quest-pulse {
+  animation: questPulseShockwave 2.2s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+}
+
+/* Breathing Glow for Active Quest Badges */
+@keyframes badgeBreathGlow {
+  0%, 100% {
+    box-shadow: 0 0 12px rgba(54, 12, 159, 0.4), inset 0 0 8px rgba(123, 44, 191, 0.3);
+    border-color: rgba(140, 82, 255, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 24px rgba(140, 82, 255, 0.8), inset 0 0 14px rgba(255, 162, 141, 0.5);
+    border-color: rgba(255, 162, 141, 0.8);
+  }
+}
+
+.animate-badge-glow {
+  animation: badgeBreathGlow 3s ease-in-out infinite;
+}
+

@@ -30,23 +30,23 @@ export const LandingNav: React.FC = () => {
     if (prefersReducedMotion()) return;
 
     const ctx = gsap.context(() => {
-      // 1. Initial Load: Logo scales from 0 -> 1 with blur, Nav slides down from y: -30
+      // 1. Initial Load: Logo scales from 0.7 -> 1 with blur reduction, Nav slides down from y: -30
       gsap.fromTo(
         logoRef.current,
-        { scale: 0, opacity: 0, filter: 'blur(10px)' },
-        { scale: 1, opacity: 1, filter: 'blur(0px)', duration: 0.75, ease: MotionEases.backOut, delay: 0.1 }
+        { scale: 0.7, opacity: 0, filter: 'blur(12px)' },
+        { scale: 1, opacity: 1, filter: 'blur(0px)', duration: 0.85, ease: MotionEases.backOut, delay: 0.15 }
       );
 
       gsap.fromTo(
         navRef.current,
         { y: -30, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.6, ease: 'power3.out', delay: 0.15 }
+        { y: 0, opacity: 1, duration: 0.6, ease: 'power3.out', delay: 0.2 }
       );
 
       gsap.fromTo(
         ['.nav-item', '#nav-enter-app-btn'],
         { y: -15, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.5, stagger: 0.05, ease: 'power3.out', delay: 0.25 }
+        { y: 0, opacity: 1, duration: 0.5, stagger: 0.08, ease: 'power3.out', delay: 0.3 }
       );
     }, navRef);
 

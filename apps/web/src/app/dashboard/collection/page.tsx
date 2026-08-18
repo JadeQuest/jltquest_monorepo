@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useCollection, Card } from '../../../hooks/useCollection';
 import { JLTLoader } from '@/components/common/JLTLoader';
+import { showError } from '@/components/common/AlertModal';
 import { Sparkles, Layers, Shield, Zap, Award, ArrowRight } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -17,7 +18,7 @@ export default function CollectionPage() {
       const card = await mergeFragments();
       setNewCard(card);
     } catch (e: any) {
-      alert(e.message || 'Failed to merge fragments. Please try again.');
+      showError(e.message || 'Failed to merge fragments. Please try again.', 'Merge Failed');
     }
   };
 
@@ -149,11 +150,10 @@ export default function CollectionPage() {
             <button
               onClick={handleMerge}
               disabled={fragments < maxFragments || isMerging}
-              className={`w-full py-3.5 rounded-xl font-gilroyBold text-sm sm:text-base transition-all duration-300 flex items-center justify-center gap-2 ${
-                fragments >= maxFragments && !isMerging
-                  ? 'glass-btn text-white shadow-[0_0_25px_rgba(123,44,191,0.5)] cursor-pointer'
-                  : 'bg-white/5 text-white/40 border border-white/5 cursor-not-allowed'
-              }`}
+              className={`w-full py-3.5 rounded-xl font-gilroyBold text-sm sm:text-base transition-all duration-300 flex items-center justify-center gap-2 ${fragments >= maxFragments && !isMerging
+                ? 'glass-btn text-white shadow-[0_0_25px_rgba(123,44,191,0.5)] cursor-pointer'
+                : 'bg-white/5 text-white/40 border border-white/5 cursor-not-allowed'
+                }`}
             >
               {isMerging ? (
                 <JLTLoader variant="inline" size="sm" text="Merging Fragments..." />
@@ -221,11 +221,10 @@ export default function CollectionPage() {
                 <button
                   key={rarity}
                   onClick={() => setSelectedRarity(rarity)}
-                  className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-[11px] sm:text-xs font-gilroyBold uppercase tracking-wider transition-all duration-300 border ${
-                    isActive
-                      ? 'bg-purple-600/90 text-white shadow-[0_0_15px_rgba(123,44,191,0.5)] border-purple-400/40'
-                      : 'bg-white/5 text-purple-200 border-white/5 hover:bg-white/10 hover:text-white'
-                  }`}
+                  className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-[11px] sm:text-xs font-gilroyBold uppercase tracking-wider transition-all duration-300 border ${isActive
+                    ? 'bg-purple-600/90 text-white shadow-[0_0_15px_rgba(123,44,191,0.5)] border-purple-400/40'
+                    : 'bg-white/5 text-purple-200 border-white/5 hover:bg-white/10 hover:text-white'
+                    }`}
                 >
                   {rarity}
                 </button>
@@ -236,7 +235,7 @@ export default function CollectionPage() {
 
         {(() => {
           const filteredCards = cards.filter(c => selectedRarity === 'all' || (c.rarity || 'COMMON').toLowerCase() === selectedRarity.toLowerCase());
-          
+
           if (filteredCards.length === 0) {
             return (
               /* Empty Collection State */
@@ -349,7 +348,7 @@ export default function CollectionPage() {
               <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-pill mb-4">
                 <Sparkles className="w-4 h-4 text-[#FFA28D] animate-sparkle" />
                 <span className="text-[#FFA28D] font-gilroyBold text-xs uppercase tracking-wider">
-                  New Card Unlocked!
+                  Card Unlocked!
                 </span>
               </div>
 

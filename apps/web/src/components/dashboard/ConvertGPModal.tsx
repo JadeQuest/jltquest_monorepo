@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { useConvertGp } from '@/hooks/useConvertGp';
 import { useDashboard } from '@/hooks/useDashboard';
 import { JLTLoader } from '@/components/common/JLTLoader';
+import { showWarning, showError } from '@/components/common/AlertModal';
 import { RefreshCw, X, Coins, Sparkles, CheckCircle2, ArrowRight } from 'lucide-react';
 
 interface ConvertGPModalProps {
@@ -29,11 +30,11 @@ export const ConvertGPModal: React.FC<ConvertGPModalProps> = ({ isOpen, onClose 
 
   const handleConvert = async () => {
     if (gpInput < 100) {
-      alert('Minimum conversion amount is 100 GP.');
+      showWarning('Minimum conversion amount is 100 GP.', 'Invalid Amount');
       return;
     }
     if (gpInput > userGp) {
-      alert('Insufficient GP balance.');
+      showWarning('Insufficient GP balance to complete this conversion.', 'Insufficient Balance');
       return;
     }
     try {
@@ -43,7 +44,7 @@ export const ConvertGPModal: React.FC<ConvertGPModalProps> = ({ isOpen, onClose 
         jltReceived: res.jltReceived,
       });
     } catch (err: any) {
-      alert(err.message || 'Failed to convert GP');
+      showError(err.message || 'Failed to convert GP', 'Conversion Failed');
     }
   };
 

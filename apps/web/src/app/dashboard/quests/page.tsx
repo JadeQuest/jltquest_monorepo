@@ -7,6 +7,7 @@ import { useQuests, Quest } from '@/hooks/useQuests';
 import { useRarePass, RarePassMission } from '@/hooks/useRarePass';
 import { QuestCard } from '@/components/quests/QuestCard';
 import { JLTLoader } from '@/components/common/JLTLoader';
+import { showError } from '@/components/common/AlertModal';
 import {
   Target,
   Zap,
@@ -112,7 +113,7 @@ export default function QuestsPage() {
       });
       setShowPopup(true);
     } catch (err: any) {
-      alert(err.message || 'Failed to claim quest');
+      showError(err.message || 'Failed to claim quest', 'Claim Failed');
     } finally {
       setClaimingId(null);
     }
@@ -127,7 +128,7 @@ export default function QuestsPage() {
       });
       setShowPopup(true);
     } catch (err: any) {
-      alert(err.message || 'Failed to claim Rare Pass mission');
+      showError(err.message || 'Failed to claim Rare Pass mission', 'Mission Failed');
     } finally {
       setClaimingId(null);
     }

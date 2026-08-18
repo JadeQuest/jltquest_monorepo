@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import { useAccount } from 'wagmi';
 import { useRarePass, RarePassLevelConfig, RarePassRewardItem, RarePassMission } from '@/hooks/useRarePass';
 import { JLTLoader } from '@/components/common/JLTLoader';
+import { showError } from '@/components/common/AlertModal';
 import {
   Sparkles,
   Zap,
@@ -209,7 +210,7 @@ export default function RarePassPage() {
       });
       setShowPopup(true);
     } catch (err: any) {
-      alert(err.message || 'Failed to claim pass reward');
+      showError(err.message || 'Failed to claim pass reward', 'Claim Failed');
     } finally {
       setClaimingId(null);
     }
@@ -232,7 +233,7 @@ export default function RarePassPage() {
       });
       setShowPopup(true);
     } catch (err: any) {
-      alert(err.message || 'Failed to claim mission');
+      showError(err.message || 'Failed to claim mission', 'Mission Failed');
     } finally {
       setClaimingId(null);
     }
@@ -251,7 +252,7 @@ export default function RarePassPage() {
       });
       setShowPopup(true);
     } catch (err: any) {
-      alert(err.message || 'Failed to upgrade to Premium Pass');
+      showError(err.message || 'Failed to upgrade to Premium Pass', 'Upgrade Failed');
     }
   };
 

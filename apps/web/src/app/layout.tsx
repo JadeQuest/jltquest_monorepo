@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from 'next';
 import { CookieConsentLoader } from '@/components/common/CookieConsentLoader';
 import { ServiceWorkerRegistration } from '@/components/common/ServiceWorkerRegistration';
 import { WalletExtensionErrorHandler } from '@/components/common/WalletExtensionErrorHandler';
+import { AlertModalProvider } from '@/components/common/AlertModal';
 // Plus Jakarta Sans standard CSS variable fallback for Turbopack compatibility
 const fontVariable = '--font-plus-jakarta-sans';
 
@@ -108,7 +109,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         suppressHydrationWarning
       >
         <WalletExtensionErrorHandler />
-        {children}
+        <AlertModalProvider>
+          {children}
+        </AlertModalProvider>
         <CookieConsentLoader />
         <ServiceWorkerRegistration />
       </body>

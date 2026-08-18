@@ -36,7 +36,7 @@ const HeaderStatusComponent: React.FC<HeaderStatusProps> = ({
   const { signMessageAsync } = useSignMessage();
   const { login } = useAuth();
   const { data: dashboardData } = useDashboard();
-  
+
   const [isConvertModalOpen, setIsConvertModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -125,17 +125,9 @@ const HeaderStatusComponent: React.FC<HeaderStatusProps> = ({
                     className="w-full h-full object-contain"
                   />
                 </div>
-                <span className="text-white font-gilroyBold text-sm sm:text-base font-bold tracking-wide mr-1">
+                <span className="text-white font-gilroyBold text-sm sm:text-base font-bold tracking-wide">
                   {displayTokens} JLT
                 </span>
-                <button
-                  type="button"
-                  onClick={() => setIsConvertModalOpen(true)}
-                  className="p-1 rounded-md text-amber-400 hover:text-white hover:bg-white/10 transition-colors"
-                  title="Convert GP to JLT"
-                >
-                  <RefreshCw className="w-4 h-4" />
-                </button>
               </div>
             </>
           )}
@@ -163,30 +155,26 @@ const HeaderStatusComponent: React.FC<HeaderStatusProps> = ({
               <button
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                 type="button"
-                className="glass-pill px-3 py-1.5 sm:px-5 sm:py-2.5 flex items-center gap-2 sm:gap-3 cursor-pointer hover:border-purple-400/50 transition-all shadow-lg"
+                className="glass-pill p-1 sm:p-1.5 flex items-center justify-center cursor-pointer hover:border-purple-400/60 hover:scale-105 transition-all shadow-lg rounded-full"
+                title="Profile & Settings"
               >
-                <img
-                  src={dashboardData?.user?.activeAvatar?.imageUrl || "/avatar.webp"}
-                  alt="Wallet Avatar"
-                  width={28}
-                  height={28}
-                  className="w-5 h-5 sm:w-7 sm:h-7 rounded-md object-cover"
-                />
-                <span className="text-white font-gilroyMedium text-xs sm:text-base font-medium tracking-wide">
-                  {formatAddress(address || '')}
-                </span>
-                {chain && (
-                  <span className="hidden md:inline text-purple-300 font-gilroyRegular text-xs sm:text-sm">
-                    ({chain.name})
-                  </span>
-                )}
+                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full overflow-hidden border border-purple-400/50 shadow-[0_0_12px_rgba(168,85,247,0.4)]">
+                  <img
+                    src={dashboardData?.user?.activeAvatar?.imageUrl || '/avatar.webp'}
+                    onError={(e) => {
+                      e.currentTarget.src = '/avatar.webp';
+                    }}
+                    alt="User Avatar"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
               </button>
 
               {/* Dropdown Menu */}
               {isDropdownOpen && (
                 <>
-                  <div 
-                    className="fixed inset-0 z-40" 
+                  <div
+                    className="fixed inset-0 z-40"
                     onClick={() => setIsDropdownOpen(false)}
                   />
                   <div className="absolute right-0 mt-2 w-48 rounded-xl bg-indigo-950/95 backdrop-blur-md border border-white/10 shadow-2xl z-50 overflow-hidden flex flex-col py-1">
@@ -195,19 +183,29 @@ const HeaderStatusComponent: React.FC<HeaderStatusProps> = ({
                         setIsDropdownOpen(false);
                         setIsProfileModalOpen(true);
                       }}
-                      className="flex items-center gap-3 px-4 py-3 text-white hover:bg-white/10 transition-colors w-full text-left"
+                      className="flex items-center gap-3 px-4 py-3 text-white hover:bg-white/10 transition-colors w-full text-left group"
                     >
-                      <User className="w-4 h-4 text-purple-400" />
+                      <User className="w-4 h-4 text-white/80 group-hover:text-white transition-colors" />
                       <span className="font-gilroyMedium text-sm">Profile</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsDropdownOpen(false);
+                        setIsConvertModalOpen(true);
+                      }}
+                      className="flex items-center gap-3 px-4 py-3 text-white hover:bg-white/10 transition-colors w-full text-left group"
+                    >
+                      <RefreshCw className="w-4 h-4 text-white/80 group-hover:text-white transition-colors" />
+                      <span className="font-gilroyMedium text-sm">Convert</span>
                     </button>
                     <button
                       onClick={() => {
                         setIsDropdownOpen(false);
                         if (onConnectClick) onConnectClick();
                       }}
-                      className="flex items-center gap-3 px-4 py-3 text-white hover:bg-white/10 transition-colors w-full text-left"
+                      className="flex items-center gap-3 px-4 py-3 text-white hover:bg-white/10 transition-colors w-full text-left group"
                     >
-                      <Wallet className="w-4 h-4 text-blue-400" />
+                      <Wallet className="w-4 h-4 text-white/80 group-hover:text-white transition-colors" />
                       <span className="font-gilroyMedium text-sm">Wallet</span>
                     </button>
                   </div>

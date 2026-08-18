@@ -195,6 +195,7 @@ model Streak {
   user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   currentDay       Int      @default(0)     // 1-7, resets to 1 after a miss
+  longestStreak    Int      @default(0)     // All-time peak streak in days
   lastCheckInDate  DateTime? @db.Date       // UTC calendar date of last successful claim
   lastCheckInAt    DateTime?
 

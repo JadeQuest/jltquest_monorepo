@@ -15,11 +15,11 @@ export const claimQuestSchema = z.object({
 });
 
 export const selectAvatarSchema = z.object({
-  variantId: z.string().uuid('Invalid variant ID format'),
+  variantId: z.string().min(1, 'Variant ID is required'),
 });
 
 export const unlockAvatarSchema = z.object({
-  variantId: z.string().uuid('Invalid variant ID format'),
+  variantId: z.string().min(1, 'Variant ID is required'),
 });
 
 export const socialCallbackSchema = z.object({

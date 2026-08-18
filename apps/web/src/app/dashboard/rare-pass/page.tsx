@@ -22,13 +22,52 @@ import {
   Clock,
 } from 'lucide-react';
 
-const getRewardImage = (type: string) => {
+const getRewardImage = (type: string, level?: number, track?: 'FREE' | 'PREMIUM') => {
+  if (level === 10) {
+    if (track === 'PREMIUM') return '/avatar/pass/s1/s1p.webp';
+    return '/avatar/pass/s1/s1b.webp';
+  }
+  if (level === 50) {
+    if (track === 'PREMIUM') return '/card/pass/s1/premium.webp';
+    return '/card/pass/s1/basic.webp';
+  }
   const t = type.toLowerCase();
   if (t === 'gp') return '/icon/coin.webp';
   if (t === 'xp') return '/icon/xp.webp';
   if (t === 'spin') return '/icon/spinIcon.webp';
   if (t === 'fragment') return '/icon/Fragment.webp';
+  if (t === 'avatar') return '/avatar/avatar.webp';
+  if (t === 'card') {
+    if (track === 'PREMIUM') return '/card/pass/s1/premium.webp';
+    return '/card/pass/s1/basic.webp';
+  }
   return null;
+};
+
+const getRewardTitle = (reward: { rewardType: string; amount?: number | null; track?: 'FREE' | 'PREMIUM' }, level?: number) => {
+  if (level === 10) {
+    if (reward.track === 'PREMIUM') return 'Season 01 Pass';
+    return 'Season 01 Pass';
+  }
+  if (level === 50) {
+    if (reward.track === 'PREMIUM') return 'Throne of Creation';
+    return 'Cosmic Guardian';
+  }
+  if (reward.rewardType === 'SPIN') {
+    const count = reward.amount || 1;
+    return count > 1 ? `+${count} Spins` : '+1 Spin';
+  }
+  if (reward.rewardType === 'GP') {
+    return `${reward.amount ?? 0} GP`;
+  }
+  if (reward.rewardType === 'XP') {
+    return `${reward.amount ?? 0} XP`;
+  }
+  if (reward.rewardType === 'FRAGMENT') {
+    const count = reward.amount || 1;
+    return `${count} Fragment${count > 1 ? 's' : ''}`;
+  }
+  return `${reward.rewardType} ${reward.amount ? `(${reward.amount})` : ''}`;
 };
 
 export default function RarePassPage() {
@@ -48,9 +87,21 @@ export default function RarePassPage() {
     isBuyingPremium,
   } = useRarePass();
 
+  interface ClaimModalDetails {
+    title: string;
+    subtitle?: string;
+    track?: 'FREE' | 'PREMIUM';
+    level?: number;
+    rewardType?: string;
+    amount?: number | null;
+    name?: string;
+    image?: string | null;
+    message?: string;
+  }
+
   const [claimingId, setClaimingId] = useState<string | null>(null);
   const [showPopup, setShowPopup] = useState(false);
-  const [claimedRewardMessage, setClaimedRewardMessage] = useState<string>('');
+  const [claimModalData, setClaimModalData] = useState<ClaimModalDetails | null>(null);
   const [mounted, setMounted] = useState(false);
   const [activeTab, setActiveTab] = useState<'rewards' | 'missions'>('rewards');
   const [timeLeft, setTimeLeft] = useState<string>('');
@@ -89,24 +140,73 @@ export default function RarePassPage() {
   useEffect(() => {
     const level = status?.progression?.currentLevel ?? 1;
     if (rewards && level > 1 && scrollRef.current) {
-      const cardWidth = 256; // 240px width + 16px gap
-      const targetScroll = Math.max(0, (level - 2) * cardWidth);
+      const columnStep = 176; // 164px width + 12px gap
+      const targetScroll = Math.max(0, (level - 2) * columnStep);
       scrollRef.current.scrollTo({ left: targetScroll, behavior: 'smooth' });
     }
   }, [rewards, status?.progression?.currentLevel]);
 
   const handleScroll = (direction: 'left' | 'right') => {
     if (scrollRef.current) {
-      const scrollAmount = direction === 'left' ? -340 : 340;
+      const scrollAmount = direction === 'left' ? -352 : 352;
       scrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
     }
   };
 
-  const handleClaimReward = async (rewardId: string, rewardName: string) => {
+  const handleClaimReward = async (reward: RarePassRewardItem, level: number) => {
     try {
-      setClaimingId(rewardId);
-      await claimReward(rewardId);
-      setClaimedRewardMessage(`Successfully claimed reward: ${rewardName}!`);
+      setClaimingId(reward.id);
+      const res = await claimReward(reward.id);
+
+      let displayName = getRewardTitle(reward, level);
+      let rewardImage = getRewardImage(reward.rewardType, level, reward.track);
+
+      if (level === 50) {
+        if (reward.track === 'PREMIUM') {
+          displayName = 'Throne of Creation (Mythical Rank)';
+          rewardImage = '/card/pass/s1/premium.webp';
+        } else {
+          displayName = 'Cosmic Guardian (Epic Rank)';
+          rewardImage = '/card/pass/s1/basic.webp';
+        }
+      } else if (level === 10) {
+        if (reward.track === 'PREMIUM') {
+          displayName = 'Season 01 Premium Pass';
+          rewardImage = '/avatar/pass/s1/s1p.webp';
+        } else {
+          displayName = 'Season 01 Pass';
+          rewardImage = '/avatar/pass/s1/s1b.webp';
+        }
+      } else if (reward.rewardType === 'SPIN') {
+        const count = reward.amount || 1;
+        displayName = count > 1 ? `+${count} Spins` : '+1 Spin';
+      } else if (reward.rewardType === 'GP') {
+        displayName = `+${reward.amount || 0} Gold Points (GP)`;
+      } else if (reward.rewardType === 'XP') {
+        displayName = `+${reward.amount || 0} XP`;
+      } else if (reward.rewardType === 'FRAGMENT') {
+        const count = reward.amount || 1;
+        displayName = count > 1 ? `+${count} Fragments` : '+1 Fragment';
+      } else if (reward.rewardType === 'CARD') {
+        displayName = res?.grantDetails?.card?.name || 'Exclusive Rare Card';
+        if (res?.grantDetails?.card?.imageUrl) {
+          rewardImage = res.grantDetails.card.imageUrl;
+        }
+      } else if (reward.rewardType === 'AVATAR') {
+        displayName = res?.grantDetails?.avatar?.name || 'Exclusive 3D Avatar';
+      }
+
+      setClaimModalData({
+        title: 'Reward Claimed!',
+        subtitle: `Level ${level} • ${reward.track === 'PREMIUM' ? '★ Premium Track' : 'Free Track'}`,
+        track: reward.track,
+        level,
+        rewardType: reward.rewardType,
+        amount: reward.amount,
+        name: displayName,
+        image: rewardImage,
+        message: `You successfully unlocked ${displayName}! It has been credited to your balance.`,
+      });
       setShowPopup(true);
     } catch (err: any) {
       alert(err.message || 'Failed to claim pass reward');
@@ -115,11 +215,21 @@ export default function RarePassPage() {
     }
   };
 
-  const handleClaimMission = async (missionId: string, missionName: string) => {
+  const handleClaimMission = async (mission: RarePassMission) => {
     try {
-      setClaimingId(missionId);
-      const res = await claimMission(missionId);
-      setClaimedRewardMessage(`Completed "${missionName}" and earned +${res.rpXpAwarded || 20} RP XP!`);
+      setClaimingId(mission.id);
+      const res = await claimMission(mission.id);
+      const rpXpAwarded = res?.rpXpAwarded || mission.rpXpReward || 20;
+
+      setClaimModalData({
+        title: 'Mission Completed!',
+        subtitle: mission.name,
+        rewardType: 'RP XP',
+        amount: rpXpAwarded,
+        name: `+${rpXpAwarded} Rare Pass XP`,
+        image: '/icon/xp.webp',
+        message: `Great job! You earned +${rpXpAwarded} RP XP towards Season 01 progression.`,
+      });
       setShowPopup(true);
     } catch (err: any) {
       alert(err.message || 'Failed to claim mission');
@@ -131,7 +241,14 @@ export default function RarePassPage() {
   const handleBuyPremium = async () => {
     try {
       await buyPremium();
-      setClaimedRewardMessage('Unlocked Premium Rare Pass! Exclusive rewards are now available.');
+      setClaimModalData({
+        title: 'Premium Pass Activated!',
+        subtitle: 'Season 01: Cosmic Origins',
+        track: 'PREMIUM',
+        name: 'Premium Track Unlocked',
+        image: null,
+        message: 'All exclusive premium rewards, avatars, cards, and bonus spins are now unlocked!',
+      });
       setShowPopup(true);
     } catch (err: any) {
       alert(err.message || 'Failed to upgrade to Premium Pass');
@@ -150,6 +267,23 @@ export default function RarePassPage() {
 
   const isLoading = isLoadingStatus || isLoadingRewards || isLoadingMissions;
 
+  const formatSeasonDate = (dateStr?: string) => {
+    if (!dateStr) return '';
+    try {
+      const d = new Date(dateStr);
+      return d.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      });
+    } catch {
+      return dateStr;
+    }
+  };
+
+  const startDateFormatted = formatSeasonDate(status?.season?.startAt);
+  const endDateFormatted = formatSeasonDate(status?.season?.endAt);
+
   return (
     <div className="flex flex-col gap-8 max-w-[1550px] w-full mx-auto">
       {/* ════════════════════════════════════════════════════════
@@ -159,33 +293,15 @@ export default function RarePassPage() {
         <div className="absolute inset-0 bg-radial from-[#7B2CBF]/30 via-transparent to-transparent pointer-events-none" />
 
         {/* Left Section */}
-        <div className="flex flex-col gap-3 z-10 max-w-2xl">
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full glass-pill border border-cyan-400/20 w-fit">
-              <Sparkles className="w-4 h-4 text-[#00F0FF] animate-sparkle" />
-              <span className="text-[#00F0FF] font-gilroyMedium text-xs font-semibold uppercase tracking-wider">
-                Seasonal Pass Progression
-              </span>
-            </div>
-
-            <span className={`text-xs font-gilroyBold px-3 py-1 rounded-full border ${isPremium ? 'bg-amber-500/20 text-amber-300 border-amber-400/40 shadow-[0_0_12px_rgba(245,158,11,0.3)]' : 'bg-white/10 text-gray-300 border-white/15'}`}>
-              {isPremium ? '★ Premium Pass Active' : 'Free Pass Track'}
-            </span>
-
-            {mounted && timeLeft && (
-              <span className="text-xs font-gilroyBold px-3 py-1 rounded-full border bg-purple-500/20 text-purple-300 border-purple-400/40 flex items-center gap-1">
-                <Clock className="w-3 h-3" />
-                {timeLeft}
-              </span>
-            )}
-          </div>
-
+        <div className="flex flex-col gap-2 z-10 max-w-2xl">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-gilroyBold text-white tracking-tight drop-shadow-md">
             {seasonName}
           </h1>
 
-          <p className="text-purple-200 font-gilroyRegular text-sm sm:text-base leading-relaxed opacity-90">
-            Earn Rare Pass XP (RP XP) by completing quests, daily check-ins, spins, and card crafts to level up your pass and unlock exclusive cards, fragments, and 3D avatars.
+          <p className="text-purple-200 font-gilroyMedium text-sm sm:text-base leading-relaxed opacity-90">
+            {startDateFormatted && endDateFormatted
+              ? `Season 01 start from ${startDateFormatted} to ${endDateFormatted}`
+              : 'Season 01 start from Aug 1, 2026 to Sep 30, 2026'}
           </p>
         </div>
 
@@ -298,101 +414,236 @@ export default function RarePassPage() {
           </div>
 
           {activeTab === 'rewards' && rewards && (
-            <div
-              ref={scrollRef}
-              className="overflow-x-auto pb-4 scroll-smooth scrollbar-thin scrollbar-thumb-purple-500/40 scrollbar-track-black/40"
-            >
-              <div className="flex gap-4 w-max min-w-full">
-                {rewards.map((levelConfig: RarePassLevelConfig) => {
-                  const isLevelUnlocked = currentLevel >= levelConfig.level;
-                  const freeReward = levelConfig.rewards.find((r) => r.track === 'FREE');
-                  const premiumReward = levelConfig.rewards.find((r) => r.track === 'PREMIUM');
+            <div className="daily-card-panel p-4 sm:p-6 relative overflow-hidden flex flex-col gap-4 shadow-2xl group/track">
 
-                  return (
-                    <div
-                      key={levelConfig.level}
-                      className={`glass-panel p-5 rounded-2xl flex flex-col justify-between w-[240px] shrink-0 border transition-all duration-300 relative ${isLevelUnlocked
-                        ? 'border-purple-500/40 shadow-[0_0_15px_rgba(123,44,191,0.2)] bg-black/40'
-                        : 'border-white/5 bg-black/60 opacity-80'
-                        }`}
-                    >
-                      {/* Level Badge Header */}
-                      <div className="flex justify-between items-center mb-3">
-                        <span className={`text-sm font-gilroyBold px-3 py-1 rounded-lg border ${isLevelUnlocked ? 'bg-purple-500/20 text-white border-purple-400/30' : 'bg-white/5 text-gray-400 border-white/10'}`}>
-                          Level {levelConfig.level}
-                        </span>
-                        <span className="text-[11px] font-gilroyMedium text-purple-300">
-                          {levelConfig.requiredRpXp} RP XP
-                        </span>
-                      </div>
-
-                      {/* Free Track Card Box */}
-                      <div className="bg-black/40 p-3 rounded-xl border border-cyan-500/20 flex flex-col gap-1.5 mb-3">
-                        <div className="flex justify-between items-center text-[10px] font-gilroyBold uppercase text-cyan-300">
-                          <span>Free Reward</span>
-                          {freeReward?.isClaimed && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {freeReward ? (
-                            <>
-                              {getRewardImage(freeReward.rewardType) && (
-                                <img src={getRewardImage(freeReward.rewardType)!} alt={freeReward.rewardType} className="w-6 h-6 object-contain drop-shadow-md" />
-                              )}
-                              <p className="text-sm font-gilroyBold text-white">
-                                {freeReward.rewardType} {freeReward.amount ? `(${freeReward.amount})` : ''}
-                              </p>
-                            </>
-                          ) : (
-                            <p className="text-sm font-gilroyBold text-white">No Reward</p>
-                          )}
-                        </div>
-                        {freeReward && !freeReward.isClaimed && freeReward.isClaimable && (
-                          <button
-                            onClick={() => handleClaimReward(freeReward.id, `${freeReward.rewardType} (${freeReward.amount || 1})`)}
-                            disabled={claimingId === freeReward.id}
-                            className="w-full mt-1 py-1.5 rounded-lg text-xs font-gilroyBold glass-btn text-white hover:shadow-[0_0_10px_#00F0FF] cursor-pointer"
-                          >
-                            {claimingId === freeReward.id ? 'Claiming...' : 'Claim Free'}
-                          </button>
-                        )}
-                      </div>
-
-                      {/* Premium Track Card Box */}
-                      <div className={`p-3 rounded-xl border flex flex-col gap-1.5 ${isPremium ? 'bg-amber-500/10 border-amber-400/30' : 'bg-black/50 border-white/5 opacity-60'}`}>
-                        <div className="flex justify-between items-center text-[10px] font-gilroyBold uppercase text-amber-300">
-                          <span className="flex items-center gap-1">
-                            <Crown className="w-3 h-3" /> Premium
-                          </span>
-                          {premiumReward?.isClaimed && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />}
-                          {!isPremium && <Lock className="w-3.5 h-3.5 text-gray-500" />}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {premiumReward ? (
-                            <>
-                              {getRewardImage(premiumReward.rewardType) && (
-                                <img src={getRewardImage(premiumReward.rewardType)!} alt={premiumReward.rewardType} className="w-6 h-6 object-contain drop-shadow-md" />
-                              )}
-                              <p className="text-sm font-gilroyBold text-amber-100">
-                                {premiumReward.rewardType} {premiumReward.amount ? `(${premiumReward.amount})` : ''}
-                              </p>
-                            </>
-                          ) : (
-                            <p className="text-sm font-gilroyBold text-amber-100">Exclusive Bonus</p>
-                          )}
-                        </div>
-                        {isPremium && premiumReward && !premiumReward.isClaimed && premiumReward.isClaimable && (
-                          <button
-                            onClick={() => handleClaimReward(premiumReward.id, `Premium ${premiumReward.rewardType}`)}
-                            disabled={claimingId === premiumReward.id}
-                            className="w-full mt-1 py-1.5 rounded-lg text-xs font-gilroyBold bg-gradient-to-r from-amber-500 to-purple-600 text-white hover:shadow-[0_0_12px_rgba(245,158,11,0.4)] cursor-pointer"
-                          >
-                            {claimingId === premiumReward.id ? 'Claiming...' : 'Claim Premium'}
-                          </button>
-                        )}
-                      </div>
+              {/* 3-Tier Container: Left Track Labels + Right Horizontal Scrollable Grid */}
+              <div className="flex items-stretch gap-4">
+                {/* Pinned Left Track Headers */}
+                <div className="hidden sm:flex flex-col justify-between w-[150px] shrink-0 select-none py-1">
+                  {/* Top: Premium Header */}
+                  <div className={`h-[145px] p-3 rounded-2xl flex flex-col justify-between items-center text-center transition-all relative overflow-hidden ${isPremium
+                      ? 'glass-panel bg-amber-500/15 border border-amber-400/40 shadow-[0_0_20px_rgba(245,158,11,0.25)]'
+                      : 'glass-panel opacity-90'
+                    }`}>
+                    <div className="w-10 h-10 rounded-full bg-amber-500/20 border border-amber-400/40 flex items-center justify-center shadow-[0_0_15px_rgba(245,158,11,0.3)]">
+                      <Crown className="w-5 h-5 text-amber-300 animate-bounce" />
                     </div>
-                  );
-                })}
+
+                    <div className="flex flex-col items-center">
+                      <span className="text-amber-300 font-gilroyBold text-sm uppercase tracking-wider drop-shadow-sm">
+                        Premium Pass
+                      </span>
+                    </div>
+
+                    {isPremium ? (
+                      <span className="text-[11px] font-gilroyBold text-emerald-300 bg-emerald-500/20 px-3 py-0.5 rounded-full border border-emerald-400/40">
+                        Active
+                      </span>
+                    ) : (
+                      <button
+                        onClick={handleBuyPremium}
+                        disabled={isBuyingPremium}
+                        className="w-full py-1.5 text-xs font-gilroyBold glass-btn text-white rounded-xl hover:shadow-[0_0_15px_#FFA28D] transition-all cursor-pointer"
+                      >
+                        {isBuyingPremium ? 'Upgrading...' : 'Unlock'}
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Center: Milestone Track Label */}
+                  <div className="h-[52px] flex items-center justify-center text-center px-1 my-1">
+                    <div className="w-full py-1.5 px-2 rounded-xl glass-pill flex items-center justify-center">
+                      <span className="text-[11px] font-gilroyBold uppercase tracking-wider text-cyan-300">
+                        Level Track
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Bottom: Free Header */}
+                  <div className="h-[145px] p-3 rounded-2xl flex flex-col justify-between items-center text-center glass-panel shadow-[0_0_20px_rgba(0,240,255,0.15)] relative overflow-hidden">
+                    <div className="w-10 h-10 rounded-full bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center shadow-[0_0_15px_rgba(0,240,255,0.3)]">
+                      <Sparkles className="w-5 h-5 text-cyan-300 animate-sparkle" />
+                    </div>
+
+                    <div className="flex flex-col items-center">
+                      <span className="text-cyan-300 font-gilroyBold text-sm uppercase tracking-wider drop-shadow-sm">
+                        Free Pass
+                      </span>
+                    </div>
+
+                    <span className="text-[11px] font-gilroyBold text-cyan-200 bg-cyan-500/20 px-3 py-0.5 rounded-full border border-cyan-400/40">
+                      Active
+                    </span>
+                  </div>
+                </div>
+
+                {/* Right Horizontal Scrollable Pass Tiers */}
+                <div
+                  ref={scrollRef}
+                  className="overflow-x-auto pb-1 pt-1 px-1 scroll-smooth flex-grow [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+                >
+                  <div className="flex gap-3 w-max min-w-full">
+                    {rewards.map((levelConfig: RarePassLevelConfig) => {
+                      const isLevelUnlocked = currentLevel >= levelConfig.level;
+                      const isCurrentLevel = currentLevel === levelConfig.level;
+                      const freeReward = levelConfig.rewards.find((r) => r.track === 'FREE');
+                      const premiumReward = levelConfig.rewards.find((r) => r.track === 'PREMIUM');
+
+                      return (
+                        <div
+                          key={levelConfig.level}
+                          className="w-[164px] shrink-0 flex flex-col justify-between items-center select-none"
+                        >
+                          {/* ══ TOP ROW: PREMIUM REWARD CARD ══ */}
+                          <div
+                            className={`h-[145px] w-full p-2.5 rounded-2xl flex flex-col justify-between items-center text-center relative transition-all duration-300 ${isPremium && isLevelUnlocked
+                                ? 'glass-panel bg-amber-500/10 border-amber-400/30 shadow-[0_0_15px_rgba(245,158,11,0.15)]'
+                                : 'glass-panel opacity-70'
+                              }`}
+                          >
+                            <div className="flex flex-col items-center gap-1 my-auto pt-1">
+                              {premiumReward ? (
+                                <>
+                                  {getRewardImage(premiumReward.rewardType, levelConfig.level, 'PREMIUM') ? (
+                                    <img
+                                      src={getRewardImage(premiumReward.rewardType, levelConfig.level, 'PREMIUM')!}
+                                      alt={premiumReward.rewardType}
+                                      className="w-10 h-10 object-contain drop-shadow-md"
+                                    />
+                                  ) : (
+                                    <Star className="w-8 h-8 text-amber-300" />
+                                  )}
+                                  <p className="text-xs font-gilroyBold text-amber-100 truncate max-w-[140px]" title={getRewardTitle(premiumReward, levelConfig.level)}>
+                                    {getRewardTitle(premiumReward, levelConfig.level)}
+                                  </p>
+                                </>
+                              ) : (
+                                <p className="text-xs font-gilroyBold text-amber-100/60">Bonus</p>
+                              )}
+                            </div>
+
+                            {/* Premium Action / Status Slot */}
+                            <div className="w-full h-7 flex items-center justify-center">
+                              {premiumReward?.isClaimed ? (
+                                <div className="w-full h-full rounded-lg bg-emerald-500/15 border border-emerald-400/30 text-emerald-300 text-[11px] font-gilroyBold flex items-center justify-center gap-1">
+                                  <CheckCircle2 className="w-3 h-3" /> Claimed
+                                </div>
+                              ) : !isPremium ? (
+                                <div className="w-full h-full rounded-lg bg-amber-500/5 border border-amber-400/10 text-amber-300/60 text-[10px] font-gilroyMedium flex items-center justify-center gap-1">
+                                  <Lock className="w-2.5 h-2.5" /> Premium
+                                </div>
+                              ) : isPremium && premiumReward && !premiumReward.isClaimed && premiumReward.isClaimable ? (
+                                <button
+                                  onClick={() => handleClaimReward(premiumReward, levelConfig.level)}
+                                  disabled={claimingId === premiumReward.id}
+                                  className="w-full h-full rounded-lg text-xs font-gilroyBold glass-btn text-white hover:shadow-[0_0_15px_#FFA28D] hover:scale-105 transition-all cursor-pointer flex items-center justify-center"
+                                >
+                                  {claimingId === premiumReward.id ? (
+                                    <JLTLoader variant="inline" size="sm" text="Claiming..." />
+                                  ) : (
+                                    'Claim'
+                                  )}
+                                </button>
+                              ) : !isLevelUnlocked ? (
+                                <div className="w-full h-full rounded-lg bg-black/40 border border-white/5 text-gray-400 text-[10px] font-gilroyMedium flex items-center justify-center gap-1">
+                                  <Lock className="w-2.5 h-2.5" /> Locked
+                                </div>
+                              ) : (
+                                <div className="w-full h-full rounded-lg bg-black/20 border border-white/5 text-gray-400 text-[10px] font-gilroyMedium flex items-center justify-center">
+                                  Locked
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* ══ CENTER ROW: PROGRESS LINE & MILESTONE NODE ══ */}
+                          <div className="h-[52px] w-full flex items-center justify-center relative my-1">
+                            {/* Horizontal Progress Track Line */}
+                            <div className="absolute top-1/2 -translate-y-1/2 left-0 right-0 h-1.5 bg-black/80 border-y border-white/10 z-0" />
+                            {isLevelUnlocked && (
+                              <div
+                                className={`absolute top-1/2 -translate-y-1/2 left-0 h-1.5 z-0 ${isCurrentLevel
+                                    ? 'right-1/2 bg-gradient-to-r from-[#00F0FF] via-[#7B2CBF] to-[#FFA28D] shadow-[0_0_8px_#00F0FF]'
+                                    : 'right-0 bg-gradient-to-r from-[#00F0FF] via-[#7B2CBF] to-[#FFA28D]'
+                                  }`}
+                              />
+                            )}
+
+                            {/* Milestone Circle Node - Displaying Level Only */}
+                            <div
+                              className={`w-9 h-9 rounded-full flex items-center justify-center font-gilroyBold text-xs z-10 relative transition-all duration-300 ${isCurrentLevel
+                                  ? 'bg-gradient-to-br from-[#00F0FF] to-[#7B2CBF] text-white ring-4 ring-cyan-400/40 shadow-[0_0_18px_#00F0FF] scale-110'
+                                  : isLevelUnlocked
+                                    ? 'bg-[#360C9F] text-cyan-200 border-2 border-cyan-400 shadow-[0_0_10px_rgba(0,240,255,0.3)]'
+                                    : 'bg-black/90 text-gray-400 border-2 border-white/15'
+                                }`}
+                            >
+                              {levelConfig.level}
+                            </div>
+                          </div>
+
+                          {/* ══ BOTTOM ROW: FREE REWARD CARD ══ */}
+                          <div
+                            className={`h-[145px] w-full p-2.5 rounded-2xl flex flex-col justify-between items-center text-center relative transition-all duration-300 ${isLevelUnlocked
+                                ? 'glass-panel shadow-[0_0_15px_rgba(0,240,255,0.1)]'
+                                : 'glass-panel opacity-70'
+                              }`}
+                          >
+                            <div className="flex flex-col items-center gap-1 my-auto pt-1">
+                              {freeReward ? (
+                                <>
+                                  {getRewardImage(freeReward.rewardType, levelConfig.level, 'FREE') ? (
+                                    <img
+                                      src={getRewardImage(freeReward.rewardType, levelConfig.level, 'FREE')!}
+                                      alt={freeReward.rewardType}
+                                      className="w-10 h-10 object-contain drop-shadow-md"
+                                    />
+                                  ) : (
+                                    <Gift className="w-8 h-8 text-cyan-300" />
+                                  )}
+                                  <p className="text-xs font-gilroyBold text-white truncate max-w-[140px]" title={getRewardTitle(freeReward, levelConfig.level)}>
+                                    {getRewardTitle(freeReward, levelConfig.level)}
+                                  </p>
+                                </>
+                              ) : (
+                                <p className="text-xs font-gilroyBold text-gray-400">No Reward</p>
+                              )}
+                            </div>
+
+                            {/* Free Action / Status Slot */}
+                            <div className="w-full h-7 flex items-center justify-center">
+                              {freeReward?.isClaimed ? (
+                                <div className="w-full h-full rounded-lg bg-emerald-500/15 border border-emerald-400/30 text-emerald-300 text-[11px] font-gilroyBold flex items-center justify-center gap-1">
+                                  <CheckCircle2 className="w-3 h-3" /> Claimed
+                                </div>
+                              ) : freeReward && !freeReward.isClaimed && freeReward.isClaimable ? (
+                                <button
+                                  onClick={() => handleClaimReward(freeReward, levelConfig.level)}
+                                  disabled={claimingId === freeReward.id}
+                                  className="w-full h-full rounded-lg text-xs font-gilroyBold glass-btn text-white hover:shadow-[0_0_12px_#00F0FF] hover:scale-105 transition-all cursor-pointer flex items-center justify-center"
+                                >
+                                  {claimingId === freeReward.id ? (
+                                    <JLTLoader variant="inline" size="sm" text="Claiming..." />
+                                  ) : (
+                                    'Claim'
+                                  )}
+                                </button>
+                              ) : !isLevelUnlocked ? (
+                                <div className="w-full h-full rounded-lg bg-black/40 border border-white/5 text-gray-400 text-[10px] font-gilroyMedium flex items-center justify-center gap-1">
+                                  <Lock className="w-2.5 h-2.5" /> Locked
+                                </div>
+                              ) : (
+                                <div className="w-full h-full rounded-lg bg-black/20 border border-white/5 text-gray-400 text-[10px] font-gilroyMedium flex items-center justify-center">
+                                  Locked
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -443,7 +694,7 @@ export default function RarePassPage() {
                           : 'glass-btn text-white hover:shadow-[0_0_15px_#00F0FF]'
                         }`}
                       disabled={mission.completed || claimingId === mission.id || !mission.canClaim}
-                      onClick={() => handleClaimMission(mission.id, mission.name)}
+                      onClick={() => handleClaimMission(mission)}
                     >
                       {claimingId === mission.id ? (
                         <JLTLoader variant="inline" size="sm" text="Claiming..." />
@@ -464,24 +715,55 @@ export default function RarePassPage() {
       )}
 
       {/* ════════════════════════════════════════════════════════
-          CLAIM SUCCESS MODAL
+          CELEBRATORY REWARD CLAIM SUCCESS MODAL
           ════════════════════════════════════════════════════════ */}
-      {showPopup && mounted &&
+      {showPopup && mounted && claimModalData &&
         createPortal(
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-            <div className="glass-panel w-full max-w-sm p-6 sm:p-8 flex flex-col items-center text-center relative animate-fade-in shadow-[0_0_40px_rgba(0,240,255,0.3)] border border-cyan-400/20 rounded-2xl">
-              <div className="w-16 h-16 rounded-full glass-panel border border-cyan-400/30 flex items-center justify-center mb-4 shadow-[0_0_25px_rgba(0,240,255,0.4)]">
-                <Sparkles className="w-8 h-8 text-[#00F0FF] animate-spin" />
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
+            <div className="glass-panel w-full max-w-md p-6 sm:p-8 flex flex-col items-center text-center relative shadow-[0_0_40px_rgba(123,44,191,0.3)] border border-white/10 rounded-2xl">
+              <div className="absolute inset-0 bg-radial from-[#7B2CBF]/20 via-transparent to-transparent pointer-events-none rounded-2xl" />
+
+              {/* Central Glowing Icon Badge */}
+              <div className="w-16 h-16 rounded-full glass-panel border border-purple-400/30 flex items-center justify-center mb-4 shadow-[0_0_25px_rgba(123,44,191,0.4)]">
+                {claimModalData.image ? (
+                  <img
+                    src={claimModalData.image}
+                    alt={claimModalData.name || 'Reward'}
+                    className="w-10 h-10 object-contain drop-shadow-[0_0_10px_rgba(0,240,255,0.5)]"
+                  />
+                ) : (
+                  <CheckCircle2 className="w-8 h-8 text-[#00F0FF]" />
+                )}
               </div>
 
-              <h3 className="text-white font-gilroyBold text-2xl mb-2 tracking-wide">Pass Update!</h3>
-              <p className="text-cyan-200 font-gilroyMedium text-base mb-6 leading-relaxed">
-                {claimedRewardMessage}
+              {/* Title */}
+              <h3 className="text-white font-gilroyBold text-2xl mb-2 tracking-wide">
+                {claimModalData.title || 'Reward Claimed!'}
+              </h3>
+
+              {/* Message */}
+              <p className="text-purple-200 font-gilroyMedium text-base mb-6 leading-relaxed">
+                {claimModalData.message || 'Your reward has been granted and credited to your account!'}
               </p>
 
+              {/* Reward Display */}
+              <div className="flex justify-center items-center gap-6 mb-8 w-full">
+                <div className="flex flex-col items-center">
+                  <span className="text-3xl font-bold text-white drop-shadow-[0_0_15px_#00F0FF]">
+                    {claimModalData.name}
+                  </span>
+                  {claimModalData.subtitle && (
+                    <span className="text-xs text-purple-300 font-gilroyMedium uppercase tracking-wider mt-1">
+                      {claimModalData.subtitle}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Confirm Button */}
               <button
                 onClick={() => setShowPopup(false)}
-                className="glass-btn px-8 py-3 rounded-xl text-white font-gilroyBold text-lg shadow-[0_0_15px_#00F0FF] hover:shadow-[0_0_25px_#00F0FF] transition-shadow w-full cursor-pointer"
+                className="glass-btn px-8 py-3 rounded-xl text-white font-gilroyBold text-lg shadow-[0_0_15px_#7B2CBF] hover:shadow-[0_0_25px_#7B2CBF] transition-shadow w-full cursor-pointer"
               >
                 Awesome
               </button>

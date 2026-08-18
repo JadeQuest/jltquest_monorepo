@@ -12,6 +12,14 @@ interface ProfileModalProps {
   dashboardData?: DashboardData | null;
 }
 
+const DEFAULT_FALLBACK_VARIANTS = [
+  { id: 'var_default_avatar', type: 'BASIC', imageUrl: '/avatar/avatar.webp', unlocked: true, active: false, isPurchasable: false, costGp: 0, costJlt: 0 },
+  { id: 'var_star_cadet', type: 'BASIC', imageUrl: '/avatar/1.webp', unlocked: true, active: false, isPurchasable: false, costGp: 0, costJlt: 0 },
+  { id: 'var_nova_pilot', type: 'BASIC', imageUrl: '/avatar/2.webp', unlocked: true, active: false, isPurchasable: false, costGp: 0, costJlt: 0 },
+  { id: 'var_cosmic_explorer_basic', type: 'BASIC', imageUrl: '/avatar/pass/s1/s1b.webp', unlocked: false, active: false, unlockDescription: 'Rare Pass Season 1 Free track level 10', isPurchasable: false, costGp: 0, costJlt: 0 },
+  { id: 'var_cosmic_explorer_3d', type: 'THREE_D', imageUrl: '/avatar/pass/s1/s1p.webp', unlocked: false, active: false, unlockDescription: 'Rare Pass Season 1 Premium track level 10', isPurchasable: false, costGp: 0, costJlt: 0 },
+];
+
 export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, dashboardData }) => {
   const { status } = useRarePass();
   const { avatars, selectAvatar, isSelecting, unlockAvatar, isUnlocking } = useAvatar();
@@ -28,16 +36,48 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, das
   const jlt = dashboardData?.user?.jlt || 0;
   const seasonalPassLevel = status?.progression?.currentLevel || 1;
 
-  const currentAvatarUrl = dashboardData?.user?.activeAvatar?.imageUrl || "/avatar.webp";
-  const allVariants = avatars?.flatMap(a => a.variants) || [];
+  const serverVariants = avatars?.flatMap((a) => a.variants) || [];
+  const allVariants = serverVariants.length > 0 ? serverVariants : DEFAULT_FALLBACK_VARIANTS;
+  const selectedVariant = allVariants.find((v) => v.id === selectedVariantId);
+  const selectedAvatarParent = avatars?.find((a) => a.variants.some((v) => v.id === selectedVariantId));
+
+  // Dynamic live preview: update preview image & title immediately when an avatar is selected
+  const previewAvatarUrl =
+    isChoosingAvatar && selectedVariant?.imageUrl
+      ? selectedVariant.imageUrl
+      : dashboardData?.user?.activeAvatar?.imageUrl || '/avatar.webp';
+
+  const previewAvatarName =
+    isChoosingAvatar && selectedVariant
+      ? selectedAvatarParent?.name || selectedVariant.type || 'Selected Avatar'
+      : dashboardData?.user?.activeAvatar?.name || 'Default';
+
+  const handleOpenChooser = () => {
+    const activeVar = allVariants.find((v) => v.active || v.id === dashboardData?.user?.activeAvatar?.variantId);
+    if (activeVar) {
+      setSelectedVariantId(activeVar.id);
+    }
+    setIsChoosingAvatar(true);
+  };
+
+  const handleCancelChooser = () => {
+    setIsChoosingAvatar(false);
+    setSelectedVariantId(null);
+  };
+
+  const handleCloseModal = () => {
+    setIsChoosingAvatar(false);
+    setSelectedVariantId(null);
+    onClose();
+  };
 
   const handleSaveAvatar = async () => {
     if (selectedVariantId) {
+      setIsChoosingAvatar(false);
       try {
         await selectAvatar(selectedVariantId);
-        setIsChoosingAvatar(false);
       } catch (err) {
-        console.error("Failed to save avatar", err);
+        console.error('Failed to save avatar', err);
       }
     }
   };
@@ -48,19 +88,17 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, das
       try {
         await unlockAvatar(selectedVariantId);
       } catch (err: any) {
-        setUnlockError(err.message || "Failed to unlock avatar");
+        setUnlockError(err.message || 'Failed to unlock avatar');
       }
     }
   };
-
-  const selectedVariant = allVariants.find(v => v.id === selectedVariantId);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
       <div
         className="relative w-full max-w-md p-6 sm:p-8 rounded-2xl bg-gradient-to-br from-indigo-950/90 to-purple-950/90 border border-white/10 shadow-2xl overflow-hidden"
         style={{
-          boxShadow: '0 0 40px rgba(139, 92, 246, 0.2)'
+          boxShadow: '0 0 40px rgba(139, 92, 246, 0.2)',
         }}
       >
         {/* Glow effect */}
@@ -68,7 +106,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, das
         <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-indigo-500/20 rounded-full blur-3xl" />
 
         <button
-          onClick={onClose}
+          onClick={handleCloseModal}
           className="absolute top-4 right-4 p-2 rounded-full text-white/60 hover:text-white hover:bg-white/10 transition-colors z-10"
         >
           <X className="w-5 h-5" />
@@ -79,21 +117,29 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, das
         </h2>
 
         <div className="space-y-6 relative z-10">
-
-          {/* Avatar Section */}
+          {/* Avatar Section (Live Preview) */}
           <div className="flex items-center justify-between bg-white/5 rounded-xl p-4 border border-white/5">
             <div className="flex items-center gap-4">
               <div className="relative shrink-0 w-16 h-16 rounded-xl overflow-hidden border-2 border-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.5)]">
-                <img src={currentAvatarUrl} alt="Current Avatar" className="w-full h-full object-cover" />
+                <img
+                  src={previewAvatarUrl}
+                  onError={(e) => {
+                    e.currentTarget.src = '/avatar.webp';
+                  }}
+                  alt="Avatar Preview"
+                  className="w-full h-full object-cover transition-all duration-200"
+                />
               </div>
               <div>
-                <p className="text-sm font-gilroyMedium text-white/60">Current Avatar</p>
-                <p className="text-base font-gilroyBold text-white">{dashboardData?.user?.activeAvatar?.name || 'Default'}</p>
+                <p className="text-sm font-gilroyMedium text-white/60">
+                  {isChoosingAvatar && selectedVariant ? 'Selected Preview' : 'Current Avatar'}
+                </p>
+                <p className="text-base font-gilroyBold text-white">{previewAvatarName}</p>
               </div>
             </div>
             {!isChoosingAvatar && (
               <button
-                onClick={() => setIsChoosingAvatar(true)}
+                onClick={handleOpenChooser}
                 className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-gilroyMedium text-sm transition-colors shadow-lg"
               >
                 Choose Avatar
@@ -106,7 +152,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, das
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-gilroyMedium text-white/70">Select New Avatar</h3>
                 <button
-                  onClick={() => setIsChoosingAvatar(false)}
+                  onClick={handleCancelChooser}
                   className="text-xs text-white/50 hover:text-white"
                 >
                   Cancel
@@ -117,22 +163,25 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, das
                 {allVariants.map((variant) => (
                   <button
                     key={variant.id}
-                    onClick={() => {
-                      if (variant.unlocked) {
-                        setSelectedVariantId(variant.id);
-                      }
-                    }}
+                    onClick={() => setSelectedVariantId(variant.id)}
                     className={`relative shrink-0 aspect-square rounded-xl overflow-hidden border-2 transition-all ${selectedVariantId === variant.id
                       ? 'border-purple-400 scale-105 shadow-[0_0_15px_rgba(168,85,247,0.5)]'
                       : variant.unlocked
                         ? 'border-transparent opacity-80 hover:opacity-100 hover:scale-105 hover:border-white/20'
-                        : 'border-transparent opacity-40 hover:opacity-80 hover:border-white/10'
+                        : 'border-transparent opacity-60 hover:opacity-90 hover:border-white/10'
                       }`}
                   >
-                    <img src={variant.imageUrl} alt="Variant" className="w-full h-full object-cover" />
+                    <img
+                      src={variant.imageUrl || '/avatar.webp'}
+                      onError={(e) => {
+                        e.currentTarget.src = '/avatar.webp';
+                      }}
+                      alt={variant.type || 'Variant'}
+                      className="w-full h-full object-cover"
+                    />
                     {!variant.unlocked && (
                       <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-[1px]">
-                        <span className="text-[10px] font-gilroyBold">Locked</span>
+                        <span className="text-[10px] font-gilroyBold text-white/90">Locked</span>
                       </div>
                     )}
                   </button>
@@ -140,10 +189,25 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, das
               </div>
 
               {selectedVariant && !selectedVariant.unlocked && (
-                <div className="p-4 bg-black/20 rounded-xl border border-white/5 space-y-3">
-                  <h4 className="text-sm font-gilroyBold text-white">How to Unlock</h4>
+                <div className="p-4 bg-black/30 rounded-xl border border-white/10 space-y-3">
+                  <h4 className="text-sm font-gilroyBold text-white flex items-center gap-1.5">
+                    <span>🔒</span> How to Unlock
+                  </h4>
                   {selectedVariant.unlockDescription && (
-                    <p className="text-xs text-white/60">{selectedVariant.unlockDescription}</p>
+                    <p className="text-xs text-white/70 font-gilroyMedium">
+                      {selectedVariant.unlockDescription}
+                    </p>
+                  )}
+                  {selectedVariant.unlockDescription?.toLowerCase().includes('rare pass') && (
+                    <button
+                      onClick={() => {
+                        handleCloseModal();
+                        window.location.href = '/dashboard/rare-pass';
+                      }}
+                      className="w-full py-2 bg-gradient-to-r from-[#00F0FF] to-[#7B2CBF] hover:opacity-90 text-white rounded-lg font-gilroyBold text-xs transition-all shadow-md"
+                    >
+                      Go to Rare Pass
+                    </button>
                   )}
                   {selectedVariant.isPurchasable && (
                     <div className="flex flex-col gap-2">

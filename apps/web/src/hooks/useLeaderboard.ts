@@ -3,6 +3,17 @@ import { useAccount } from 'wagmi';
 import { fetchWithRetry, getApiUrl } from '@/lib/apiClient';
 import { getCookie } from '@/lib/authCookie';
 
+export type LeaderboardCategory =
+  | 'gp'
+  | 'jlt'
+  | 'level'
+  | 'streak'
+  | 'pass'
+  | 'total_gp'
+  | 'total_jlt'
+  | 'highest_streak'
+  | 'season_rank';
+
 export interface LeaderboardEntry {
   rank: number;
   id: string;
@@ -11,13 +22,19 @@ export interface LeaderboardEntry {
   level: number;
   levelTier: string;
   xp: number;
+  totalLifetimeXp: number;
   gp: number;
+  totalGp: number;
   jlt: number;
+  totalJlt: number;
   currentStreak: number;
+  longestStreak: number;
+  seasonRpXp: number;
+  seasonName: string;
   avatarUrl: string;
 }
 
-export function useLeaderboard(type: 'gp' | 'xp' | 'streak' = 'gp', limit = 20) {
+export function useLeaderboard(type: LeaderboardCategory = 'total_gp', limit = 20) {
   const { isConnected, address } = useAccount();
   const token = getCookie('jlt_auth_token');
 

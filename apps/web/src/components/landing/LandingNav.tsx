@@ -3,15 +3,18 @@
 import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import Link from 'next/link';
 import { Menu, X, ArrowRight, Sparkles } from 'lucide-react';
-import gsap from 'gsap';
+import { gsap, prefersReducedMotion, MotionEases } from '@/lib/animations';
 import { useMagneticButton } from './useMagneticButton';
+import { usePageTransition } from './PageTransitionOverlay';
 
 const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 export const LandingNav: React.FC = () => {
   const navRef = useRef<HTMLElement>(null);
-  const enterAppBtnRef = useMagneticButton<HTMLAnchorElement>({ maxDistance: 10, strength: 0.25 });
+  const logoRef = useRef<HTMLDivElement>(null);
+  const enterAppBtnRef = useMagneticButton<HTMLAnchorElement>({ maxDistance: 12, strength: 0.25 });
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { navigateWithTransition } = usePageTransition();
 
   const scrollToSection = React.useCallback((id: string) => {
     setMobileMenuOpen(false);
@@ -22,37 +25,39 @@ export const LandingNav: React.FC = () => {
   }, []);
 
   useIsomorphicLayoutEffect(() => {
-    const prefersReducedMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion()) return;
 
     const ctx = gsap.context(() => {
-      if (prefersReducedMotion) {
-        gsap.from(navRef.current, {
-          opacity: 0,
-          duration: 0.3,
-          ease: 'power2.out',
-        });
-        return;
-      }
+      // 1. Initial Load: Logo scales from 0 -> 1 with blur, Nav slides down from y: -30
+      gsap.fromTo(
+        logoRef.current,
+        { scale: 0, opacity: 0, filter: 'blur(10px)' },
+        { scale: 1, opacity: 1, filter: 'blur(0px)', duration: 0.75, ease: MotionEases.backOut, delay: 0.1 }
+      );
 
-      gsap.from(['.nav-brand', '.nav-item', '#nav-enter-app-btn'], {
-        y: -12,
-        autoAlpha: 0,
-        duration: 0.55,
-        stagger: 0.05,
-        ease: 'power3.out',
-      });
+      gsap.fromTo(
+        navRef.current,
+        { y: -30, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.6, ease: 'power3.out', delay: 0.15 }
+      );
+
+      gsap.fromTo(
+        ['.nav-item', '#nav-enter-app-btn'],
+        { y: -15, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.5, stagger: 0.05, ease: 'power3.out', delay: 0.25 }
+      );
     }, navRef);
 
     return () => ctx.revert();
   }, []);
 
   return (
-    <header ref={navRef} className="fixed top-0 left-0 right-0 z-50 py-5 bg-transparent">
+    <header ref={navRef} className="fixed top-0 left-0 right-0 z-50 py-5 bg-transparent select-none">
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
         
         {/* Brand Logo */}
         <Link href="/" className="nav-brand flex items-center gap-3 group">
-          <div className="relative">
+          <div ref={logoRef} className="relative">
             <img
               src="/jltcolor.svg"
               alt="JLT Logo"
@@ -74,6 +79,7 @@ export const LandingNav: React.FC = () => {
               key={item.label}
               onClick={() => scrollToSection(item.target)}
               type="button"
+              data-cursor="pointer"
               className="nav-item text-gray-300 hover:text-white font-gilroyMedium text-sm tracking-wide transition-colors duration-200 relative group py-1 cursor-pointer"
             >
               {item.label}
@@ -88,10 +94,16 @@ export const LandingNav: React.FC = () => {
             ref={enterAppBtnRef}
             href="/dashboard"
             id="nav-enter-app-btn"
-            className="glass-btn px-5 py-2.5 sm:px-6 sm:py-2.5 rounded-xl font-gilroyBold text-white text-sm sm:text-base tracking-wide shadow-[0_0_20px_rgba(54,12,159,0.4)] flex items-center gap-2 group hover:shadow-[0_0_30px_rgba(255,162,141,0.5)] hover:scale-[1.025] active:scale-[0.98] transition-all duration-200"
+            data-cursor="cta"
+            data-cursor-text="ENTER"
+            onClick={(e) => {
+              e.preventDefault();
+              navigateWithTransition('/dashboard');
+            }}
+            className="glass-btn gsap-magnetic-btn px-5 py-2.5 sm:px-6 sm:py-2.5 rounded-xl font-gilroyBold text-white text-sm sm:text-base tracking-wide shadow-[0_0_20px_rgba(54,12,159,0.4)] flex items-center gap-2 group hover:shadow-[0_0_30px_rgba(255,162,141,0.5)] hover:scale-[1.025] active:scale-[0.98] transition-all duration-200"
           >
             <span>Enter App</span>
-            <Sparkles className="w-4 h-4 text-[#FFA28D] group-hover:rotate-12 transition-transform duration-300" />
+            <Sparkles className="w-4 h-4 text-[#FFA28D] group-hover:rotate-12 transition-transform duration-300 magnetic-icon" />
           </Link>
 
           {/* Mobile Hamburger Button */}
@@ -126,7 +138,11 @@ export const LandingNav: React.FC = () => {
 
           <Link
             href="/dashboard"
-            onClick={() => setMobileMenuOpen(false)}
+            onClick={(e) => {
+              e.preventDefault();
+              setMobileMenuOpen(false);
+              navigateWithTransition('/dashboard');
+            }}
             className="glass-btn w-full py-3.5 rounded-xl font-gilroyBold text-white text-center text-base tracking-wide mt-2 flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] transition-transform"
           >
             <span>Launch Dashboard</span>

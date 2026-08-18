@@ -20,29 +20,29 @@ interface TokenConfig {
   duration: number;
   parallaxSpeed: number; // percentage shift with scroll
   isWatermark?: boolean;
-  src?: string;
+  symbolType?: 'logo' | 'star' | 'diamond';
 }
 
 const TOKENS: TokenConfig[] = [
   // ── Hero Section Tokens ──
-  { id: 't-hero-1', top: '12%', left: '6%', size: 68, opacity: 0.08, duration: 8.5, parallaxSpeed: -12 },
-  { id: 't-hero-2', top: '24%', right: '5%', size: 105, opacity: 0.07, duration: 11.2, parallaxSpeed: -18 },
-  { id: 't-hero-3', top: '44%', left: '12%', size: 54, opacity: 0.09, duration: 7.4, parallaxSpeed: -10 },
-  { id: 't-hero-4', top: '56%', right: '14%', size: 64, opacity: 0.08, duration: 9.8, parallaxSpeed: -15 },
+  { id: 't-hero-1', top: '12%', left: '6%', size: 68, opacity: 0.08, duration: 8.5, parallaxSpeed: -12, symbolType: 'logo' },
+  { id: 't-hero-2', top: '24%', right: '5%', size: 105, opacity: 0.07, duration: 11.2, parallaxSpeed: -18, symbolType: 'logo' },
+  { id: 't-hero-3', top: '44%', left: '12%', size: 54, opacity: 0.09, duration: 7.4, parallaxSpeed: -10, symbolType: 'star' },
+  { id: 't-hero-4', top: '56%', right: '14%', size: 64, opacity: 0.08, duration: 9.8, parallaxSpeed: -15, symbolType: 'diamond' },
 
   // ── Features Section Tokens ──
-  { id: 't-feat-1', top: '1150px', left: '4%', size: 84, opacity: 0.06, duration: 10.4, parallaxSpeed: -14 },
-  { id: 't-feat-2', top: '1400px', right: '4%', size: 98, opacity: 0.07, duration: 12.6, parallaxSpeed: -20 },
-  { id: 't-feat-3', top: '1680px', left: '48%', size: 58, opacity: 0.05, duration: 8.2, parallaxSpeed: -11 },
+  { id: 't-feat-1', top: '1150px', left: '4%', size: 84, opacity: 0.06, duration: 10.4, parallaxSpeed: -14, symbolType: 'logo' },
+  { id: 't-feat-2', top: '1400px', right: '4%', size: 98, opacity: 0.07, duration: 12.6, parallaxSpeed: -20, symbolType: 'diamond' },
+  { id: 't-feat-3', top: '1680px', left: '48%', size: 58, opacity: 0.05, duration: 8.2, parallaxSpeed: -11, symbolType: 'star' },
 
   // ── How It Works Tokens ──
-  { id: 't-hiw-1', top: '2100px', left: '8%', size: 76, opacity: 0.06, duration: 9.2, parallaxSpeed: -16 },
-  { id: 't-hiw-2', top: '2350px', right: '7%', size: 88, opacity: 0.07, duration: 11.8, parallaxSpeed: -18 },
+  { id: 't-hiw-1', top: '2100px', left: '8%', size: 76, opacity: 0.06, duration: 9.2, parallaxSpeed: -16, symbolType: 'logo' },
+  { id: 't-hiw-2', top: '2350px', right: '7%', size: 88, opacity: 0.07, duration: 11.8, parallaxSpeed: -18, symbolType: 'diamond' },
 
   // ── CTA Section Tokens & Grand Watermark ──
-  { id: 't-cta-watermark', top: '2920px', left: '50%', size: 360, opacity: 0.038, duration: 14.5, parallaxSpeed: -8, isWatermark: true },
-  { id: 't-cta-1', top: '3080px', left: '14%', size: 72, opacity: 0.07, duration: 8.6, parallaxSpeed: -14 },
-  { id: 't-cta-2', top: '3180px', right: '12%', size: 80, opacity: 0.07, duration: 10.8, parallaxSpeed: -16 },
+  { id: 't-cta-watermark', top: '2920px', left: '50%', size: 360, opacity: 0.038, duration: 14.5, parallaxSpeed: -8, isWatermark: true, symbolType: 'logo' },
+  { id: 't-cta-1', top: '3080px', left: '14%', size: 72, opacity: 0.07, duration: 8.6, parallaxSpeed: -14, symbolType: 'star' },
+  { id: 't-cta-2', top: '3180px', right: '12%', size: 80, opacity: 0.07, duration: 10.8, parallaxSpeed: -16, symbolType: 'logo' },
 ];
 
 export const JLTBackgroundMotion: React.FC = () => {
@@ -60,7 +60,7 @@ export const JLTBackgroundMotion: React.FC = () => {
     if (prefersReducedMotion) return;
 
     const ctx = gsap.context(() => {
-      // 1. Initial entrance for background tokens (staggered subtle fade-in)
+      // 1. Initial entrance for background tokens
       gsap.from('.jlt-bg-token-wrapper', {
         autoAlpha: 0,
         scale: 0.7,
@@ -92,14 +92,14 @@ export const JLTBackgroundMotion: React.FC = () => {
           floatTl.to(el, {
             y: -20,
             x: 8,
-            rotation: 4,
+            rotation: 6,
             scale: 1.03,
             duration: token.duration * 0.5,
             ease: 'sine.inOut',
           }).to(el, {
             y: 15,
             x: -8,
-            rotation: -4,
+            rotation: -6,
             scale: 0.98,
             duration: token.duration * 0.5,
             ease: 'sine.inOut',
@@ -119,7 +119,7 @@ export const JLTBackgroundMotion: React.FC = () => {
         });
       });
 
-      // 4. Subtle Desktop Mouse Magnetism
+      // 4. Desktop Mouse Parallax Magnetism
       if (!isTouchDevice) {
         const mouseX = { val: 0 };
         const mouseY = { val: 0 };
@@ -156,14 +156,14 @@ export const JLTBackgroundMotion: React.FC = () => {
             const maxRadius = 450;
 
             if (dist < maxRadius) {
-              const force = (1 - dist / maxRadius) * 14;
+              const force = (1 - dist / maxRadius) * 16;
               const angle = Math.atan2(mouseY.val - tokenCenterY, mouseX.val - tokenCenterX);
               const pushX = Math.cos(angle) * force;
               const pushY = Math.sin(angle) * force;
 
               setters.x(pushX);
               setters.y(pushY);
-              setters.rot(pushX * 0.2);
+              setters.rot(pushX * 0.25);
             } else {
               setters.x(0);
               setters.y(0);
@@ -214,15 +214,25 @@ export const JLTBackgroundMotion: React.FC = () => {
             {/* Ambient Backlight Glow Ring */}
             <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-[#360C9F]/40 via-[#7B2CBF]/30 to-[#FFA28D]/25 blur-xl scale-125" />
 
-            <img
-              src="/jltcolor.svg"
-              alt=""
-              width={token.size}
-              height={token.size}
-              loading="lazy"
-              decoding="async"
-              className="relative w-full h-full object-contain filter drop-shadow-[0_0_20px_rgba(255,162,141,0.5)]"
-            />
+            {token.symbolType === 'star' ? (
+              <span className="text-[#FFA28D] font-gilroyBold text-4xl filter drop-shadow-[0_0_15px_rgba(255,162,141,0.6)]">
+                ✦
+              </span>
+            ) : token.symbolType === 'diamond' ? (
+              <span className="text-[#00F0FF] font-gilroyBold text-4xl filter drop-shadow-[0_0_15px_rgba(0,240,255,0.6)]">
+                ◇
+              </span>
+            ) : (
+              <img
+                src="/jltcolor.svg"
+                alt=""
+                width={token.size}
+                height={token.size}
+                loading="lazy"
+                decoding="async"
+                className="relative w-full h-full object-contain filter drop-shadow-[0_0_20px_rgba(255,162,141,0.5)]"
+              />
+            )}
           </div>
         );
       })}

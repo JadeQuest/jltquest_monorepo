@@ -8,6 +8,8 @@ import { LandingFooter } from './LandingFooter';
 import { JLTBackgroundMotion } from './JLTBackgroundMotion';
 import { ScrollProgressBar } from './ScrollProgressBar';
 import { SmoothScrollProvider } from './SmoothScrollProvider';
+import { CustomCursor } from './CustomCursor';
+import { PageTransitionOverlay } from './PageTransitionOverlay';
 
 // Dynamic Code Splitting for heavy below-the-fold sections
 const FeaturesSection = dynamic(() => import('./FeaturesSection').then((mod) => mod.FeaturesSection), {
@@ -22,13 +24,20 @@ const CTASection = dynamic(() => import('./CTASection').then((mod) => mod.CTASec
 
 /**
  * LandingPage
- * Full public-facing landing page for JLTQuest with Lenis Smooth Scrolling,
- * Scroll-linked progress bar, and living JLT Background Token Motion.
+ * Full public-facing landing page for JLTQuest with TRIONN & MetaMask interaction philosophy:
+ * Lenis Smooth Scrolling, ScrollTrigger synchronized progress, living background motion,
+ * custom cursor, magnetic button pulls, 3D card perspective, and cinematic page transitions.
  */
 const LandingPage: React.FC = () => {
   return (
     <SmoothScrollProvider>
       <div className="relative w-full min-h-screen bg-[#080411] text-white overflow-x-hidden select-none font-gilroyRegular antialiased">
+        {/* Global Desktop Custom Cursor */}
+        <CustomCursor />
+
+        {/* Cinematic Route Transition Portal */}
+        <PageTransitionOverlay />
+
         {/* Scroll Progress Indicator */}
         <ScrollProgressBar />
 
@@ -43,7 +52,7 @@ const LandingPage: React.FC = () => {
           <HeroSection />
         </div>
 
-        {/* Lazy code-split below-the-fold sections */}
+        {/* Below-the-fold sections */}
         <div className="relative z-10">
           <FeaturesSection />
           <HowItWorksSection />

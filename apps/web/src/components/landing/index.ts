@@ -4,4 +4,10 @@ export { FeaturesSection } from './FeaturesSection';
 export { HowItWorksSection } from './HowItWorksSection';
 export { CTASection } from './CTASection';
 export { LandingFooter } from './LandingFooter';
-
+export { CustomCursor } from './CustomCursor';
+export { PageTransitionOverlay, usePageTransition } from './PageTransitionOverlay';
+export { SplitText } from './SplitText';
+export { useMagneticButton } from './useMagneticButton';
+export { ScrollProgressBar } from './ScrollProgressBar';
+export { SmoothScrollProvider } from './SmoothScrollProvider';
+export { JLTBackgroundMotion } from './JLTBackgroundMotion';

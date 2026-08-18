@@ -21,13 +21,14 @@ export const SmoothScrollProvider: React.FC<{ children: React.ReactNode }> = ({ 
     if (prefersReducedMotion) return;
 
     const lenis = new Lenis({
-      duration: 1.15,
+      duration: 1.25,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       orientation: 'vertical',
       gestureOrientation: 'vertical',
       smoothWheel: true,
-      wheelMultiplier: isTouchDevice ? 1.0 : 1.05,
-      touchMultiplier: 1.2,
+      wheelMultiplier: 1.0,
+      touchMultiplier: isTouchDevice ? 1.2 : 1.5,
+      infinite: false,
     });
 
     lenis.on('scroll', ScrollTrigger.update);
@@ -38,6 +39,9 @@ export const SmoothScrollProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
     gsap.ticker.add(tickerCallback);
     gsap.ticker.lagSmoothing(0);
+
+    // Refresh ScrollTrigger to ensure bounds align perfectly with smooth scroll
+    ScrollTrigger.refresh();
 
     return () => {
       gsap.ticker.remove(tickerCallback);

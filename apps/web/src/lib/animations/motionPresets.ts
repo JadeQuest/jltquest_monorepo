@@ -9,6 +9,7 @@ export interface RevealOptions {
   y?: number;
   x?: number;
   scale?: number;
+  rotation?: number;
   stagger?: number;
   toggleActions?: string;
   scrub?: boolean | number;
@@ -33,6 +34,7 @@ export function createReversibleReveal(
     y = 25,
     x = 0,
     scale = 1,
+    rotation = 0,
     stagger = 0,
     toggleActions = ReversibleToggleActions,
     ease = MotionEases.powerOut,
@@ -44,6 +46,7 @@ export function createReversibleReveal(
       y,
       x,
       scale,
+      rotation,
       opacity: 0,
       visibility: 'hidden',
     },
@@ -51,6 +54,7 @@ export function createReversibleReveal(
       y: 0,
       x: 0,
       scale: 1,
+      rotation: 0,
       opacity: 1,
       visibility: 'visible',
       duration,
@@ -122,7 +126,7 @@ export function createCardTiltEffect(
 ) {
   if (isTouchDevice() || prefersReducedMotion()) return () => {};
 
-  const { maxRotation = 3, translateY = -5 } = options;
+  const { maxRotation = 4, translateY = -6 } = options;
 
   const rotX = gsap.quickTo(card, 'rotationX', { duration: 0.35, ease: 'power2.out' });
   const rotY = gsap.quickTo(card, 'rotationY', { duration: 0.35, ease: 'power2.out' });
@@ -162,18 +166,51 @@ export function createCardTiltEffect(
 }
 
 /**
- * Attaches a magnetic cursor pull effect to a button element using gsap.quickTo.
+ * Attaches a dynamic Web3 light beam / spotlight sweep following the cursor over a card.
+ */
+export function createCardLightBeamEffect(card: HTMLElement) {
+  if (isTouchDevice() || prefersReducedMotion()) return () => {};
+
+  const handleMouseMove = (e: MouseEvent) => {
+    const rect = card.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    card.style.setProperty('--mouse-x', `${x}px`);
+    card.style.setProperty('--mouse-y', `${y}px`);
+    card.style.setProperty('--mouse-active', '1');
+  };
+
+  const handleMouseLeave = () => {
+    card.style.setProperty('--mouse-active', '0');
+  };
+
+  card.addEventListener('mousemove', handleMouseMove);
+  card.addEventListener('mouseleave', handleMouseLeave);
+
+  return () => {
+    card.removeEventListener('mousemove', handleMouseMove);
+    card.removeEventListener('mouseleave', handleMouseLeave);
+  };
+}
+
+/**
+ * Attaches a magnetic cursor pull effect to a button element using gsap.quickTo,
+ * including independent child icon shift and elastic recovery.
  */
 export function createMagneticButtonEffect(
   button: HTMLElement,
-  options: { maxDistance?: number; strength?: number } = {}
+  options: { maxDistance?: number; strength?: number; iconSelector?: string } = {}
 ) {
   if (isTouchDevice() || prefersReducedMotion()) return () => {};
 
-  const { maxDistance = 12, strength = 0.25 } = options;
+  const { maxDistance = 14, strength = 0.28, iconSelector = 'svg, img, .magnetic-icon' } = options;
 
-  const xTo = gsap.quickTo(button, 'x', { duration: 0.3, ease: 'power3.out' });
-  const yTo = gsap.quickTo(button, 'y', { duration: 0.3, ease: 'power3.out' });
+  const xTo = gsap.quickTo(button, 'x', { duration: 0.35, ease: 'power3.out' });
+  const yTo = gsap.quickTo(button, 'y', { duration: 0.35, ease: 'power3.out' });
+
+  const iconEl = button.querySelector<HTMLElement>(iconSelector);
+  const iconXTo = iconEl ? gsap.quickTo(iconEl, 'x', { duration: 0.3, ease: 'power2.out' }) : null;
+  const iconYTo = iconEl ? gsap.quickTo(iconEl, 'y', { duration: 0.3, ease: 'power2.out' }) : null;
 
   const handleMouseMove = (e: MouseEvent) => {
     const rect = button.getBoundingClientRect();
@@ -188,11 +225,28 @@ export function createMagneticButtonEffect(
 
     xTo(clampedX);
     yTo(clampedY);
+
+    if (iconXTo && iconYTo) {
+      iconXTo(clampedX * 0.45);
+      iconYTo(clampedY * 0.45);
+    }
   };
 
   const handleMouseLeave = () => {
-    xTo(0);
-    yTo(0);
+    gsap.to(button, {
+      x: 0,
+      y: 0,
+      duration: 0.7,
+      ease: MotionEases.elasticOut,
+    });
+    if (iconEl) {
+      gsap.to(iconEl, {
+        x: 0,
+        y: 0,
+        duration: 0.6,
+        ease: MotionEases.elasticOut,
+      });
+    }
   };
 
   button.addEventListener('mousemove', handleMouseMove);
@@ -203,7 +257,76 @@ export function createMagneticButtonEffect(
     button.removeEventListener('mouseleave', handleMouseLeave);
     xTo(0);
     yTo(0);
+    if (iconEl) {
+      gsap.set(iconEl, { x: 0, y: 0 });
+    }
   };
+}
+
+/**
+ * Creates a lightweight particle burst around an element (15-25 particles).
+ */
+export function createParticleBurst(
+  container: HTMLElement,
+  options: {
+    count?: number;
+    colors?: string[];
+    radius?: number;
+    duration?: number;
+  } = {}
+) {
+  if (prefersReducedMotion()) return;
+
+  const {
+    count = 20,
+    colors = ['#FFA28D', '#7B2CBF', '#00F0FF', '#FF007F', '#FFD700', '#FFFFFF'],
+    radius = 70,
+    duration = 0.9,
+  } = options;
+
+  const rect = container.getBoundingClientRect();
+  const originX = rect.width / 2;
+  const originY = rect.height / 2;
+
+  for (let i = 0; i < count; i++) {
+    const particle = document.createElement('div');
+    const color = colors[i % colors.length];
+    const size = Math.random() * 4 + 3;
+
+    particle.style.cssText = `
+      position: absolute;
+      left: ${originX}px;
+      top: ${originY}px;
+      width: ${size}px;
+      height: ${size}px;
+      background: ${color};
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 50;
+      box-shadow: 0 0 8px ${color};
+    `;
+
+    container.appendChild(particle);
+
+    const angle = (i / count) * Math.PI * 2 + (Math.random() - 0.5) * 0.5;
+    const distance = radius * (0.6 + Math.random() * 0.6);
+    const destX = Math.cos(angle) * distance;
+    const destY = Math.sin(angle) * distance;
+
+    gsap.to(particle, {
+      x: destX,
+      y: destY,
+      scale: Math.random() * 0.5 + 0.2,
+      opacity: 0,
+      duration: duration * (0.7 + Math.random() * 0.5),
+      ease: 'power3.out',
+      onComplete: () => {
+        if (particle.parentNode === container) {
+          container.removeChild(particle);
+        }
+      },
+    });
+  }
 }
 
 /**

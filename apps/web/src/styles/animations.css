@@ -3,6 +3,28 @@
    Modular, hardware-accelerated classes for interactive Web3 & Game UI.
    ══════════════════════════════════════════════════════════════════════════ */
 
+/* ── TRIONN Lenis Smooth Scrolling Core CSS ── */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-scrolling iframe {
+  pointer-events: none;
+}
+
 /* ── 3D Perspective & Hardware Acceleration ── */
 .perspective-1000 {
   perspective: 1000px;
@@ -25,6 +47,51 @@
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   will-change: transform, opacity;
+}
+
+/* ── Web3 Glass Spotlight & Interactive Light Beam ── */
+.web3-glass-card {
+  position: relative;
+  overflow: hidden;
+  --mouse-x: -500px;
+  --mouse-y: -500px;
+  --mouse-active: 0;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.web3-glass-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    450px circle at var(--mouse-x) var(--mouse-y),
+    rgba(255, 162, 141, 0.16),
+    rgba(123, 44, 191, 0.1) 35%,
+    transparent 70%
+  );
+  opacity: var(--mouse-active);
+  transition: opacity 0.35s ease;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ── Shimmering Gradient Typography ── */
+@keyframes textGradientShimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-text-shimmer {
+  background-size: 200% auto;
+  animation: textGradientShimmer 4s ease-in-out infinite;
 }
 
 /* ── GSAP Target Initial States ── */
@@ -117,4 +184,18 @@
 .gsap-token-float {
   animation: tokenFloatIdle 4.5s ease-in-out infinite;
   will-change: transform;
+}
+
+/* ── Subtle Background Grid Drift ── */
+@keyframes gridDrift {
+  0% {
+    background-position: 0px 0px;
+  }
+  100% {
+    background-position: 72px 72px;
+  }
+}
+
+.animate-grid-drift {
+  animation: gridDrift 45s linear infinite;
 }

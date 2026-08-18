@@ -5,18 +5,28 @@ import Link from 'next/link';
 import {
   gsap,
   prefersReducedMotion,
+  createParticleBurst,
   ReversibleToggleActions,
   MotionEases,
 } from '@/lib/animations';
 import { ShieldCheck, Sparkles, ArrowUp, Zap, Trophy, Play } from 'lucide-react';
+import { usePageTransition } from './PageTransitionOverlay';
 
 const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 export const LandingFooter: React.FC = () => {
   const footerRef = useRef<HTMLElement>(null);
+  const logoWrapperRef = useRef<HTMLDivElement>(null);
+  const { navigateWithTransition } = usePageTransition();
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleLogoHover = () => {
+    if (logoWrapperRef.current) {
+      createParticleBurst(logoWrapperRef.current, { count: 16, radius: 45 });
+    }
   };
 
   useIsomorphicLayoutEffect(() => {
@@ -44,11 +54,11 @@ export const LandingFooter: React.FC = () => {
       // Reversible Staggered columns entrance
       gsap.fromTo(
         '.footer-col',
-        { y: 20, opacity: 0.4 },
+        { y: 25, opacity: 0.3 },
         {
           y: 0,
           opacity: 1,
-          duration: 0.6,
+          duration: 0.65,
           stagger: 0.08,
           ease: MotionEases.powerOut,
           scrollTrigger: {
@@ -64,7 +74,7 @@ export const LandingFooter: React.FC = () => {
   }, []);
 
   return (
-    <footer ref={footerRef} className="relative w-full pt-16 pb-12 px-6 bg-[#06030D] overflow-hidden border-t border-white/5">
+    <footer ref={footerRef} className="relative w-full pt-16 pb-12 px-6 bg-[#06030D] overflow-hidden border-t border-white/5 select-none">
       {/* Top Animated Glowing Border */}
       <div className="footer-divider-line absolute top-0 left-1/2 -translate-x-1/2 w-[90%] max-w-7xl h-[2px] bg-gradient-to-r from-transparent via-[#360C9F] via-[#FFA28D] via-[#00F0FF] to-transparent shadow-[0_0_20px_rgba(255,162,141,0.6)] pointer-events-none" />
 
@@ -79,14 +89,18 @@ export const LandingFooter: React.FC = () => {
           
           {/* Column 1: Brand Info & Mission (Col 1-5) */}
           <div className="footer-col md:col-span-5 flex flex-col items-start gap-4">
-            <Link href="/" className="flex items-center gap-3 group">
-              <div className="relative">
+            <Link
+              href="/"
+              onMouseEnter={handleLogoHover}
+              className="flex items-center gap-3 group"
+            >
+              <div ref={logoWrapperRef} className="relative">
                 <img
                   src="/jltcolor.svg"
                   alt="JLT Logo"
                   width={56}
                   height={56}
-                  className="w-14 h-14 object-contain drop-shadow-[0_0_20px_rgba(255,162,141,0.7)] group-hover:scale-105 group-hover:drop-shadow-[0_0_30px_rgba(255,162,141,0.9)] transition-all duration-300"
+                  className="w-14 h-14 object-contain drop-shadow-[0_0_20px_rgba(255,162,141,0.7)] group-hover:scale-110 group-hover:rotate-6 group-hover:drop-shadow-[0_0_35px_rgba(255,162,141,0.95)] transition-all duration-300"
                 />
               </div>
               <div className="flex flex-col">
@@ -121,32 +135,33 @@ export const LandingFooter: React.FC = () => {
               <span>Features</span>
             </span>
             <ul className="flex flex-col gap-2.5 text-sm font-gilroyRegular">
-              <li>
-                <Link href="/dashboard" className="text-gray-400 hover:text-white hover:translate-x-1 inline-flex items-center gap-1.5 transition-all duration-200">
-                  <span>Daily Quests</span>
-                </Link>
-              </li>
-              <li>
-                <Link href="/dashboard" className="text-gray-400 hover:text-white hover:translate-x-1 inline-flex items-center gap-1.5 transition-all duration-200">
-                  <span>Spin to Win Wheel</span>
-                </Link>
-              </li>
-              <li>
-                <Link href="/dashboard/rare-pass" className="text-gray-400 hover:text-white hover:translate-x-1 inline-flex items-center gap-1.5 transition-all duration-200">
-                  <span>Rare Pass Drops</span>
-                  <span className="px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 font-gilroyBold text-[10px]">NEW</span>
-                </Link>
-              </li>
-              <li>
-                <Link href="/dashboard" className="text-gray-400 hover:text-white hover:translate-x-1 inline-flex items-center gap-1.5 transition-all duration-200">
-                  <span>Global Leaderboards</span>
-                </Link>
-              </li>
-              <li>
-                <Link href="/dashboard" className="text-gray-400 hover:text-white hover:translate-x-1 inline-flex items-center gap-1.5 transition-all duration-200">
-                  <span>Daily Streak Bonuses</span>
-                </Link>
-              </li>
+              {[
+                { label: 'Daily Quests', href: '/dashboard' },
+                { label: 'Spin to Win Wheel', href: '/dashboard' },
+                { label: 'Rare Pass Drops', href: '/dashboard/rare-pass', badge: 'NEW' },
+                { label: 'Global Leaderboards', href: '/dashboard' },
+                { label: 'Daily Streak Bonuses', href: '/dashboard' },
+              ].map((link) => (
+                <li key={link.label}>
+                  <Link
+                    href={link.href}
+                    onClick={(e) => {
+                      if (link.href.startsWith('/dashboard')) {
+                        e.preventDefault();
+                        navigateWithTransition(link.href);
+                      }
+                    }}
+                    className="text-gray-400 hover:text-white hover:translate-x-1.5 inline-flex items-center gap-2 transition-all duration-200 relative group"
+                  >
+                    <span>{link.label}</span>
+                    {link.badge && (
+                      <span className="px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 font-gilroyBold text-[10px]">
+                        {link.badge}
+                      </span>
+                    )}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
@@ -161,10 +176,16 @@ export const LandingFooter: React.FC = () => {
                 Connect seamlessly with MetaMask, Coinbase, Rainbow, or any EVM wallet. No gas fees required for daily questing.
               </p>
 
-              {/* Quick Launch CTA */}
+              {/* Quick Launch CTA with page transition */}
               <div className="flex items-center gap-3 pt-1">
                 <Link
                   href="/dashboard"
+                  data-cursor="cta"
+                  data-cursor-text="LAUNCH"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigateWithTransition('/dashboard');
+                  }}
                   className="glass-btn px-4 py-2 rounded-xl text-xs font-gilroyBold text-white flex items-center gap-2 shadow-[0_0_15px_rgba(54,12,159,0.4)] hover:shadow-[0_0_25px_rgba(255,162,141,0.5)] hover:scale-[1.02] transition-all"
                 >
                   <Play className="w-3.5 h-3.5 fill-white" />
@@ -174,6 +195,7 @@ export const LandingFooter: React.FC = () => {
                 <button
                   onClick={scrollToTop}
                   type="button"
+                  data-cursor="pointer"
                   className="glass-pill p-2 rounded-xl text-gray-300 hover:text-white hover:border-[#FFA28D]/50 transition-all cursor-pointer"
                   title="Back to top"
                   aria-label="Back to top"

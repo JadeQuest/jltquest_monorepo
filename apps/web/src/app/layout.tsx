@@ -105,7 +105,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body
         className="bg-[#080411] text-white antialiased selection:bg-[#FFA28D]/30 selection:text-white"
-        style={{ fontFamily: 'var(--font-plus-jakarta-sans), system-ui, sans-serif' }}
+        suppressHydrationWarning
       >
         <WalletExtensionErrorHandler />
         {children}

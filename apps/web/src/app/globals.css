@@ -277,9 +277,32 @@
   will-change: background-position;
 }
 
-/* Global 120 Hz smooth scrolling & anti-aliasing */
+/* ═══════════════════════════════════════════════════════════
+   LENIS SMOOTH SCROLLING & GSAP INTEGRATION
+   ═══════════════════════════════════════════════════════════ */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: clip;
+}
+
+.lenis.lenis-scrolling iframe {
+  pointer-events: none;
+}
+
+/* Global 120 Hz anti-aliasing & text rendering */
 html {
-  scroll-behavior: smooth;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -287,16 +310,6 @@ html {
 
 body {
   overflow-x: hidden;
-}
-
-@supports (content-visibility: auto) {
-  #features,
-  #how-it-works,
-  #rewards,
-  footer {
-    content-visibility: auto;
-    contain-intrinsic-size: 1px 900px;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -26,7 +26,6 @@ import {
   MotionEases,
 } from '@/lib/animations';
 import { useMagneticButton } from './useMagneticButton';
-import { usePageTransition } from './PageTransitionOverlay';
 
 const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
@@ -69,8 +68,6 @@ export const HeroSection: React.FC = () => {
   const particleFieldRef = useRef<HTMLDivElement>(null);
   const symbol1Ref = useRef<HTMLDivElement>(null);
   const symbol2Ref = useRef<HTMLDivElement>(null);
-
-  const { navigateWithTransition } = usePageTransition();
 
   // Magnetic button refs with independent icon motion & elastic snapback
   const startQuestBtnRef = useMagneticButton<HTMLAnchorElement>({ maxDistance: 14, strength: 0.28 });
@@ -560,10 +557,6 @@ export const HeroSection: React.FC = () => {
                 id="hero-start-quest-btn"
                 data-cursor="cta"
                 data-cursor-text="START →"
-                onClick={(e) => {
-                  e.preventDefault();
-                  navigateWithTransition('/dashboard');
-                }}
                 className="glass-btn gsap-magnetic-btn px-9 py-4.5 rounded-2xl font-gilroyBold text-white text-lg tracking-wide shadow-[0_0_40px_rgba(54,12,159,0.6)] flex items-center gap-3 group hover:shadow-[0_0_60px_rgba(255,162,141,0.5)] hover:scale-[1.025] active:scale-[0.98] transition-all duration-200"
               >
                 <span>Start Your First Quest</span>

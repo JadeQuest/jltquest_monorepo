@@ -8,9 +8,14 @@ export const CustomCursor: React.FC = () => {
   const cursorRingRef = useRef<HTMLDivElement>(null);
   const cursorLabelRef = useRef<HTMLSpanElement>(null);
 
+  const [mounted, setMounted] = useState(false);
   const [cursorText, setCursorText] = useState('');
   const [cursorState, setCursorState] = useState<'default' | 'pointer' | 'cta' | 'card' | 'reward'>('default');
   const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (isTouchDevice() || prefersReducedMotion()) return;
@@ -113,8 +118,8 @@ export const CustomCursor: React.FC = () => {
     };
   }, [isVisible]);
 
-  // Don't render on touch or reduced-motion devices
-  if (typeof window !== 'undefined' && (isTouchDevice() || prefersReducedMotion())) {
+  // Don't render during SSR, or on touch / reduced-motion devices
+  if (!mounted || isTouchDevice() || prefersReducedMotion()) {
     return null;
   }
 

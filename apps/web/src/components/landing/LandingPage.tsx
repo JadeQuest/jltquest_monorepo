@@ -9,18 +9,10 @@ import { JLTBackgroundMotion } from './JLTBackgroundMotion';
 import { ScrollProgressBar } from './ScrollProgressBar';
 import { SmoothScrollProvider } from './SmoothScrollProvider';
 import { CustomCursor } from './CustomCursor';
-import { PageTransitionOverlay } from './PageTransitionOverlay';
 
-// Dynamic Code Splitting for heavy below-the-fold sections
-const FeaturesSection = dynamic(() => import('./FeaturesSection').then((mod) => mod.FeaturesSection), {
-  ssr: true,
-});
-const HowItWorksSection = dynamic(() => import('./HowItWorksSection').then((mod) => mod.HowItWorksSection), {
-  ssr: true,
-});
-const CTASection = dynamic(() => import('./CTASection').then((mod) => mod.CTASection), {
-  ssr: true,
-});
+import { FeaturesSection } from './FeaturesSection';
+import { HowItWorksSection } from './HowItWorksSection';
+import { CTASection } from './CTASection';
 
 /**
  * LandingPage
@@ -34,9 +26,6 @@ const LandingPage: React.FC = () => {
       <div className="relative w-full min-h-screen bg-[#080411] text-white overflow-x-hidden select-none font-gilroyRegular antialiased">
         {/* Global Desktop Custom Cursor */}
         <CustomCursor />
-
-        {/* Cinematic Route Transition Portal */}
-        <PageTransitionOverlay />
 
         {/* Scroll Progress Indicator */}
         <ScrollProgressBar />

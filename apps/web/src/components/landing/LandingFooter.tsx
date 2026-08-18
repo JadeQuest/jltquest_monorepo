@@ -10,17 +10,19 @@ import {
   MotionEases,
 } from '@/lib/animations';
 import { ShieldCheck, Sparkles, ArrowUp, Zap, Trophy, Play } from 'lucide-react';
-import { usePageTransition } from './PageTransitionOverlay';
 
 const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 export const LandingFooter: React.FC = () => {
   const footerRef = useRef<HTMLElement>(null);
   const logoWrapperRef = useRef<HTMLDivElement>(null);
-  const { navigateWithTransition } = usePageTransition();
 
   const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (typeof window !== 'undefined' && window.__lenis) {
+      window.__lenis.scrollTo(0, { duration: 1.2 });
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   const handleLogoHover = () => {
@@ -145,12 +147,6 @@ export const LandingFooter: React.FC = () => {
                 <li key={link.label}>
                   <Link
                     href={link.href}
-                    onClick={(e) => {
-                      if (link.href.startsWith('/dashboard')) {
-                        e.preventDefault();
-                        navigateWithTransition(link.href);
-                      }
-                    }}
                     className="text-gray-400 hover:text-white hover:translate-x-1.5 inline-flex items-center gap-2 transition-all duration-200 relative group"
                   >
                     <span>{link.label}</span>
@@ -176,16 +172,12 @@ export const LandingFooter: React.FC = () => {
                 Connect seamlessly with MetaMask, Coinbase, Rainbow, or any EVM wallet. No gas fees required for daily questing.
               </p>
 
-              {/* Quick Launch CTA with page transition */}
+              {/* Quick Launch CTA */}
               <div className="flex items-center gap-3 pt-1">
                 <Link
                   href="/dashboard"
                   data-cursor="cta"
                   data-cursor-text="LAUNCH"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    navigateWithTransition('/dashboard');
-                  }}
                   className="glass-btn px-4 py-2 rounded-xl text-xs font-gilroyBold text-white flex items-center gap-2 shadow-[0_0_15px_rgba(54,12,159,0.4)] hover:shadow-[0_0_25px_rgba(255,162,141,0.5)] hover:scale-[1.02] transition-all"
                 >
                   <Play className="w-3.5 h-3.5 fill-white" />

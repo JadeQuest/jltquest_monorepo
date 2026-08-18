@@ -1,117 +1,242 @@
 'use client';
 
-import React, { useRef, useEffect, useLayoutEffect } from 'react';
+import React, { useRef, useState, useEffect, useLayoutEffect, useCallback } from 'react';
+import Link from 'next/link';
+import {
+  ArrowLeft,
+  ArrowRight,
+  Sparkles,
+  Zap,
+  Flame,
+  Trophy,
+  Users,
+  Compass,
+  Layers,
+  CheckCircle2,
+  ExternalLink,
+} from 'lucide-react';
 import {
   gsap,
+  ScrollTrigger,
   createHeaderReveal,
   createCardTiltEffect,
   createCardLightBeamEffect,
+  createParticleBurst,
   prefersReducedMotion,
   isTouchDevice,
   ReversibleToggleActions,
   MotionEases,
 } from '@/lib/animations';
 import { SplitText } from './SplitText';
+import { useMagneticButton } from './useMagneticButton';
 
 const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
-interface FeatureCardProps {
-  icon: string;
-  iconAlt: string;
+interface FeatureProject {
+  id: string;
+  tag: string;
+  category: string;
   title: string;
+  subtitle: string;
   description: string;
-  index: number;
+  bannerMotto: string;
+  ctaText: string;
+  href: string;
+  accentColor: string;
+  gradientBg: string;
+  glowColor: string;
+  icon: string;
+  image: string;
+  badgeImg?: string;
+  extraChip?: string;
+  statsValue?: string;
+  statsLabel?: string;
 }
 
-const FeatureCard: React.FC<FeatureCardProps> = React.memo(({ icon, iconAlt, title, description, index }) => {
-  const cardRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const card = cardRef.current;
-    if (!card) return;
-    const cleanupTilt = createCardTiltEffect(card, { maxRotation: 4, translateY: -6 });
-    const cleanupLightBeam = createCardLightBeamEffect(card);
-
-    return () => {
-      cleanupTilt();
-      cleanupLightBeam();
-    };
-  }, []);
-
-  return (
-    <div
-      ref={cardRef}
-      data-cursor="card"
-      data-cursor-text="EXPLORE"
-      className="feature-card web3-glass-card glass-panel gsap-tilt-card p-7 flex flex-col gap-5 group cursor-default transition-all duration-300 hover:border-purple-400/50 hover:shadow-[0_20px_45px_rgba(54,12,159,0.35)] perspective-1000 will-change-transform"
-      style={{ transformStyle: 'preserve-3d' }}
-    >
-      {/* Icon with interactive rotate + scale */}
-      <div className="w-16 h-16 rounded-2xl glass-btn flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300 shadow-[0_0_20px_rgba(54,12,159,0.4)] group-hover:shadow-[0_0_30px_rgba(255,162,141,0.5)]">
-        <img src={icon} alt={iconAlt} width={40} height={40} loading="lazy" decoding="async" className="w-10 h-10 object-contain" />
-      </div>
-
-      {/* Text */}
-      <div className="flex flex-col gap-2 relative z-10">
-        <h3 className="font-gilroyBold text-white text-xl tracking-wide group-hover:text-[#FFA28D] transition-colors duration-200">
-          {title}
-        </h3>
-        <p className="font-gilroyRegular text-gray-400 text-base leading-relaxed group-hover:-translate-y-0.5 transition-transform duration-200">
-          {description}
-        </p>
-      </div>
-
-      {/* Bottom accent line */}
-      <div className="mt-auto h-0.5 w-0 group-hover:w-full bg-gradient-to-r from-[#360C9F] via-[#7B2CBF] to-[#FFA28D] rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(255,162,141,0.8)]" />
-    </div>
-  );
-});
-
-const features = [
+const FEATURE_PROJECTS: FeatureProject[] = [
   {
-    icon: '/Discover.svg',
-    iconAlt: 'Discover Quests',
+    id: 'quests',
+    tag: '01 / QUEST ENGINE',
+    category: 'Daily Quests & Missions',
     title: 'Discover Quests',
-    description: 'Explore daily and weekly quests tailored to your level. Complete missions to earn coins and rare rewards.',
+    subtitle: 'Daily Missions · Bounty Tasks · XP Progression',
+    description: 'Explore daily and weekly missions tailored to your rank. Complete interactive challenges across the JaxMart ecosystem to earn coins, level multipliers, and rare mystery crates.',
+    bannerMotto: 'Discover & Conquer',
+    ctaText: 'EXPLORE QUESTS',
+    href: '/dashboard/quests',
+    accentColor: '#FFA28D',
+    gradientBg: 'from-[#190638] via-[#360C9F]/40 to-[#080411]',
+    glowColor: 'rgba(255, 162, 141, 0.45)',
+    icon: '/Discover.svg',
+    image: '/showcase/quests.jpg',
+    badgeImg: '/jltcolor.svg',
+    extraChip: '+500 JLT Coins',
+    statsValue: '2.4M+',
+    statsLabel: 'Quests Cleared',
   },
   {
-    icon: '/icon/spin.webp',
-    iconAlt: 'Spin to Win',
+    id: 'spin',
+    tag: '02 / FORTUNE WHEEL',
+    category: 'Daily Spin & Win',
     title: 'Spin to Win',
-    description: 'Try your luck with the daily spin wheel. Land on rare passes, coin multipliers, and exclusive loot.',
+    subtitle: '10× Multipliers · Pass Drops · Instant Coins',
+    description: 'Try your luck every 24 hours on the high-roller fortune wheel. Land on exclusive Push Pass drops, huge coin multipliers, and rare mystery crates with zero gas required.',
+    bannerMotto: 'Spin to Multiply',
+    ctaText: 'TRY DAILY SPIN',
+    href: '/dashboard',
+    accentColor: '#00F0FF',
+    gradientBg: 'from-[#042838] via-[#0E3B43]/50 to-[#080411]',
+    glowColor: 'rgba(0, 240, 255, 0.45)',
+    icon: '/icon/spin.webp',
+    image: '/showcase/spin.jpg',
+    badgeImg: '/icon/spinIcon.webp',
+    extraChip: '10× Jackpot',
+    statsValue: '150K+',
+    statsLabel: 'Lucky Drops',
   },
   {
+    id: 'push-pass',
+    tag: '03 / VIP SYSTEM',
+    category: 'Push Pass Season Track',
+    title: 'Mythic Push Pass',
+    subtitle: 'Tier Track · Rare Pass Drops · VIP Perks',
+    description: 'Unlock the premium battle pass to supercharge your earning potential. Access high-tier quests, permanent XP buffs, collectible NFT cards, and season-end prize pool distributions.',
+    bannerMotto: 'Mythic Push Pass',
+    ctaText: 'VIEW PUSH PASS',
+    href: '/dashboard/push-pass',
+    accentColor: '#E280FF',
+    gradientBg: 'from-[#2F064C] via-[#7B2CBF]/40 to-[#080411]',
+    glowColor: 'rgba(226, 128, 255, 0.45)',
     icon: '/Push Pass.svg',
-    iconAlt: 'Push Pass',
-    title: 'Push Pass',
-    description: 'Unlock the premium Push Pass for exclusive quests, boosted coin earnings, and rare collectible drops.',
+    image: '/showcase/push-pass.jpg',
+    badgeImg: '/badge/diamond-badge.webp',
+    extraChip: 'Tier 50 VIP',
+    statsValue: '50 Tiers',
+    statsLabel: 'Unlockable Loot',
   },
   {
-    icon: '/InviteSqaud.svg',
-    iconAlt: 'Invite Squad',
+    id: 'squad',
+    tag: '04 / SOCIAL EARNING',
+    category: 'Squads & Guilds',
     title: 'Invite Squad',
-    description: 'Bring your crew into JLTQuest. Earn bonus coins for every friend you invite to the ecosystem.',
+    subtitle: 'Referral Rewards · Guild Multipliers · Crew XP',
+    description: 'Build your squad inside JLTQuest. Earn passive coin commissions on every quest your friends complete, and unlock collaborative guild multipliers to dominate seasonal leaderboards.',
+    bannerMotto: 'Assemble Your Crew',
+    ctaText: 'INVITE FRIENDS',
+    href: '/dashboard/invites',
+    accentColor: '#FF6B6B',
+    gradientBg: 'from-[#3A0A28] via-[#360C9F]/40 to-[#080411]',
+    glowColor: 'rgba(255, 107, 107, 0.45)',
+    icon: '/InviteSqaud.svg',
+    image: '/showcase/squad.jpg',
+    badgeImg: '/jltcolor.svg',
+    extraChip: '+15% Team Cut',
+    statsValue: '12,500+',
+    statsLabel: 'Active Squads',
   },
   {
-    icon: '/LeaderBoard.svg',
-    iconAlt: 'Leaderboard',
+    id: 'leaderboard',
+    tag: '05 / COMPETITIVE ARENA',
+    category: 'Global Leaderboards',
     title: 'Leaderboards',
-    description: 'Compete globally and rise to the top. Top players earn exclusive rewards and recognition each season.',
+    subtitle: 'Seasonal Races · Trophy Badges · Cash Pools',
+    description: 'Climb the global ranks by consistently crushing quests. Top champions on the weekly and seasonal leaderboards take home exclusive prestige badges, partner perks, and token payouts.',
+    bannerMotto: 'Climb to Rank #1',
+    ctaText: 'VIEW RANKINGS',
+    href: '/dashboard/leaderboard',
+    accentColor: '#FFD700',
+    gradientBg: 'from-[#3B2804] via-[#7B2CBF]/30 to-[#080411]',
+    glowColor: 'rgba(255, 215, 0, 0.45)',
+    icon: '/LeaderBoard.svg',
+    image: '/showcase/leaderboard.jpg',
+    badgeImg: '/badge/gold-badge.webp',
+    extraChip: 'Rank #1 Trophy',
+    statsValue: '#1 Rank',
+    statsLabel: 'Seasonal Glory',
   },
   {
-    icon: '/icon/flame.webp',
-    iconAlt: 'Daily Streak',
+    id: 'streak',
+    tag: '06 / STREAK ENGINE',
+    category: 'Daily Streak Multiplier',
     title: 'Daily Streaks',
-    description: 'Log in every day to build your streak. The longer the streak, the bigger the rewards — stay consistent.',
+    subtitle: 'Daily Login · Streak Fire · 2.5× Boost',
+    description: 'Keep your streak flame burning by logging in each day. The longer your streak, the higher your global coin multiplier climbs across all JaxMart quest activities.',
+    bannerMotto: 'Ignite Your Streak',
+    ctaText: 'KEEP THE FLAME',
+    href: '/dashboard',
+    accentColor: '#FF7A00',
+    gradientBg: 'from-[#421403] via-[#E85D04]/30 to-[#080411]',
+    glowColor: 'rgba(255, 122, 0, 0.45)',
+    icon: '/icon/flame.webp',
+    image: '/showcase/streak.jpg',
+    badgeImg: '/Flame.svg',
+    extraChip: '2.5× Streak Bonus',
+    statsValue: '14 Days',
+    statsLabel: 'Max Multiplier',
   },
 ];
 
 export const FeaturesSection: React.FC = () => {
   const sectionRef = useRef<HTMLElement>(null);
-  const midgroundRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const progressBarRef = useRef<HTMLDivElement>(null);
 
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const scrollTriggerInstanceRef = useRef<ScrollTrigger | null>(null);
+
+  // Magnetic button refs for slider navigation
+  const prevBtnRef = useMagneticButton<HTMLButtonElement>({ maxDistance: 10, strength: 0.22 });
+  const nextBtnRef = useMagneticButton<HTMLButtonElement>({ maxDistance: 10, strength: 0.22 });
+
+  // Scroll to a specific card index along the pinned GSAP timeline
+  const scrollToCard = useCallback((index: number) => {
+    const total = FEATURE_PROJECTS.length;
+    const clampedIndex = Math.max(0, Math.min(total - 1, index));
+    const st = scrollTriggerInstanceRef.current;
+
+    if (st) {
+      const targetScroll = st.start + (clampedIndex / (total - 1)) * (st.end - st.start);
+      if (typeof window !== 'undefined' && window.__lenis) {
+        window.__lenis.scrollTo(targetScroll, { duration: 1.1, easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)) });
+      } else {
+        window.scrollTo({ top: targetScroll, behavior: 'smooth' });
+      }
+    } else {
+      setActiveIndex(clampedIndex);
+    }
+  }, []);
+
+  const nextSlide = useCallback(() => {
+    scrollToCard(activeIndex + 1);
+  }, [activeIndex, scrollToCard]);
+
+  const prevSlide = useCallback(() => {
+    scrollToCard(activeIndex - 1);
+  }, [activeIndex, scrollToCard]);
+
+  // Apply TRIONN 3D tilt & dynamic light beam to all cards
+  useEffect(() => {
+    const cleanups: (() => void)[] = [];
+
+    cardRefs.current.forEach((card) => {
+      if (!card) return;
+      const cleanupTilt = createCardTiltEffect(card, { maxRotation: 5, translateY: -6 });
+      const cleanupLightBeam = createCardLightBeamEffect(card);
+      cleanups.push(cleanupTilt);
+      cleanups.push(cleanupLightBeam);
+    });
+
+    return () => {
+      cleanups.forEach((cleanup) => cleanup());
+    };
+  }, []);
+
+  // ── GSAP PINNED HORIZONTAL SCROLL & MOVE CHOREOGRAPHY ──
   useIsomorphicLayoutEffect(() => {
-    if (prefersReducedMotion()) return;
+    if (prefersReducedMotion() || !sectionRef.current || !trackRef.current) return;
 
     const ctx = gsap.context(() => {
       // Reversible Divider Line Expansion
@@ -132,141 +257,342 @@ export const FeaturesSection: React.FC = () => {
         }
       );
 
-      // Expanding purple accent line beneath heading
-      gsap.fromTo(
-        '.features-accent-line',
-        { scaleX: 0, opacity: 0 },
-        {
-          scaleX: 1,
-          opacity: 1,
-          transformOrigin: 'center',
-          duration: 0.8,
-          ease: 'power2.out',
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            start: 'top 82%',
-            toggleActions: ReversibleToggleActions,
-          },
-        }
-      );
-
-      // Reversible Section Header Reveal
+      // Section Header Reveal
       createHeaderReveal('.features-badge', '.features-title', '.features-desc', sectionRef.current!, {
         start: 'top 85%',
         toggleActions: ReversibleToggleActions,
       });
 
-      // 6. Directional Reversible Stagger for Feature Cards:
-      // Card 0: from left (x: -50)
-      // Card 1: from right (x: 50)
-      // Card 2: from top (y: -40)
-      // Card 3: from bottom (y: 50)
-      // Card 4: from left (x: -50)
-      // Card 5: from right (x: 50)
-      const cards = gsap.utils.toArray<HTMLElement>('.feature-card');
-      const directions = [
-        { x: -50, y: 20, rot: -2 },
-        { x: 50, y: 20, rot: 2 },
-        { x: 0, y: -40, rot: 0 },
-        { x: 0, y: 50, rot: 0 },
-        { x: -50, y: 20, rot: -2 },
-        { x: 50, y: 20, rot: 2 },
-      ];
+      const track = trackRef.current!;
+      const totalCards = FEATURE_PROJECTS.length;
 
-      cards.forEach((card, i) => {
-        const dir = directions[i] || { x: 0, y: 30, rot: 0 };
-        gsap.fromTo(
-          card,
-          {
-            x: dir.x,
-            y: dir.y,
-            rotation: dir.rot,
-            scale: 0.92,
-            opacity: 0,
-            visibility: 'hidden',
+      // Calculate total horizontal scroll translation
+      const getScrollAmount = () => {
+        const trackWidth = track.scrollWidth;
+        const windowWidth = window.innerWidth;
+        return -(trackWidth - windowWidth + windowWidth * 0.15);
+      };
+
+      // Master Pinned ScrollTrigger Timeline
+      const pinTimeline = gsap.timeline({
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: 'top top',
+          end: () => `+=${Math.max(window.innerHeight * 2.8, track.scrollWidth * 0.9)}`,
+          pin: true,
+          scrub: 0.75,
+          anticipatePin: 1,
+          invalidateOnRefresh: true,
+          onUpdate: (self) => {
+            const progress = self.progress;
+            setScrollProgress(progress);
+
+            // Compute active index based on scroll progress
+            const step = 1 / totalCards;
+            const currentIdx = Math.min(
+              totalCards - 1,
+              Math.max(0, Math.floor((progress + step * 0.4) / step))
+            );
+            setActiveIndex(currentIdx);
+
+            // Update Progress Bar
+            if (progressBarRef.current) {
+              progressBarRef.current.style.width = `${Math.min(100, Math.max(8, progress * 100))}%`;
+            }
+
+            // Real-time dynamic center-focus scaling & depth for each card
+            const cards = cardRefs.current;
+            const windowCenterX = window.innerWidth / 2;
+
+            cards.forEach((card, idx) => {
+              if (!card) return;
+              const rect = card.getBoundingClientRect();
+              const cardCenterX = rect.left + rect.width / 2;
+              const distanceFromCenter = Math.abs(windowCenterX - cardCenterX);
+              const maxDistance = window.innerWidth * 0.7;
+              const normalizedDist = Math.min(1, distanceFromCenter / maxDistance);
+
+              const scale = 1 - normalizedDist * 0.14; // 1.0 down to 0.86
+              const opacity = 1 - normalizedDist * 0.65; // 1.0 down to 0.35
+              const rotY = ((cardCenterX - windowCenterX) / window.innerWidth) * -12;
+
+              gsap.set(card, {
+                scale,
+                opacity,
+                rotationY: rotY,
+                transformPerspective: 1000,
+                transformOrigin: 'center center',
+              });
+            });
           },
-          {
-            x: 0,
-            y: 0,
-            rotation: 0,
-            scale: 1,
-            opacity: 1,
-            visibility: 'visible',
-            duration: 0.65,
-            delay: (i % 3) * 0.1,
-            ease: MotionEases.powerOut,
-            scrollTrigger: {
-              trigger: card,
-              start: 'top 88%',
-              toggleActions: ReversibleToggleActions,
-            },
-          }
-        );
+        },
       });
 
-      // 9. Parallax "Quest World" multi-speed background layers (0.45x)
-      if (midgroundRef.current) {
-        gsap.to(midgroundRef.current, {
-          yPercent: -20,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            start: 'top bottom',
-            end: 'bottom top',
-            scrub: 1.2,
-          },
-        });
-      }
+      scrollTriggerInstanceRef.current = pinTimeline.scrollTrigger || null;
+
+      // Translate the entire track horizontally on scroll
+      pinTimeline.to(track, {
+        x: getScrollAmount,
+        ease: 'none',
+      });
     }, sectionRef);
 
     return () => ctx.revert();
   }, []);
 
-  return (
-    <section id="features" ref={sectionRef} className="relative w-full py-24 px-6 bg-[#080411] overflow-hidden select-none">
-      {/* Section Separator Line */}
-      <div className="features-divider-line absolute top-0 left-1/2 -translate-x-1/2 w-[75%] max-w-5xl h-[1.5px] bg-gradient-to-r from-transparent via-[#360C9F] via-[#FFA28D] to-transparent pointer-events-none" />
+  const activeProject = FEATURE_PROJECTS[activeIndex];
 
-      {/* 9. "Quest World" Midground Parallax Elements (0.45x) */}
-      <div ref={midgroundRef} className="absolute inset-0 pointer-events-none z-0 overflow-hidden" aria-hidden="true">
-        <div className="absolute top-1/4 left-[5%] w-32 h-32 rounded-full bg-radial from-[#FFA28D]/8 to-transparent blur-2xl" />
-        <div className="absolute bottom-1/3 right-[8%] w-48 h-48 rounded-full bg-radial from-[#360C9F]/20 to-transparent blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 w-64 h-64 opacity-5">
-          <img src="/jltcolor.svg" alt="" className="w-full h-full object-contain filter drop-shadow-[0_0_40px_#FFA28D]" />
+  return (
+    <section
+      id="features"
+      ref={sectionRef}
+      className="relative w-full min-h-screen bg-[#080411] overflow-hidden select-none flex flex-col justify-between py-12 sm:py-16"
+      aria-label="Features Showcase - Built for Quest Champions"
+    >
+      {/* Top Animated Glowing Border */}
+      <div className="features-divider-line absolute top-0 left-1/2 -translate-x-1/2 w-[85%] max-w-6xl h-[1.5px] bg-gradient-to-r from-transparent via-[#360C9F] via-[#FFA28D] via-[#00F0FF] to-transparent pointer-events-none" />
+
+      {/* Dynamic Ambient Background Glows */}
+      <div
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1200px] h-[600px] rounded-full blur-[160px] pointer-events-none transition-all duration-700 opacity-25"
+        style={{
+          background: `radial-gradient(ellipse at center, ${activeProject.accentColor} 0%, rgba(54,12,159,0.3) 50%, transparent 80%)`,
+        }}
+      />
+      <div className="absolute bottom-10 right-[-10%] w-[600px] h-[600px] rounded-full bg-radial from-[#7B2CBF]/20 via-transparent to-transparent blur-[130px] pointer-events-none" />
+
+      {/* ── 1. SECTION HEADER ── */}
+      <div className="max-w-7xl mx-auto w-full px-6 flex flex-col items-center gap-3 text-center relative z-20 shrink-0">
+        <div className="features-badge glass-pill px-4 py-1.5 inline-flex items-center gap-2">
+          <img src="/jlt.svg" alt="JLT" width={18} height={18} loading="lazy" decoding="async" className="w-4 h-4 object-contain" />
+          <span className="font-gilroyMedium text-xs text-white/90 tracking-wider uppercase">
+            Featured Mechanics
+          </span>
+        </div>
+
+        <h2 className="features-title font-gilroyBold text-3xl sm:text-4xl md:text-5xl text-white tracking-tight leading-tight">
+          <SplitText scrollTrigger={false}>Built for Quest Champions</SplitText>
+        </h2>
+
+        <p className="features-desc font-gilroyRegular text-gray-400 text-xs sm:text-sm max-w-[560px] leading-relaxed hidden sm:block">
+          Scroll to explore the 6 high-yield earning engines, fortune spins, and social mechanics powering the JLT ecosystem.
+        </p>
+      </div>
+
+      {/* ── 2. PINNED HORIZONTAL CARDS TRACK (SCROLL & MOVE) ── */}
+      <div
+        ref={containerRef}
+        className="relative w-full my-auto flex items-center overflow-hidden z-10 py-4"
+      >
+        <div
+          ref={trackRef}
+          className="flex items-center gap-8 sm:gap-12 pl-[8vw] sm:pl-[14vw] md:pl-[20vw] pr-[50vw] will-change-transform"
+        >
+          {FEATURE_PROJECTS.map((project, idx) => {
+            const isCenter = idx === activeIndex;
+
+            return (
+              <div
+                key={project.id}
+                ref={(el) => {
+                  cardRefs.current[idx] = el;
+                }}
+                onClick={() => scrollToCard(idx)}
+                data-cursor="card"
+                data-cursor-text={isCenter ? 'OPEN' : 'SCROLL'}
+                className={`w-[85vw] sm:w-[620px] md:w-[700px] lg:w-[760px] shrink-0 rounded-[28px] sm:rounded-[36px] p-6 sm:p-8 bg-gradient-to-b ${project.gradientBg} border transition-all duration-300 cursor-pointer will-change-transform ${
+                  isCenter
+                    ? 'border-white/30 shadow-[0_30px_80px_rgba(0,0,0,0.85)] ring-1 ring-white/20'
+                    : 'border-white/10 shadow-[0_15px_35px_rgba(0,0,0,0.5)]'
+                }`}
+                style={{
+                  transformStyle: 'preserve-3d',
+                }}
+              >
+                {/* ── CARD VISUAL ARTWORK FRAME (16:10 Cinematic Frame) ── */}
+                <div className="relative w-full h-[240px] sm:h-[280px] md:h-[320px] rounded-[20px] sm:rounded-[26px] overflow-hidden border border-white/15 bg-black/60 shadow-inner group flex flex-col justify-between p-4 sm:p-6">
+                  
+                  {/* Full-bleed Generated Cinematic Artwork */}
+                  <img
+                    src={project.image}
+                    alt={project.title}
+                    loading="lazy"
+                    decoding="async"
+                    className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 brightness-90 group-hover:brightness-100"
+                  />
+
+                  {/* High-Contrast Gradient Scrim for readable badges and motto typography */}
+                  <div
+                    className="absolute inset-0 pointer-events-none"
+                    style={{
+                      background: `linear-gradient(180deg, rgba(8,4,17,0.7) 0%, rgba(8,4,17,0.1) 45%, rgba(8,4,17,0.92) 100%)`,
+                    }}
+                  />
+
+                  {/* Ambient Corner Accent Glow */}
+                  <div
+                    className="absolute top-0 right-0 w-48 h-48 rounded-full blur-3xl opacity-30 pointer-events-none"
+                    style={{ background: project.accentColor }}
+                  />
+
+                  {/* Top Row: Tag Badge & Extra Status Chip */}
+                  <div className="relative z-10 flex items-center justify-between gap-3">
+                    <div className="glass-pill px-3 py-1.5 inline-flex items-center gap-2 border border-white/20 bg-black/60 backdrop-blur-md">
+                      <span className="w-2 h-2 rounded-full" style={{ background: project.accentColor }} />
+                      <span className="font-gilroyBold text-[10px] sm:text-[11px] text-white tracking-widest uppercase">
+                        {project.tag}
+                      </span>
+                    </div>
+
+                    {project.extraChip && (
+                      <div className="glass-pill px-3 py-1.5 inline-flex items-center gap-1.5 border border-white/20 bg-black/60 backdrop-blur-md shadow-sm">
+                        <Sparkles className="w-3.5 h-3.5" style={{ color: project.accentColor }} />
+                        <span className="font-gilroyBold text-[11px] sm:text-xs text-white">
+                          {project.extraChip}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Central Micro-Emblem */}
+                  <div className="relative z-10 my-auto flex items-center justify-center pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div className="glass-pill px-4 py-2 bg-black/70 border border-white/30 backdrop-blur-md flex items-center gap-2 shadow-2xl scale-95 group-hover:scale-100 transition-transform duration-300">
+                      <img src={project.icon} alt="" className="w-5 h-5 object-contain" />
+                      <span className="font-gilroyBold text-xs text-white uppercase tracking-wider">{project.title}</span>
+                    </div>
+                  </div>
+
+                  {/* Bottom Floating Motto / Headline Inside Artwork (TRIONN Philosophy) */}
+                  <div className="relative z-10 flex items-end justify-between">
+                    <div className="flex flex-col">
+                      <span className="font-gilroyBold text-xl sm:text-3xl md:text-4xl text-white tracking-tight leading-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.9)]">
+                        {project.bannerMotto}
+                      </span>
+                    </div>
+
+                    {project.statsValue && (
+                      <div className="hidden sm:flex flex-col items-end px-3 py-1.5 rounded-xl bg-black/50 border border-white/10 backdrop-blur-md">
+                        <span className="font-gilroyBold text-base text-white" style={{ color: project.accentColor }}>
+                          {project.statsValue}
+                        </span>
+                        <span className="font-gilroyRegular text-[10px] text-gray-300 uppercase tracking-wider">
+                          {project.statsLabel}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* ── CARD TYPOGRAPHY & INTERACTIVE ACTION (Below Frame) ── */}
+                <div className="mt-4 sm:mt-5 flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+                  <div className="flex flex-col gap-1 max-w-lg">
+                    <div className="flex items-center gap-2">
+                      <span className="font-gilroyBold text-lg sm:text-xl text-white tracking-wide group-hover:text-[#FFA28D] transition-colors duration-200">
+                        {project.title}
+                      </span>
+                      <span className="text-[10px] sm:text-xs px-2 py-0.5 rounded-md bg-white/10 text-gray-300 font-gilroyMedium">
+                        {project.category}
+                      </span>
+                    </div>
+                    <p className="font-gilroyRegular text-gray-300 text-xs sm:text-sm leading-relaxed line-clamp-2">
+                      {project.description}
+                    </p>
+                  </div>
+
+                  {/* Explore Link CTA with Animated Line & Arrow */}
+                  <Link
+                    href={project.href}
+                    data-cursor="cta"
+                    data-cursor-text="OPEN →"
+                    className="inline-flex items-center gap-2 font-gilroyBold text-xs sm:text-sm tracking-wider uppercase group/link self-start sm:self-end text-white hover:text-[#FFA28D] transition-colors py-1 shrink-0"
+                  >
+                    <span className="relative">
+                      {project.ctaText}
+                      <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#FFA28D] group-hover/link:w-full transition-all duration-300" />
+                    </span>
+                    <ArrowRight className="w-4 h-4 text-[#FFA28D] group-hover/link:translate-x-1.5 transition-transform duration-200" />
+                  </Link>
+                </div>
+
+                {/* Dynamic Corner Ambient Accent */}
+                <div
+                  className="absolute -top-10 -right-10 w-40 h-40 rounded-full blur-3xl opacity-20 pointer-events-none"
+                  style={{ background: project.accentColor }}
+                />
+              </div>
+            );
+          })}
         </div>
       </div>
 
-      {/* Background blurs */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[400px] rounded-full bg-radial from-[#360C9F]/20 via-transparent to-transparent blur-[120px] pointer-events-none" />
+      {/* ── 3. BOTTOM SCRUBBED PROGRESS TRACK & MAGNETIC CONTROLS ── */}
+      <div className="max-w-7xl mx-auto w-full px-6 flex flex-wrap items-center justify-between gap-6 relative z-20 shrink-0">
+        
+        {/* Step Indicators: 01, 02, 03, 04, 05, 06 */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          {FEATURE_PROJECTS.map((proj, idx) => {
+            const isCurrent = idx === activeIndex;
+            return (
+              <button
+                key={proj.id}
+                onClick={() => scrollToCard(idx)}
+                type="button"
+                data-cursor="pointer"
+                aria-label={`Scroll to feature ${idx + 1}: ${proj.title}`}
+                className={`group/dot relative flex items-center justify-center transition-all duration-300 ${
+                  isCurrent
+                    ? 'px-3.5 py-1 rounded-full bg-white/15 border border-white/30 text-white shadow-[0_0_15px_rgba(255,162,141,0.4)] scale-105'
+                    : 'w-7 h-7 rounded-full bg-white/5 border border-white/10 text-gray-500 hover:text-gray-300 hover:bg-white/10'
+                }`}
+              >
+                <span className="font-gilroyBold text-xs">
+                  {isCurrent ? `0${idx + 1} · ${proj.title.split(' ')[0]}` : `0${idx + 1}`}
+                </span>
+              </button>
+            );
+          })}
+        </div>
 
-      <div className="max-w-7xl mx-auto flex flex-col gap-16 relative z-10">
-        {/* Section Header */}
-        <div className="flex flex-col items-center gap-4 text-center">
-          <div className="features-badge glass-pill px-5 py-2 inline-flex items-center gap-2">
-            <img src="/jlt.svg" alt="JLT" width={20} height={20} loading="lazy" decoding="async" className="w-5 h-5 object-contain" />
-            <span className="font-gilroyMedium text-sm text-white/90 tracking-wider uppercase">
-              Everything You Need
-            </span>
+        {/* Center Progress Line Bar */}
+        <div className="hidden md:flex flex-col gap-1.5 w-48">
+          <div className="flex items-center justify-between text-[11px] font-gilroyMedium text-gray-400">
+            <span>SCROLL TO MOVE</span>
+            <span className="text-[#FFA28D] font-gilroyBold">0{activeIndex + 1} / 06</span>
           </div>
-
-          <h2 className="features-title font-gilroyBold text-4xl sm:text-5xl text-white tracking-tight leading-tight">
-            <SplitText scrollTrigger={false}>Built for Quest Champions</SplitText>
-          </h2>
-
-          {/* Thin purple accent line that grows width: 0 -> 100% */}
-          <div className="features-accent-line w-24 h-[2px] bg-gradient-to-r from-transparent via-[#FFA28D] to-transparent rounded-full" />
-
-          <p className="features-desc font-gilroyRegular text-gray-400 text-lg max-w-[560px] leading-relaxed">
-            JLTQuest packs a full suite of earning tools, collectibles, and social mechanics — all free to play.
-          </p>
+          <div className="w-full h-1 bg-white/10 rounded-full overflow-hidden">
+            <div
+              ref={progressBarRef}
+              className="h-full bg-gradient-to-r from-[#360C9F] via-[#FFA28D] to-[#00F0FF] rounded-full transition-all duration-75 origin-left"
+              style={{ width: `${Math.min(100, Math.max(16, ((activeIndex + 1) / 6) * 100))}%` }}
+            />
+          </div>
         </div>
 
-        {/* Feature Cards Grid */}
-        <div className="feature-card-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {features.map((feature, idx) => (
-            <FeatureCard key={feature.title} index={idx} {...feature} />
-          ))}
+        {/* Magnetic Left & Right Navigation Arrows */}
+        <div className="flex items-center gap-3">
+          <button
+            ref={prevBtnRef}
+            onClick={prevSlide}
+            type="button"
+            data-cursor="pointer"
+            aria-label="Previous feature card"
+            className="glass-btn p-2.5 sm:p-3 rounded-2xl text-white hover:text-[#FFA28D] hover:border-[#FFA28D]/50 border border-white/15 shadow-md flex items-center justify-center transition-all"
+          >
+            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 magnetic-icon" />
+          </button>
+
+          <button
+            ref={nextBtnRef}
+            onClick={nextSlide}
+            type="button"
+            data-cursor="pointer"
+            aria-label="Next feature card"
+            className="glass-btn p-2.5 sm:p-3 rounded-2xl text-white hover:text-[#FFA28D] hover:border-[#FFA28D]/50 border border-white/15 shadow-md flex items-center justify-center transition-all"
+          >
+            <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 magnetic-icon" />
+          </button>
         </div>
+
       </div>
     </section>
   );

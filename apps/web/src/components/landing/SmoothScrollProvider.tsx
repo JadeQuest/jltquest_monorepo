@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import Lenis from 'lenis';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -9,7 +9,15 @@ if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger);
 }
 
+declare global {
+  interface Window {
+    __lenis?: Lenis;
+  }
+}
+
 export const SmoothScrollProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const lenisRef = useRef<Lenis | null>(null);
+
   useEffect(() => {
     const isTouchDevice =
       typeof window !== 'undefined' &&
@@ -21,7 +29,7 @@ export const SmoothScrollProvider: React.FC<{ children: React.ReactNode }> = ({ 
     if (prefersReducedMotion) return;
 
     const lenis = new Lenis({
-      duration: 1.25,
+      duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       orientation: 'vertical',
       gestureOrientation: 'vertical',
@@ -31,6 +39,10 @@ export const SmoothScrollProvider: React.FC<{ children: React.ReactNode }> = ({ 
       infinite: false,
     });
 
+    lenisRef.current = lenis;
+    window.__lenis = lenis;
+
+    // Synchronize Lenis scroll position with GSAP ScrollTrigger
     lenis.on('scroll', ScrollTrigger.update);
 
     const tickerCallback = (time: number) => {
@@ -40,12 +52,47 @@ export const SmoothScrollProvider: React.FC<{ children: React.ReactNode }> = ({ 
     gsap.ticker.add(tickerCallback);
     gsap.ticker.lagSmoothing(0);
 
-    // Refresh ScrollTrigger to ensure bounds align perfectly with smooth scroll
-    ScrollTrigger.refresh();
+    // Initial settle refreshes
+    const initialRefreshTimer = setTimeout(() => {
+      ScrollTrigger.refresh();
+      lenis.resize();
+    }, 150);
+
+    const secondaryRefreshTimer = setTimeout(() => {
+      ScrollTrigger.refresh();
+      lenis.resize();
+    }, 600);
+
+    // Handle external refresh events
+    const handleRefresh = () => {
+      ScrollTrigger.refresh();
+      lenis.resize();
+    };
+
+    const handleScrollTo = (e: Event) => {
+      const customEvent = e as CustomEvent<{ target: string; offset?: number }>;
+      if (customEvent.detail?.target) {
+        lenis.scrollTo(customEvent.detail.target, {
+          offset: customEvent.detail.offset ?? -40,
+          duration: 1.2,
+          easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+        });
+      }
+    };
+
+    window.addEventListener('resize', handleRefresh);
+    window.addEventListener('refresh-scroll-trigger', handleRefresh);
+    window.addEventListener('scroll-to-target', handleScrollTo);
 
     return () => {
+      clearTimeout(initialRefreshTimer);
+      clearTimeout(secondaryRefreshTimer);
+      window.removeEventListener('resize', handleRefresh);
+      window.removeEventListener('refresh-scroll-trigger', handleRefresh);
+      window.removeEventListener('scroll-to-target', handleScrollTo);
       gsap.ticker.remove(tickerCallback);
       lenis.destroy();
+      delete window.__lenis;
     };
   }, []);
 

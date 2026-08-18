@@ -10,7 +10,6 @@ import {
   MotionEases,
 } from '@/lib/animations';
 import { useMagneticButton } from './useMagneticButton';
-import { usePageTransition } from './PageTransitionOverlay';
 import { SplitText } from './SplitText';
 
 const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
@@ -20,7 +19,6 @@ export const CTASection: React.FC = () => {
   const mascotRef = useRef<HTMLDivElement>(null);
   const mascotImgRef = useRef<HTMLImageElement>(null);
   const glowRingRef = useRef<HTMLDivElement>(null);
-  const { navigateWithTransition } = usePageTransition();
 
   const ctaBtnRef = useMagneticButton<HTMLAnchorElement>({ maxDistance: 15, strength: 0.28 });
 
@@ -201,17 +199,13 @@ export const CTASection: React.FC = () => {
           ))}
         </div>
 
-        {/* CTA Button with Magnetic interaction & page transition */}
+        {/* CTA Button with Magnetic interaction */}
         <Link
           ref={ctaBtnRef}
           href="/dashboard"
           id="cta-enter-app-btn"
           data-cursor="cta"
           data-cursor-text="ENTER →"
-          onClick={(e) => {
-            e.preventDefault();
-            navigateWithTransition('/dashboard');
-          }}
           className="glass-btn gsap-magnetic-btn px-10 py-4 sm:px-12 sm:py-5 rounded-2xl font-gilroyBold text-white text-lg sm:text-xl tracking-wide shadow-[0_0_40px_rgba(54,12,159,0.6)] flex items-center gap-3 group hover:shadow-[0_0_60px_rgba(255,162,141,0.4)] hover:scale-[1.025] active:scale-[0.98] transition-all duration-200"
         >
           <span>Enter JLTQuest</span>

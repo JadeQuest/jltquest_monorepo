@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { Menu, X, ArrowRight, Sparkles } from 'lucide-react';
 import { gsap, prefersReducedMotion, MotionEases } from '@/lib/animations';
 import { useMagneticButton } from './useMagneticButton';
-import { usePageTransition } from './PageTransitionOverlay';
 
 const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
@@ -14,13 +13,16 @@ export const LandingNav: React.FC = () => {
   const logoRef = useRef<HTMLDivElement>(null);
   const enterAppBtnRef = useMagneticButton<HTMLAnchorElement>({ maxDistance: 12, strength: 0.25 });
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { navigateWithTransition } = usePageTransition();
 
   const scrollToSection = React.useCallback((id: string) => {
     setMobileMenuOpen(false);
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+    if (typeof window !== 'undefined' && window.__lenis) {
+      window.__lenis.scrollTo(`#${id}`, { offset: -70, duration: 1.2 });
+    } else {
+      const element = document.getElementById(id);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
     }
   }, []);
 
@@ -96,10 +98,6 @@ export const LandingNav: React.FC = () => {
             id="nav-enter-app-btn"
             data-cursor="cta"
             data-cursor-text="ENTER"
-            onClick={(e) => {
-              e.preventDefault();
-              navigateWithTransition('/dashboard');
-            }}
             className="glass-btn gsap-magnetic-btn px-5 py-2.5 sm:px-6 sm:py-2.5 rounded-xl font-gilroyBold text-white text-sm sm:text-base tracking-wide shadow-[0_0_20px_rgba(54,12,159,0.4)] flex items-center gap-2 group hover:shadow-[0_0_30px_rgba(255,162,141,0.5)] hover:scale-[1.025] active:scale-[0.98] transition-all duration-200"
           >
             <span>Enter App</span>
@@ -138,11 +136,7 @@ export const LandingNav: React.FC = () => {
 
           <Link
             href="/dashboard"
-            onClick={(e) => {
-              e.preventDefault();
-              setMobileMenuOpen(false);
-              navigateWithTransition('/dashboard');
-            }}
+            onClick={() => setMobileMenuOpen(false)}
             className="glass-btn w-full py-3.5 rounded-xl font-gilroyBold text-white text-center text-base tracking-wide mt-2 flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] transition-transform"
           >
             <span>Launch Dashboard</span>

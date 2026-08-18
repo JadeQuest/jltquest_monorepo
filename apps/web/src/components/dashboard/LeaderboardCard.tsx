@@ -41,11 +41,10 @@ export const LeaderboardCardComponent: React.FC = () => {
               key={tab.id}
               type="button"
               onClick={() => setActiveType(tab.id)}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-gilroyBold transition-all cursor-pointer ${
-                activeType === tab.id
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-gilroyBold transition-all cursor-pointer ${activeType === tab.id
                   ? 'bg-purple-500/30 text-white border border-purple-400/40 shadow-[0_0_12px_#7B2CBF]'
                   : 'text-gray-400 hover:text-white hover:bg-white/5'
-              }`}
+                }`}
             >
               {tab.label}
             </button>
@@ -71,15 +70,14 @@ export const LeaderboardCardComponent: React.FC = () => {
                 <div className="flex items-center gap-3 min-w-0">
                   {/* Rank Badge */}
                   <span
-                    className={`w-7 h-7 shrink-0 rounded-lg flex items-center justify-center font-gilroyBold text-xs font-bold ${
-                      user.rank === 1
+                    className={`w-7 h-7 shrink-0 rounded-lg flex items-center justify-center font-gilroyBold text-xs font-bold ${user.rank === 1
                         ? 'bg-amber-400 text-black shadow-[0_0_10px_#F59E0B]'
                         : user.rank === 2
-                        ? 'bg-gray-300 text-black shadow-[0_0_10px_#E5E7EB]'
-                        : user.rank === 3
-                        ? 'bg-amber-700 text-white'
-                        : 'bg-white/10 text-gray-400'
-                    }`}
+                          ? 'bg-gray-300 text-black shadow-[0_0_10px_#E5E7EB]'
+                          : user.rank === 3
+                            ? 'bg-amber-700 text-white'
+                            : 'bg-white/10 text-gray-400'
+                      }`}
                   >
                     #{user.rank}
                   </span>

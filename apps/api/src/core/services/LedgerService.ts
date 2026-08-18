@@ -50,6 +50,28 @@ export class LedgerService {
       }
     });
 
+    // Check for level-up unlocks
+    if (currentLevel > user.level) {
+      const newlyUnlockedVariants = await tx.avatarVariant.findMany({
+        where: {
+          unlockLevel: {
+            gt: user.level,
+            lte: currentLevel
+          }
+        }
+      });
+
+      if (newlyUnlockedVariants.length > 0) {
+        for (const variant of newlyUnlockedVariants) {
+          await tx.userAvatar.upsert({
+            where: { userId_variantId: { userId, variantId: variant.id } },
+            update: {},
+            create: { userId, variantId: variant.id }
+          });
+        }
+      }
+    }
+
     await this.ledgerRepository.createXpLedger(tx, {
       userId,
       amount,

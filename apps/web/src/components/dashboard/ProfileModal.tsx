@@ -14,8 +14,7 @@ interface ProfileModalProps {
 
 const DEFAULT_FALLBACK_VARIANTS = [
   { id: 'var_default_avatar', type: 'BASIC', imageUrl: '/avatar/avatar.webp', unlocked: true, active: false, isPurchasable: false, costGp: 0, costJlt: 0 },
-  { id: 'var_star_cadet', type: 'BASIC', imageUrl: '/avatar/1.webp', unlocked: true, active: false, isPurchasable: false, costGp: 0, costJlt: 0 },
-  { id: 'var_nova_pilot', type: 'BASIC', imageUrl: '/avatar/2.webp', unlocked: true, active: false, isPurchasable: false, costGp: 0, costJlt: 0 },
+  { id: 'var_star_cadet', type: 'BASIC', imageUrl: '/avatar/1.webp?v=2', unlocked: true, active: false, isPurchasable: false, costGp: 0, costJlt: 0 },
   { id: 'var_cosmic_explorer_basic', type: 'BASIC', imageUrl: '/avatar/pass/s1/s1b.webp', unlocked: false, active: false, unlockDescription: 'Rare Pass Season 1 Free track level 10', isPurchasable: false, costGp: 0, costJlt: 0 },
   { id: 'var_cosmic_explorer_3d', type: 'THREE_D', imageUrl: '/avatar/pass/s1/s1p.webp', unlocked: false, active: false, unlockDescription: 'Rare Pass Season 1 Premium track level 10', isPurchasable: false, costGp: 0, costJlt: 0 },
 ];
@@ -159,94 +158,97 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, das
                 </button>
               </div>
 
-              <div className="grid grid-cols-4 gap-3 max-h-48 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+              <div className="grid grid-cols-4 gap-3 auto-rows-max h-48 overflow-y-auto p-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
                 {allVariants.map((variant) => (
-                  <button
-                    key={variant.id}
-                    onClick={() => setSelectedVariantId(variant.id)}
-                    className={`relative shrink-0 aspect-square rounded-xl overflow-hidden border-2 transition-all ${selectedVariantId === variant.id
-                      ? 'border-purple-400 scale-105 shadow-[0_0_15px_rgba(168,85,247,0.5)]'
-                      : variant.unlocked
-                        ? 'border-transparent opacity-80 hover:opacity-100 hover:scale-105 hover:border-white/20'
-                        : 'border-transparent opacity-60 hover:opacity-90 hover:border-white/10'
-                      }`}
-                  >
-                    <img
-                      src={variant.imageUrl || '/avatar.webp'}
-                      onError={(e) => {
-                        e.currentTarget.src = '/avatar.webp';
-                      }}
-                      alt={variant.type || 'Variant'}
-                      className="w-full h-full object-cover"
-                    />
-                    {!variant.unlocked && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-[1px]">
-                        <span className="text-[10px] font-gilroyBold text-white/90">Locked</span>
-                      </div>
-                    )}
-                  </button>
+                  <div key={variant.id} className="relative w-full aspect-square">
+                    <button
+                      onClick={() => setSelectedVariantId(variant.id)}
+                      className={`absolute inset-0 w-full h-full flex items-center justify-center rounded-xl overflow-hidden border-2 transition-all ${selectedVariantId === variant.id
+                        ? 'border-purple-400 scale-105 shadow-[0_0_15px_rgba(168,85,247,0.5)]'
+                        : variant.unlocked
+                          ? 'border-transparent opacity-80 hover:opacity-100 hover:scale-105 hover:border-white/20'
+                          : 'border-transparent opacity-60 hover:opacity-90 hover:border-white/10'
+                        }`}
+                    >
+                      <img
+                        src={variant.imageUrl || '/avatar.webp'}
+                        onError={(e) => {
+                          e.currentTarget.src = '/avatar.webp';
+                        }}
+                        alt={variant.type || 'Variant'}
+                        className="absolute inset-0 w-full h-full object-cover"
+                      />
+                      {!variant.unlocked && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-[1px]">
+                          <span className="text-[10px] font-gilroyBold text-white/90">Locked</span>
+                        </div>
+                      )}
+                    </button>
+                  </div>
                 ))}
               </div>
 
-              {selectedVariant && !selectedVariant.unlocked && (
-                <div className="p-4 bg-black/30 rounded-xl border border-white/10 space-y-3">
-                  <h4 className="text-sm font-gilroyBold text-white flex items-center gap-1.5">
-                    <span>🔒</span> How to Unlock
-                  </h4>
-                  {selectedVariant.unlockDescription && (
-                    <p className="text-xs text-white/70 font-gilroyMedium">
-                      {selectedVariant.unlockDescription}
-                    </p>
-                  )}
-                  {selectedVariant.unlockDescription?.toLowerCase().includes('rare pass') && (
-                    <button
-                      onClick={() => {
-                        handleCloseModal();
-                        window.location.href = '/dashboard/rare-pass';
-                      }}
-                      className="w-full py-2 bg-gradient-to-r from-[#00F0FF] to-[#7B2CBF] hover:opacity-90 text-white rounded-lg font-gilroyBold text-xs transition-all shadow-md"
-                    >
-                      Go to Rare Pass
-                    </button>
-                  )}
-                  {selectedVariant.isPurchasable && (
-                    <div className="flex flex-col gap-2">
-                      <div className="flex items-center gap-4 text-sm font-gilroyMedium">
-                        {selectedVariant.costGp > 0 && (
-                          <div className="flex items-center gap-1.5 text-white/80">
-                            <img src="/icon/coin.webp" alt="GP" className="w-4 h-4" />
-                            {selectedVariant.costGp} GP
-                          </div>
-                        )}
-                        {selectedVariant.costJlt > 0 && (
-                          <div className="flex items-center gap-1.5 text-white/80">
-                            <img src="/jltcolor.svg" alt="JLT" className="w-4 h-4" />
-                            {selectedVariant.costJlt} JLT
-                          </div>
-                        )}
-                      </div>
-                      {unlockError && <p className="text-xs text-red-400">{unlockError}</p>}
+              <div className="min-h-[132px] flex flex-col justify-end">
+                {selectedVariant && !selectedVariant.unlocked && (
+                  <div className="p-4 bg-black/30 rounded-xl border border-white/10 space-y-3">
+                    <h4 className="text-sm font-gilroyBold text-white flex items-center gap-1.5">
+                      <span>🔒</span> How to Unlock
+                    </h4>
+                    {selectedVariant.unlockDescription && (
+                      <p className="text-xs text-white/70 font-gilroyMedium">
+                        {selectedVariant.unlockDescription}
+                      </p>
+                    )}
+                    {selectedVariant.unlockDescription?.toLowerCase().includes('rare pass') && (
                       <button
-                        onClick={handleUnlockAvatar}
-                        disabled={isUnlocking}
-                        className="w-full py-2 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-400 hover:to-rose-400 disabled:opacity-50 text-white rounded-lg font-gilroyBold text-sm transition-all"
+                        onClick={() => {
+                          handleCloseModal();
+                          window.location.href = '/dashboard/rare-pass';
+                        }}
+                        className="w-full py-2 bg-gradient-to-r from-[#00F0FF] to-[#7B2CBF] hover:opacity-90 text-white rounded-lg font-gilroyBold text-xs transition-all shadow-md"
                       >
-                        {isUnlocking ? 'Unlocking...' : 'Unlock Now'}
+                        Go to Rare Pass
                       </button>
-                    </div>
-                  )}
-                </div>
-              )}
+                    )}
+                    {selectedVariant.isPurchasable && (
+                      <div className="flex flex-col gap-2">
+                        <div className="flex items-center gap-4 text-sm font-gilroyMedium">
+                          {selectedVariant.costGp > 0 && (
+                            <div className="flex items-center gap-1.5 text-white/80">
+                              <img src="/icon/coin.webp" alt="GP" className="w-4 h-4" />
+                              {selectedVariant.costGp} GP
+                            </div>
+                          )}
+                          {selectedVariant.costJlt > 0 && (
+                            <div className="flex items-center gap-1.5 text-white/80">
+                              <img src="/jltcolor.svg" alt="JLT" className="w-4 h-4" />
+                              {selectedVariant.costJlt} JLT
+                            </div>
+                          )}
+                        </div>
+                        {unlockError && <p className="text-xs text-red-400">{unlockError}</p>}
+                        <button
+                          onClick={handleUnlockAvatar}
+                          disabled={isUnlocking}
+                          className="w-full py-2 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-400 hover:to-rose-400 disabled:opacity-50 text-white rounded-lg font-gilroyBold text-sm transition-all"
+                        >
+                          {isUnlocking ? 'Unlocking...' : 'Unlock Now'}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
 
-              {selectedVariant && selectedVariant.unlocked && (
-                <button
-                  onClick={handleSaveAvatar}
-                  disabled={isSelecting}
-                  className="w-full py-3 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-400 hover:to-indigo-400 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl font-gilroyBold transition-all shadow-lg flex items-center justify-center gap-2"
-                >
-                  {isSelecting ? 'Saving...' : 'Save Avatar'}
-                </button>
-              )}
+                {selectedVariant && selectedVariant.unlocked && (
+                  <button
+                    onClick={handleSaveAvatar}
+                    disabled={isSelecting}
+                    className="w-full py-3 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-400 hover:to-indigo-400 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl font-gilroyBold transition-all shadow-lg flex items-center justify-center gap-2"
+                  >
+                    {isSelecting ? 'Saving...' : 'Save Avatar'}
+                  </button>
+                )}
+              </div>
             </div>
           ) : (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-300">

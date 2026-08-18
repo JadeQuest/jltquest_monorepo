@@ -21,10 +21,20 @@ export class InviteService {
           inviterId: userId,
           code
         },
-        include: { redemptions: true }
+        include: { 
+          redemptions: {
+            include: {
+              redeemedByUser: {
+                select: {
+                  level: true,
+                  displayName: true
+                }
+              }
+            }
+          }
+        }
       });
     }
-
     const totalInvited = invite.redemptions?.length || 0;
     const gpEarnedFromInvites = invite.redemptions?.reduce((acc: number, r: any) => acc + (r.inviterGpAwarded || 0), 0) || 0;
 
@@ -36,17 +46,38 @@ export class InviteService {
     };
   }
 
-  async redeem(inviteCode: string, newUserId: string) {
+  async redeem(rawInviteCode: string, newUserId: string) {
     return await this.prisma.$transaction(
       async (tx: any) => {
-        if (!inviteCode) {
+        if (!rawInviteCode) {
           throw new BadRequestError(
             ErrorMessages[ErrorCode.INVITE_CODE_INVALID],
             ErrorCode.INVITE_CODE_INVALID
           );
         }
 
-        const invite = await this.inviteRepository.findByCode(tx, inviteCode);
+        const inviteCode = rawInviteCode.trim().toUpperCase();
+
+        let invite = await this.inviteRepository.findByCode(tx, inviteCode);
+        
+        // Lazy creation if inviter hasn't visited their dashboard yet
+        if (!invite && inviteCode.startsWith('JLT_') && inviteCode.length === 12) {
+          const shortId = inviteCode.substring(4).toLowerCase();
+          const inviterUser = await tx.user.findFirst({
+            where: { id: { startsWith: shortId } }
+          });
+
+          if (inviterUser) {
+            invite = await tx.invite.create({
+              data: {
+                inviterId: inviterUser.id,
+                code: inviteCode
+              },
+              include: { redemptions: true }
+            });
+          }
+        }
+
         if (!invite) {
           throw new BadRequestError(
             ErrorMessages[ErrorCode.INVITE_CODE_INVALID],
@@ -74,7 +105,7 @@ export class InviteService {
 
         const inviterGp = APP_CONFIG.INVITE.INVITER_GP_REWARD;
         const inviteeGp = APP_CONFIG.INVITE.INVITEE_GP_REWARD;
-        const inviterXp = 75; // Invite 1 Friend repeatable quest gives 75 XP
+        const inviterXp = 0; // XP is now awarded at Level 6 milestone
 
         await this.inviteRepository.createRedemption(tx, {
           inviteId: invite.id,

@@ -70,6 +70,80 @@ export class LedgerService {
           });
         }
       }
+      
+      // Check for referral milestones
+      const redemption = await tx.inviteRedemption.findUnique({
+        where: { redeemedByUserId: userId },
+        include: { invite: true }
+      });
+
+      if (redemption) {
+        const inviterId = redemption.invite.inviterId;
+        const milestones = [
+          { level: 6, flag: 'level6RewardClaimed', gp: 150, xp: 75 },
+          { level: 11, flag: 'level11RewardClaimed', gp: 300, xp: 150 },
+          { level: 16, flag: 'level16RewardClaimed', gp: 450, xp: 225 },
+          { level: 21, flag: 'level21RewardClaimed', gp: 600, xp: 300 },
+          { level: 26, flag: 'level26RewardClaimed', gp: 750, xp: 375 }
+        ];
+
+        for (const ms of milestones) {
+          if (currentLevel >= ms.level && !(redemption as any)[ms.flag]) {
+            // Mark flag true
+            await tx.inviteRedemption.update({
+              where: { id: redemption.id },
+              data: { [ms.flag]: true }
+            });
+
+            // Award inviter
+            await this.awardGp(tx, inviterId, ms.gp, LedgerSource.INVITE, redemption.id);
+            if (ms.xp > 0) {
+              await this.awardXp(tx, inviterId, ms.xp, LedgerSource.INVITE, redemption.id);
+            }
+
+            // If it's the Level 6 milestone, check for the 5-referral quest
+            if (ms.level === 6) {
+              const count = await tx.inviteRedemption.count({
+                where: {
+                  invite: { inviterId: inviterId },
+                  level6RewardClaimed: true
+                }
+              });
+
+              if (count === 5) {
+                const quest = await tx.quest.findUnique({ where: { code: 'quest_invite_5_level_6' } });
+                if (quest) {
+                  const existingCompletion = await tx.userQuestCompletion.findUnique({
+                    where: {
+                      userId_questId_periodKey: {
+                        userId: inviterId,
+                        questId: quest.id,
+                        periodKey: 'ALL'
+                      }
+                    }
+                  });
+
+                  if (!existingCompletion) {
+                    await tx.userQuestCompletion.create({
+                      data: {
+                        userId: inviterId,
+                        questId: quest.id,
+                        periodKey: 'ALL',
+                        gpAwarded: quest.gpReward,
+                        xpAwarded: quest.xpReward
+                      }
+                    });
+                    await this.awardGp(tx, inviterId, quest.gpReward, LedgerSource.QUEST, quest.id);
+                    if (quest.xpReward > 0) {
+                      await this.awardXp(tx, inviterId, quest.xpReward, LedgerSource.QUEST, quest.id);
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
 
     await this.ledgerRepository.createXpLedger(tx, {

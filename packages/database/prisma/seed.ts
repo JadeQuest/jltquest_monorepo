@@ -199,6 +199,17 @@ export async function seedQuests() {
       frequency: QuestFrequency.ONE_TIME,
       category: QuestCategory.MILESTONE,
     },
+    {
+      code: 'quest_invite_5_level_6',
+      name: '5 Successful Referrals',
+      description: 'Have 5 referred users reach Level 6.',
+      gpReward: 1000,
+      xpReward: 0,
+      rpXpReward: 0,
+      fragmentReward: 0,
+      frequency: QuestFrequency.ONE_TIME,
+      category: QuestCategory.REFERRAL,
+    },
 
     // Achievement Quests
     {
@@ -313,13 +324,14 @@ async function main() {
 
   const defaultVariant = await prisma.avatarVariant.upsert({
     where: { id: 'var_default_avatar' },
-    update: { imageUrl: '/avatar/avatar.webp', unlockDescription: 'Default Starter Avatar' },
+    update: { imageUrl: '/avatar/avatar.webp', unlockDescription: 'Default Starter Avatar', unlockLevel: 1 },
     create: {
       id: 'var_default_avatar',
       avatarId: defaultAvatar.id,
       type: AvatarVariantType.BASIC,
       imageUrl: '/avatar/avatar.webp',
       unlockDescription: 'Default Starter Avatar',
+      unlockLevel: 1,
     },
   });
 
@@ -335,13 +347,14 @@ async function main() {
 
   const starCadetVariant = await prisma.avatarVariant.upsert({
     where: { id: 'var_star_cadet' },
-    update: { imageUrl: '/avatar/1.webp?v=2', unlockDescription: 'Free Starter Avatar' },
+    update: { imageUrl: '/avatar/1.webp?v=2', unlockDescription: 'Free Starter Avatar', unlockLevel: 1 },
     create: {
       id: 'var_star_cadet',
       avatarId: starCadet.id,
       type: AvatarVariantType.BASIC,
       imageUrl: '/avatar/1.webp?v=2',
       unlockDescription: 'Free Starter Avatar',
+      unlockLevel: 1,
     },
   });
 

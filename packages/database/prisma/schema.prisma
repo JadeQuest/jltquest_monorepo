@@ -346,6 +346,13 @@ model InviteRedemption {
   inviterXpAwarded Int
   redeemedAt       DateTime @default(now())
 
+  referralRewardClaimed Boolean @default(true)
+  level6RewardClaimed   Boolean @default(false)
+  level11RewardClaimed  Boolean @default(false)
+  level16RewardClaimed  Boolean @default(false)
+  level21RewardClaimed  Boolean @default(false)
+  level26RewardClaimed  Boolean @default(false)
+
   @@map("invite_redemptions")
 }
 

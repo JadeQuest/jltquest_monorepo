@@ -3,17 +3,8 @@
 import React, { useRef, useState, useEffect, useLayoutEffect, useCallback } from 'react';
 import Link from 'next/link';
 import {
-  ArrowLeft,
   ArrowRight,
   Sparkles,
-  Zap,
-  Flame,
-  Trophy,
-  Users,
-  Compass,
-  Layers,
-  CheckCircle2,
-  ExternalLink,
 } from 'lucide-react';
 import {
   gsap,
@@ -21,14 +12,10 @@ import {
   createHeaderReveal,
   createCardTiltEffect,
   createCardLightBeamEffect,
-  createParticleBurst,
   prefersReducedMotion,
-  isTouchDevice,
   ReversibleToggleActions,
-  MotionEases,
 } from '@/lib/animations';
 import { SplitText } from './SplitText';
-import { useMagneticButton } from './useMagneticButton';
 
 const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
@@ -181,41 +168,36 @@ export const FeaturesSection: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const progressBarRef = useRef<HTMLDivElement>(null);
 
   const [activeIndex, setActiveIndex] = useState(0);
-  const [scrollProgress, setScrollProgress] = useState(0);
+  const activeIndexRef = useRef(0);
+  activeIndexRef.current = activeIndex;
+
   const scrollTriggerInstanceRef = useRef<ScrollTrigger | null>(null);
 
-  // Magnetic button refs for slider navigation
-  const prevBtnRef = useMagneticButton<HTMLButtonElement>({ maxDistance: 10, strength: 0.22 });
-  const nextBtnRef = useMagneticButton<HTMLButtonElement>({ maxDistance: 10, strength: 0.22 });
-
-  // Scroll to a specific card index along the pinned GSAP timeline
+  // ─── Scroll to a specific card index along the pinned GSAP timeline ───
   const scrollToCard = useCallback((index: number) => {
     const total = FEATURE_PROJECTS.length;
     const clampedIndex = Math.max(0, Math.min(total - 1, index));
-    const st = scrollTriggerInstanceRef.current;
+    setActiveIndex(clampedIndex);
+    activeIndexRef.current = clampedIndex;
 
+    const st = scrollTriggerInstanceRef.current;
     if (st) {
-      const targetScroll = st.start + (clampedIndex / (total - 1)) * (st.end - st.start);
+      const scrollDistance = st.end - st.start;
+      const ratio = clampedIndex / (total - 1);
+      const targetScroll = st.start + ratio * scrollDistance * 0.95 + (clampedIndex === 0 ? 5 : 0);
+
       if (typeof window !== 'undefined' && window.__lenis) {
-        window.__lenis.scrollTo(targetScroll, { duration: 1.1, easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)) });
+        window.__lenis.scrollTo(targetScroll, {
+          duration: 1.1,
+          easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+        });
       } else {
         window.scrollTo({ top: targetScroll, behavior: 'smooth' });
       }
-    } else {
-      setActiveIndex(clampedIndex);
     }
   }, []);
-
-  const nextSlide = useCallback(() => {
-    scrollToCard(activeIndex + 1);
-  }, [activeIndex, scrollToCard]);
-
-  const prevSlide = useCallback(() => {
-    scrollToCard(activeIndex - 1);
-  }, [activeIndex, scrollToCard]);
 
   // Apply TRIONN 3D tilt & dynamic light beam to all cards
   useEffect(() => {
@@ -234,7 +216,7 @@ export const FeaturesSection: React.FC = () => {
     };
   }, []);
 
-  // ── GSAP PINNED HORIZONTAL SCROLL & MOVE CHOREOGRAPHY ──
+  // ── GSAP PINNED HORIZONTAL SCROLL CHOREOGRAPHY ──
   useIsomorphicLayoutEffect(() => {
     if (prefersReducedMotion() || !sectionRef.current || !trackRef.current) return;
 
@@ -270,41 +252,39 @@ export const FeaturesSection: React.FC = () => {
       const getScrollAmount = () => {
         const trackWidth = track.scrollWidth;
         const windowWidth = window.innerWidth;
-        return -(trackWidth - windowWidth + windowWidth * 0.15);
+        return -(trackWidth - windowWidth + 60);
       };
 
-      // Master Pinned ScrollTrigger Timeline
+      // Master Pinned ScrollTrigger Timeline with comfortable, responsive pin distance
       const pinTimeline = gsap.timeline({
         scrollTrigger: {
           trigger: sectionRef.current,
           start: 'top top',
-          end: () => `+=${Math.max(window.innerHeight * 2.8, track.scrollWidth * 0.9)}`,
+          end: () => `+=${Math.min(window.innerHeight * 1.6, 1600)}`,
           pin: true,
-          scrub: 0.75,
+          scrub: 0.65,
           anticipatePin: 1,
           invalidateOnRefresh: true,
           onUpdate: (self) => {
             const progress = self.progress;
-            setScrollProgress(progress);
 
             // Compute active index based on scroll progress
             const step = 1 / totalCards;
             const currentIdx = Math.min(
               totalCards - 1,
-              Math.max(0, Math.floor((progress + step * 0.4) / step))
+              Math.max(0, Math.floor((progress + step * 0.35) / step))
             );
-            setActiveIndex(currentIdx);
 
-            // Update Progress Bar
-            if (progressBarRef.current) {
-              progressBarRef.current.style.width = `${Math.min(100, Math.max(8, progress * 100))}%`;
+            if (currentIdx !== activeIndexRef.current) {
+              activeIndexRef.current = currentIdx;
+              setActiveIndex(currentIdx);
             }
 
             // Real-time dynamic center-focus scaling & depth for each card
             const cards = cardRefs.current;
             const windowCenterX = window.innerWidth / 2;
 
-            cards.forEach((card, idx) => {
+            cards.forEach((card) => {
               if (!card) return;
               const rect = card.getBoundingClientRect();
               const cardCenterX = rect.left + rect.width / 2;
@@ -322,6 +302,7 @@ export const FeaturesSection: React.FC = () => {
                 rotationY: rotY,
                 transformPerspective: 1000,
                 transformOrigin: 'center center',
+                force3D: true,
               });
             });
           },
@@ -334,6 +315,7 @@ export const FeaturesSection: React.FC = () => {
       pinTimeline.to(track, {
         x: getScrollAmount,
         ease: 'none',
+        force3D: true,
       });
     }, sectionRef);
 
@@ -525,11 +507,10 @@ export const FeaturesSection: React.FC = () => {
         </div>
       </div>
 
-      {/* ── 3. BOTTOM SCRUBBED PROGRESS TRACK & MAGNETIC CONTROLS ── */}
-      <div className="max-w-7xl mx-auto w-full px-6 flex flex-wrap items-center justify-between gap-6 relative z-20 shrink-0">
-        
+      {/* ── 3. BOTTOM SCRUBBED STEP INDICATORS (CENTERED) ── */}
+      <div className="max-w-7xl mx-auto w-full px-6 flex items-center justify-center relative z-20 shrink-0 mt-2">
         {/* Step Indicators: 01, 02, 03, 04, 05, 06 */}
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex items-center justify-center gap-2 sm:gap-3 flex-wrap">
           {FEATURE_PROJECTS.map((proj, idx) => {
             const isCurrent = idx === activeIndex;
             return (
@@ -539,10 +520,10 @@ export const FeaturesSection: React.FC = () => {
                 type="button"
                 data-cursor="pointer"
                 aria-label={`Scroll to feature ${idx + 1}: ${proj.title}`}
-                className={`group/dot relative flex items-center justify-center transition-all duration-300 ${
+                className={`group/dot relative flex items-center justify-center transition-all duration-300 cursor-pointer ${
                   isCurrent
-                    ? 'px-3.5 py-1 rounded-full bg-white/15 border border-white/30 text-white shadow-[0_0_15px_rgba(255,162,141,0.4)] scale-105'
-                    : 'w-7 h-7 rounded-full bg-white/5 border border-white/10 text-gray-500 hover:text-gray-300 hover:bg-white/10'
+                    ? 'px-4 py-1.5 rounded-full bg-white/15 border border-white/30 text-white shadow-[0_0_15px_rgba(255,162,141,0.4)] scale-105'
+                    : 'w-8 h-8 rounded-full bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10'
                 }`}
               >
                 <span className="font-gilroyBold text-xs">
@@ -552,47 +533,6 @@ export const FeaturesSection: React.FC = () => {
             );
           })}
         </div>
-
-        {/* Center Progress Line Bar */}
-        <div className="hidden md:flex flex-col gap-1.5 w-48">
-          <div className="flex items-center justify-between text-[11px] font-gilroyMedium text-gray-400">
-            <span>SCROLL TO MOVE</span>
-            <span className="text-[#FFA28D] font-gilroyBold">0{activeIndex + 1} / 06</span>
-          </div>
-          <div className="w-full h-1 bg-white/10 rounded-full overflow-hidden">
-            <div
-              ref={progressBarRef}
-              className="h-full bg-gradient-to-r from-[#360C9F] via-[#FFA28D] to-[#00F0FF] rounded-full transition-all duration-75 origin-left"
-              style={{ width: `${Math.min(100, Math.max(16, ((activeIndex + 1) / 6) * 100))}%` }}
-            />
-          </div>
-        </div>
-
-        {/* Magnetic Left & Right Navigation Arrows */}
-        <div className="flex items-center gap-3">
-          <button
-            ref={prevBtnRef}
-            onClick={prevSlide}
-            type="button"
-            data-cursor="pointer"
-            aria-label="Previous feature card"
-            className="glass-btn p-2.5 sm:p-3 rounded-2xl text-white hover:text-[#FFA28D] hover:border-[#FFA28D]/50 border border-white/15 shadow-md flex items-center justify-center transition-all"
-          >
-            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 magnetic-icon" />
-          </button>
-
-          <button
-            ref={nextBtnRef}
-            onClick={nextSlide}
-            type="button"
-            data-cursor="pointer"
-            aria-label="Next feature card"
-            className="glass-btn p-2.5 sm:p-3 rounded-2xl text-white hover:text-[#FFA28D] hover:border-[#FFA28D]/50 border border-white/15 shadow-md flex items-center justify-center transition-all"
-          >
-            <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 magnetic-icon" />
-          </button>
-        </div>
-
       </div>
     </section>
   );

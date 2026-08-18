@@ -17,6 +17,12 @@ export interface UserSession {
   userAddress?: string;
 }
 
+export const AUTH_COOKIE_NAME = 'jlt_auth_token';
+export const REFRESH_COOKIE_NAME = 'jlt_refresh_token';
+export const CSRF_COOKIE_NAME = 'jlt_csrf';
+export const SESSION_COOKIE_NAME = 'jlt_session';
+export const CONSENT_COOKIE_NAME = 'jlt_cookie_consent';
+
 const DEFAULT_OPTIONS: CookieOptions = {
   days: 7,
   sameSite: 'Lax',
@@ -37,6 +43,14 @@ function safeSetLocalStorage(key: string, value: string): void {
     localStorage.setItem(key, value);
   } catch {
     // Browsers can block storage in private or restricted contexts.
+  }
+}
+
+function safeRemoveLocalStorage(key: string): void {
+  try {
+    localStorage.removeItem(key);
+  } catch {
+    // Ignore errors
   }
 }
 
@@ -86,10 +100,49 @@ export function getCookie(name: string): string | null {
 
 /**
  * Delete a cookie cleanly upon logout or session termination
+ * Supports path string or options object, and reliably purges across HTTP and HTTPS environments.
  */
-export function deleteCookie(name: string, path: string = '/'): void {
+export function deleteCookie(name: string, pathOrOptions: string | CookieOptions = '/'): void {
   if (typeof document === 'undefined') return;
-  document.cookie = `${encodeURIComponent(name)}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=${path}; SameSite=Lax; Secure`;
+
+  const path = typeof pathOrOptions === 'string' ? pathOrOptions : pathOrOptions.path || '/';
+  const isSecure = typeof pathOrOptions === 'object' && pathOrOptions.secure !== undefined
+    ? pathOrOptions.secure
+    : (typeof window !== 'undefined' ? window.location.protocol === 'https:' : false);
+
+  // Expire with SameSite=Lax
+  document.cookie = `${encodeURIComponent(name)}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=${path}; SameSite=Lax${isSecure ? '; Secure' : ''}`;
+  
+  // Also expire without Secure flag to handle cookies set in mixed or localhost environments
+  if (isSecure) {
+    document.cookie = `${encodeURIComponent(name)}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=${path}; SameSite=Lax`;
+  }
+}
+
+/**
+ * Direct typed helpers for Auth & Refresh tokens
+ */
+export function getAuthToken(): string | null {
+  return getCookie(AUTH_COOKIE_NAME);
+}
+
+export function setAuthToken(token: string, days: number = 7): void {
+  setCookie(AUTH_COOKIE_NAME, token, { days });
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('auth-state-change', { detail: { isAuthenticated: true } }));
+  }
+}
+
+export function getRefreshToken(): string | null {
+  return getCookie(REFRESH_COOKIE_NAME);
+}
+
+export function setRefreshToken(token: string, days: number = 30): void {
+  setCookie(REFRESH_COOKIE_NAME, token, { days });
+}
+
+export function hasAuthToken(): boolean {
+  return !!getAuthToken();
 }
 
 /**
@@ -120,12 +173,12 @@ export function generateCsrfToken(): string {
 
 export function setCsrfToken(): string {
   const token = generateCsrfToken();
-  setCookie('jlt_csrf', token, { days: 1, sameSite: 'Strict' });
+  setCookie(CSRF_COOKIE_NAME, token, { days: 1, sameSite: 'Strict' });
   return token;
 }
 
 export function validateCsrfToken(token: string): boolean {
-  const stored = getCookie('jlt_csrf');
+  const stored = getCookie(CSRF_COOKIE_NAME);
   return !!stored && stored === token;
 }
 
@@ -133,28 +186,25 @@ export function validateCsrfToken(token: string): boolean {
  * GDPR / CCPA Cookie Consent Management with IP Persistence
  */
 export function getCookieConsent(): boolean {
-  return getCookie('jlt_cookie_consent') === 'accepted';
+  return getCookie(CONSENT_COOKIE_NAME) === 'accepted';
 }
 
 export function setCookieConsent(accepted: boolean): void {
-  setCookie('jlt_cookie_consent', accepted ? 'accepted' : 'declined', { days: 365 });
+  setCookie(CONSENT_COOKIE_NAME, accepted ? 'accepted' : 'declined', { days: 365 });
   if (typeof window !== 'undefined') {
-    safeSetLocalStorage('jlt_cookie_consent', accepted ? 'accepted' : 'declined');
+    safeSetLocalStorage(CONSENT_COOKIE_NAME, accepted ? 'accepted' : 'declined');
   }
 }
 
 export function hasConsentBeenGiven(): boolean {
   if (typeof window === 'undefined') return false;
 
-  // Check direct cookie
-  const consentCookie = getCookie('jlt_cookie_consent');
+  const consentCookie = getCookie(CONSENT_COOKIE_NAME);
   if (consentCookie === 'accepted' || consentCookie === 'declined') return true;
 
-  // Check localStorage
-  const localConsent = safeGetLocalStorage('jlt_cookie_consent');
+  const localConsent = safeGetLocalStorage(CONSENT_COOKIE_NAME);
   if (localConsent === 'accepted' || localConsent === 'declined') return true;
 
-  // Check stored IP consent record
   const savedIp = safeGetLocalStorage('jlt_user_ip');
   if (savedIp) {
     const ipConsent = safeGetLocalStorage(`jlt_cookie_consent_${savedIp}`);
@@ -166,10 +216,10 @@ export function hasConsentBeenGiven(): boolean {
 
 export function saveConsentForIp(accepted: boolean, ip?: string): void {
   const status = accepted ? 'accepted' : 'declined';
-  setCookie('jlt_cookie_consent', status, { days: 365 });
+  setCookie(CONSENT_COOKIE_NAME, status, { days: 365 });
   
   if (typeof window !== 'undefined') {
-    safeSetLocalStorage('jlt_cookie_consent', status);
+    safeSetLocalStorage(CONSENT_COOKIE_NAME, status);
     if (ip) {
       safeSetLocalStorage('jlt_user_ip', ip);
       safeSetLocalStorage(`jlt_cookie_consent_${ip}`, status);
@@ -182,7 +232,7 @@ export function saveConsentForIp(accepted: boolean, ip?: string): void {
  * Session Expiration & Refresh Rotation Utility
  */
 export function isSessionValid(): boolean {
-  const sessionData = getCookie('jlt_session');
+  const sessionData = getCookie(SESSION_COOKIE_NAME);
   if (!sessionData) return false;
 
   try {
@@ -193,8 +243,20 @@ export function isSessionValid(): boolean {
   }
 }
 
+/**
+ * Cleanly clear all session and auth cookies/storage
+ */
 export function clearUserSession(): void {
-  deleteCookie('jlt_session');
-  deleteCookie('jlt_auth_token');
-  deleteCookie('jlt_csrf');
+  deleteCookie(SESSION_COOKIE_NAME);
+  deleteCookie(AUTH_COOKIE_NAME);
+  deleteCookie(REFRESH_COOKIE_NAME);
+  deleteCookie(CSRF_COOKIE_NAME);
+
+  safeRemoveLocalStorage('jlt_session');
+  safeRemoveLocalStorage('jlt_auth_token');
+  safeRemoveLocalStorage('jlt_refresh_token');
+
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('auth-state-change', { detail: { isAuthenticated: false } }));
+  }
 }

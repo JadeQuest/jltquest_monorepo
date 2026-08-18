@@ -151,32 +151,44 @@ export const HeroSection: React.FC = () => {
     const sym2 = symbol2Ref.current;
     if (!section || !card) return;
 
-    // Movement strengths: Glow 0.05x, Grid 0.08x, Particles 0.15x, Hero Card 0.20x, Floating Symbols 0.30x
-    const cardRotX = gsap.quickTo(card, 'rotationX', { duration: 0.5, ease: 'power2.out' });
-    const cardRotY = gsap.quickTo(card, 'rotationY', { duration: 0.5, ease: 'power2.out' });
-    const cardX = gsap.quickTo(card, 'x', { duration: 0.5, ease: 'power2.out' });
-    const cardY = gsap.quickTo(card, 'y', { duration: 0.5, ease: 'power2.out' });
+    // Movement strengths with force3D hardware acceleration
+    const cardRotX = gsap.quickTo(card, 'rotationX', { duration: 0.5, ease: 'power2.out', force3D: true });
+    const cardRotY = gsap.quickTo(card, 'rotationY', { duration: 0.5, ease: 'power2.out', force3D: true });
+    const cardX = gsap.quickTo(card, 'x', { duration: 0.5, ease: 'power2.out', force3D: true });
+    const cardY = gsap.quickTo(card, 'y', { duration: 0.5, ease: 'power2.out', force3D: true });
 
-    const orb1X = orb1 ? gsap.quickTo(orb1, 'x', { duration: 0.9, ease: 'power2.out' }) : null;
-    const orb1Y = orb1 ? gsap.quickTo(orb1, 'y', { duration: 0.9, ease: 'power2.out' }) : null;
-    const orb2X = orb2 ? gsap.quickTo(orb2, 'x', { duration: 1.0, ease: 'power2.out' }) : null;
-    const orb2Y = orb2 ? gsap.quickTo(orb2, 'y', { duration: 1.0, ease: 'power2.out' }) : null;
+    const orb1X = orb1 ? gsap.quickTo(orb1, 'x', { duration: 0.8, ease: 'power2.out', force3D: true }) : null;
+    const orb1Y = orb1 ? gsap.quickTo(orb1, 'y', { duration: 0.8, ease: 'power2.out', force3D: true }) : null;
+    const orb2X = orb2 ? gsap.quickTo(orb2, 'x', { duration: 0.9, ease: 'power2.out', force3D: true }) : null;
+    const orb2Y = orb2 ? gsap.quickTo(orb2, 'y', { duration: 0.9, ease: 'power2.out', force3D: true }) : null;
 
-    const gridX = grid ? gsap.quickTo(grid, 'x', { duration: 0.7, ease: 'power2.out' }) : null;
-    const gridY = grid ? gsap.quickTo(grid, 'y', { duration: 0.7, ease: 'power2.out' }) : null;
+    const gridX = grid ? gsap.quickTo(grid, 'x', { duration: 0.6, ease: 'power2.out', force3D: true }) : null;
+    const gridY = grid ? gsap.quickTo(grid, 'y', { duration: 0.6, ease: 'power2.out', force3D: true }) : null;
 
-    const particlesX = particles ? gsap.quickTo(particles, 'x', { duration: 0.6, ease: 'power2.out' }) : null;
-    const particlesY = particles ? gsap.quickTo(particles, 'y', { duration: 0.6, ease: 'power2.out' }) : null;
+    const particlesX = particles ? gsap.quickTo(particles, 'x', { duration: 0.5, ease: 'power2.out', force3D: true }) : null;
+    const particlesY = particles ? gsap.quickTo(particles, 'y', { duration: 0.5, ease: 'power2.out', force3D: true }) : null;
 
-    const sym1X = sym1 ? gsap.quickTo(sym1, 'x', { duration: 0.45, ease: 'power2.out' }) : null;
-    const sym1Y = sym1 ? gsap.quickTo(sym1, 'y', { duration: 0.45, ease: 'power2.out' }) : null;
-    const sym2X = sym2 ? gsap.quickTo(sym2, 'x', { duration: 0.45, ease: 'power2.out' }) : null;
-    const sym2Y = sym2 ? gsap.quickTo(sym2, 'y', { duration: 0.45, ease: 'power2.out' }) : null;
+    const sym1X = sym1 ? gsap.quickTo(sym1, 'x', { duration: 0.4, ease: 'power2.out', force3D: true }) : null;
+    const sym1Y = sym1 ? gsap.quickTo(sym1, 'y', { duration: 0.4, ease: 'power2.out', force3D: true }) : null;
+    const sym2X = sym2 ? gsap.quickTo(sym2, 'x', { duration: 0.4, ease: 'power2.out', force3D: true }) : null;
+    const sym2Y = sym2 ? gsap.quickTo(sym2, 'y', { duration: 0.4, ease: 'power2.out', force3D: true }) : null;
 
-    const handleMouseMove = (e: MouseEvent) => {
-      const rect = section.getBoundingClientRect();
-      const relX = (e.clientX - rect.left) / rect.width - 0.5; // -0.5 to +0.5
-      const relY = (e.clientY - rect.top) / rect.height - 0.5;
+    // Cache section bounding rect to avoid layout recalculations during mousemove
+    let cachedRect = section.getBoundingClientRect();
+    const updateRect = () => {
+      if (section) cachedRect = section.getBoundingClientRect();
+    };
+
+    let heroRaf: number | null = null;
+    let clientX = 0;
+    let clientY = 0;
+
+    const processHeroParallax = () => {
+      heroRaf = null;
+      if (!cachedRect.width || !cachedRect.height) return;
+
+      const relX = (clientX - cachedRect.left) / cachedRect.width - 0.5;
+      const relY = (clientY - cachedRect.top) / cachedRect.height - 0.5;
 
       // Card 0.20x
       cardRotX(relY * -9);
@@ -217,7 +229,17 @@ export const HeroSection: React.FC = () => {
       }
     };
 
+    const handleMouseMove = (e: MouseEvent) => {
+      clientX = e.clientX;
+      clientY = e.clientY;
+      if (!heroRaf) {
+        heroRaf = requestAnimationFrame(processHeroParallax);
+      }
+    };
+
     const handleMouseLeave = () => {
+      if (heroRaf) cancelAnimationFrame(heroRaf);
+      heroRaf = null;
       cardRotX(0);
       cardRotY(0);
       cardX(0);
@@ -230,12 +252,17 @@ export const HeroSection: React.FC = () => {
       if (sym2X && sym2Y) { sym2X(0); sym2Y(0); }
     };
 
-    section.addEventListener('mousemove', handleMouseMove);
+    section.addEventListener('mousemove', handleMouseMove, { passive: true });
     section.addEventListener('mouseleave', handleMouseLeave);
+    window.addEventListener('resize', updateRect, { passive: true });
+    window.addEventListener('scroll', updateRect, { passive: true });
 
     return () => {
+      if (heroRaf) cancelAnimationFrame(heroRaf);
       section.removeEventListener('mousemove', handleMouseMove);
       section.removeEventListener('mouseleave', handleMouseLeave);
+      window.removeEventListener('resize', updateRect);
+      window.removeEventListener('scroll', updateRect);
     };
   }, []);
 
@@ -422,6 +449,7 @@ export const HeroSection: React.FC = () => {
 
   return (
     <section
+      id="hero"
       ref={sectionRef}
       className="relative w-full pt-36 pb-20 px-6 bg-[#080411] overflow-hidden min-h-screen flex flex-col justify-center select-none"
     >

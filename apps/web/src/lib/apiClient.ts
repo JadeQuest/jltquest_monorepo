@@ -2,7 +2,7 @@
  * High-Performance API Client with Request Deduplication, Retries & Offline Fallback
  */
 
-import { sanitizeInput, getCookie, setCookie, deleteCookie } from './authCookie';
+import { sanitizeInput, getAuthToken, setAuthToken, getRefreshToken, clearUserSession } from './authCookie';
 
 export function getApiUrl(): string {
   if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
@@ -40,7 +40,7 @@ export async function fetchWithRetry<T = any>(url: string, options: FetchOptions
 
   const executeFetch = async (attempt: number): Promise<T> => {
     try {
-      let authToken = getCookie('jlt_auth_token');
+      let authToken = getAuthToken();
 
       const reqHeaders: Record<string, string> = {
         'Content-Type': 'application/json',
@@ -60,23 +60,23 @@ export async function fetchWithRetry<T = any>(url: string, options: FetchOptions
           if (!globalRefreshPromise) {
             globalRefreshPromise = (async () => {
               try {
+                const refreshToken = getRefreshToken();
                 const res = await fetch(`${getApiUrl()}/auth/refresh`, {
                   method: 'POST',
                   credentials: options.credentials || 'include',
                   headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ refreshToken: refreshToken || undefined }),
                 });
                 if (!res.ok) {
-                  deleteCookie('jlt_auth_token');
-                  deleteCookie('jlt_refresh_token');
+                  clearUserSession();
                   throw new Error('Session expired');
                 }
                 const result = await res.json();
                 if (!result.success || !result.data?.token) {
-                  deleteCookie('jlt_auth_token');
-                  deleteCookie('jlt_refresh_token');
+                  clearUserSession();
                   throw new Error('Session expired');
                 }
-                setCookie('jlt_auth_token', result.data.token, { days: 7 });
+                setAuthToken(result.data.token, 7);
                 return result.data.token;
               } finally {
                 globalRefreshPromise = null;
@@ -95,8 +95,7 @@ export async function fetchWithRetry<T = any>(url: string, options: FetchOptions
           });
         } catch (refreshError) {
           globalRefreshPromise = null;
-          deleteCookie('jlt_auth_token');
-          deleteCookie('jlt_refresh_token');
+          clearUserSession();
           throw new Error('Session expired. Please reconnect your wallet.');
         }
       }

@@ -153,10 +153,11 @@ export default function Splash({ onClick, onStartTransition, onComplete }: Splas
     const glowElements = [glow0Ref.current, glow1Ref.current, glow2Ref.current, glow3Ref.current].filter(Boolean);
     if (glowElements.length > 0) gsap.killTweensOf(glowElements);
 
-    // Master GSAP Timeline
+    // Master GSAP Timeline with force3D hardware acceleration
     const tl = gsap.timeline({
       defaults: {
         overwrite: 'auto',
+        force3D: true,
       },
       onComplete: () => {
         onClick?.();

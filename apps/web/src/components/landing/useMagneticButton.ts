@@ -24,8 +24,8 @@ export function useMagneticButton<T extends HTMLElement = HTMLButtonElement>(opt
 
     if (isTouchDevice) return;
 
-    const xTo = gsap.quickTo(el, 'x', { duration, ease });
-    const yTo = gsap.quickTo(el, 'y', { duration, ease });
+    const xTo = gsap.quickTo(el, 'x', { duration, ease, force3D: true });
+    const yTo = gsap.quickTo(el, 'y', { duration, ease, force3D: true });
 
     const handleMouseMove = (e: MouseEvent) => {
       const rect = el.getBoundingClientRect();

@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchWithRetry, getApiUrl } from '@/lib/apiClient';
-import { setCookie, deleteCookie } from '@/lib/authCookie';
+import { setAuthToken, setRefreshToken, clearUserSession } from '@/lib/authCookie';
 
 export interface LoginParams {
   walletAddress: string;
@@ -24,9 +24,9 @@ export function useAuth() {
     },
     onSuccess: (data) => {
       // Save access token and refresh token
-      setCookie('jlt_auth_token', data.token, { days: 7 });
+      setAuthToken(data.token, 7);
       if (data.refreshToken) {
-        setCookie('jlt_refresh_token', data.refreshToken, { days: 30 });
+        setRefreshToken(data.refreshToken, 30);
       }
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
     },
@@ -39,8 +39,7 @@ export function useAuth() {
       }).catch(() => {});
     },
     onSuccess: () => {
-      deleteCookie('jlt_auth_token');
-      deleteCookie('jlt_refresh_token');
+      clearUserSession();
       queryClient.clear();
     }
   });

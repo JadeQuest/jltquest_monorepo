@@ -119,11 +119,8 @@ export const JLTBackgroundMotion: React.FC = () => {
         });
       });
 
-      // 4. Desktop Mouse Parallax Magnetism
+      // 4. Desktop Mouse Parallax Magnetism with Cached Coordinates (Zero Layout Reflow)
       if (!isTouchDevice) {
-        const mouseX = { val: 0 };
-        const mouseY = { val: 0 };
-
         const quickTos = new Map<
           string,
           { x: (v: number) => void; y: (v: number) => void; rot: (v: number) => void }
@@ -133,31 +130,46 @@ export const JLTBackgroundMotion: React.FC = () => {
           const el = tokenRefs.current.get(token.id);
           if (!el) return;
           quickTos.set(token.id, {
-            x: gsap.quickTo(el, 'x', { duration: 0.7, ease: 'power3.out' }),
-            y: gsap.quickTo(el, 'y', { duration: 0.7, ease: 'power3.out' }),
-            rot: gsap.quickTo(el, 'rotation', { duration: 0.7, ease: 'power3.out' }),
+            x: gsap.quickTo(el, 'x', { duration: 0.6, ease: 'power3.out', force3D: true }),
+            y: gsap.quickTo(el, 'y', { duration: 0.6, ease: 'power3.out', force3D: true }),
+            rot: gsap.quickTo(el, 'rotation', { duration: 0.6, ease: 'power3.out', force3D: true }),
           });
         });
 
-        const handleMouseMove = (e: MouseEvent) => {
-          mouseX.val = e.clientX;
-          mouseY.val = e.clientY;
-
-          TOKENS.forEach((token) => {
+        // Cache token positions to prevent layout thrashing on mousemove
+        let tokenPositions: Array<{ id: string; centerX: number; centerY: number }> = [];
+        const updateTokenPositions = () => {
+          tokenPositions = TOKENS.map((token) => {
             const el = tokenRefs.current.get(token.id);
-            const setters = quickTos.get(token.id);
-            if (!el || !setters) return;
-
+            if (!el) return { id: token.id, centerX: 0, centerY: 0 };
             const rect = el.getBoundingClientRect();
-            const tokenCenterX = rect.left + rect.width / 2;
-            const tokenCenterY = rect.top + rect.height / 2;
+            return {
+              id: token.id,
+              centerX: rect.left + rect.width / 2,
+              centerY: rect.top + rect.height / 2,
+            };
+          });
+        };
 
-            const dist = Math.hypot(mouseX.val - tokenCenterX, mouseY.val - tokenCenterY);
-            const maxRadius = 450;
+        updateTokenPositions();
+
+        let mouseRaf: number | null = null;
+        let lastClientX = 0;
+        let lastClientY = 0;
+
+        const processMouseMove = () => {
+          mouseRaf = null;
+          const maxRadius = 450;
+
+          tokenPositions.forEach(({ id, centerX, centerY }) => {
+            const setters = quickTos.get(id);
+            if (!setters || (centerX === 0 && centerY === 0)) return;
+
+            const dist = Math.hypot(lastClientX - centerX, lastClientY - centerY);
 
             if (dist < maxRadius) {
               const force = (1 - dist / maxRadius) * 16;
-              const angle = Math.atan2(mouseY.val - tokenCenterY, mouseX.val - tokenCenterX);
+              const angle = Math.atan2(lastClientY - centerY, lastClientX - centerX);
               const pushX = Math.cos(angle) * force;
               const pushY = Math.sin(angle) * force;
 
@@ -172,10 +184,23 @@ export const JLTBackgroundMotion: React.FC = () => {
           });
         };
 
+        const handleMouseMove = (e: MouseEvent) => {
+          lastClientX = e.clientX;
+          lastClientY = e.clientY;
+          if (!mouseRaf) {
+            mouseRaf = requestAnimationFrame(processMouseMove);
+          }
+        };
+
         window.addEventListener('mousemove', handleMouseMove, { passive: true });
+        window.addEventListener('resize', updateTokenPositions, { passive: true });
+        window.addEventListener('scroll', updateTokenPositions, { passive: true });
 
         return () => {
+          if (mouseRaf) cancelAnimationFrame(mouseRaf);
           window.removeEventListener('mousemove', handleMouseMove);
+          window.removeEventListener('resize', updateTokenPositions);
+          window.removeEventListener('scroll', updateTokenPositions);
         };
       }
     }, containerRef);

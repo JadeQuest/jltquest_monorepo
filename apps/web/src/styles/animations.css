@@ -272,3 +272,24 @@ html.lenis body {
   animation: badgeBreathGlow 3s ease-in-out infinite;
 }
 
+/* Hero Scroller Pill Motion */
+@keyframes scrollPillMotion {
+  0% {
+    transform: translateY(0px);
+    opacity: 1;
+  }
+  60% {
+    transform: translateY(12px);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(18px);
+    opacity: 0;
+  }
+}
+
+.animate-scroll-pill {
+  animation: scrollPillMotion 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+

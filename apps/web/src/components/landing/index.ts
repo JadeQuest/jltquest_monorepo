@@ -1,5 +1,6 @@
 export { LandingNav } from './LandingNav';
 export { HeroSection } from './HeroSection';
+export { CosmicOriginsSection } from './CosmicOriginsSection';
 export { FeaturesSection } from './FeaturesSection';
 export { HowItWorksSection } from './HowItWorksSection';
 export { CTASection } from './CTASection';

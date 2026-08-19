@@ -13,7 +13,6 @@ import {
   Zap,
   Play,
   Layers,
-  Compass,
 } from 'lucide-react';
 import {
   gsap,
@@ -77,7 +76,6 @@ export const HeroSection: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const heroContentRef = useRef<HTMLDivElement>(null);
   const headlineRef = useRef<HTMLDivElement>(null);
-  const textSweepRef = useRef<HTMLDivElement>(null);
   const dashboardCardRef = useRef<HTMLDivElement>(null);
   const statsSectionRef = useRef<HTMLDivElement>(null);
   const progressBarRef = useRef<HTMLDivElement>(null);
@@ -95,7 +93,6 @@ export const HeroSection: React.FC = () => {
   const lvlBadgeRef = useRef<HTMLSpanElement>(null);
   const questPlayIconRef = useRef<HTMLSpanElement>(null);
   const testimonialRef = useRef<HTMLDivElement>(null);
-  const seasonBadgeRef = useRef<HTMLDivElement>(null);
   const featuredBoxRef = useRef<HTMLDivElement>(null);
 
   // Magnetic button refs with independent icon motion & elastic recovery
@@ -167,6 +164,7 @@ export const HeroSection: React.FC = () => {
     }
   }, [questCompleted, questProgress, triggerCoinAnimation]);
 
+
   // ══════════════════════════════════════════════════════════════════════════
   // 8. BACKGROUND JLT ENERGY FIELD (HIGH-PERFORMANCE CANVAS ENGINE)
   // ══════════════════════════════════════════════════════════════════════════
@@ -218,11 +216,7 @@ export const HeroSection: React.FC = () => {
 
     window.addEventListener('resize', handleResize, { passive: true });
 
-    let lastTime = performance.now();
-
     const render = (time: number) => {
-      lastTime = time;
-
       ctx.clearRect(0, 0, width, height);
 
       const mx = mousePosRef.current.x;
@@ -316,13 +310,11 @@ export const HeroSection: React.FC = () => {
     if (!section || !card) return;
 
     // High-performance GSAP quickTo setters with hardware acceleration
-    // Card: 10% movement + 3D Tilt
     const cardRotX = gsap.quickTo(card, 'rotationX', { duration: 0.45, ease: 'power2.out', force3D: true });
     const cardRotY = gsap.quickTo(card, 'rotationY', { duration: 0.45, ease: 'power2.out', force3D: true });
     const cardX = gsap.quickTo(card, 'x', { duration: 0.45, ease: 'power2.out', force3D: true });
     const cardY = gsap.quickTo(card, 'y', { duration: 0.45, ease: 'power2.out', force3D: true });
 
-    // Background Orbs: 2% movement
     const orb1X = orb1 ? gsap.quickTo(orb1, 'x', { duration: 0.8, ease: 'power2.out', force3D: true }) : null;
     const orb1Y = orb1 ? gsap.quickTo(orb1, 'y', { duration: 0.8, ease: 'power2.out', force3D: true }) : null;
     const orb2X = orb2 ? gsap.quickTo(orb2, 'x', { duration: 0.9, ease: 'power2.out', force3D: true }) : null;
@@ -330,25 +322,20 @@ export const HeroSection: React.FC = () => {
     const orb3X = orb3 ? gsap.quickTo(orb3, 'x', { duration: 0.85, ease: 'power2.out', force3D: true }) : null;
     const orb3Y = orb3 ? gsap.quickTo(orb3, 'y', { duration: 0.85, ease: 'power2.out', force3D: true }) : null;
 
-    // Grid: 4% movement
     const gridX = grid ? gsap.quickTo(grid, 'x', { duration: 0.6, ease: 'power2.out', force3D: true }) : null;
     const gridY = grid ? gsap.quickTo(grid, 'y', { duration: 0.6, ease: 'power2.out', force3D: true }) : null;
 
-    // Headline: 6% movement
     const headX = headline ? gsap.quickTo(headline, 'x', { duration: 0.5, ease: 'power2.out', force3D: true }) : null;
     const headY = headline ? gsap.quickTo(headline, 'y', { duration: 0.5, ease: 'power2.out', force3D: true }) : null;
 
-    // Floating JLT Symbols: 14% movement
     const sym1X = sym1 ? gsap.quickTo(sym1, 'x', { duration: 0.4, ease: 'power2.out', force3D: true }) : null;
     const sym1Y = sym1 ? gsap.quickTo(sym1, 'y', { duration: 0.4, ease: 'power2.out', force3D: true }) : null;
     const sym2X = sym2 ? gsap.quickTo(sym2, 'x', { duration: 0.4, ease: 'power2.out', force3D: true }) : null;
     const sym2Y = sym2 ? gsap.quickTo(sym2, 'y', { duration: 0.4, ease: 'power2.out', force3D: true }) : null;
 
-    // Quest Scanner Cursor Coordinates
     const scannerX = scanner ? gsap.quickTo(scanner, 'x', { duration: 0.15, ease: 'power3.out', force3D: true }) : null;
     const scannerY = scanner ? gsap.quickTo(scanner, 'y', { duration: 0.15, ease: 'power3.out', force3D: true }) : null;
 
-    // Cache section & card bounding rects to eliminate layout recalculations during mousemove
     let cachedRect = section.getBoundingClientRect();
     const updateRects = () => {
       if (section) cachedRect = section.getBoundingClientRect();
@@ -375,29 +362,24 @@ export const HeroSection: React.FC = () => {
       const relX = localX / cachedRect.width - 0.5;
       const relY = localY / cachedRect.height - 0.5;
 
-      // Update particle mouse tracker in local canvas coords
       mousePosRef.current.x = localX;
       mousePosRef.current.y = localY;
 
-      // Quest Scan Cursor Position
       if (scannerX && scannerY) {
         scannerX(localX);
         scannerY(localY);
       }
 
-      // Quest Card 3D Depth (10% Movement + 3D Tilt)
       cardRotX(relY * -10);
       cardRotY(relX * 12);
       cardX(relX * 24);
       cardY(relY * 18);
 
-      // Headline Depth (6%)
       if (headX && headY) {
         headX(relX * 16);
         headY(relY * 12);
       }
 
-      // Background Orbs (2%)
       if (orb1X && orb1Y) {
         orb1X(relX * -25);
         orb1Y(relY * -18);
@@ -411,13 +393,11 @@ export const HeroSection: React.FC = () => {
         orb3Y(relY * 22);
       }
 
-      // Grid (4%)
       if (gridX && gridY) {
         gridX(relX * 16);
         gridY(relY * 16);
       }
 
-      // Floating Symbols (14%)
       if (sym1X && sym1Y) {
         sym1X(relX * 42);
         sym1Y(relY * 36);
@@ -452,7 +432,6 @@ export const HeroSection: React.FC = () => {
         gsap.to(scanner, { opacity: 0, duration: 0.4, overwrite: 'auto' });
       }
 
-      // Smooth damped settling back to center
       cardRotX(0);
       cardRotY(0);
       cardX(0);
@@ -494,13 +473,9 @@ export const HeroSection: React.FC = () => {
     }
 
     const ctx = gsap.context(() => {
-      // ──────────────────────────────────────────────────────────────────
-      // 1. HERO ACTIVATION MASTER TIMELINE ("QUEST ACTIVATION")
-      // ──────────────────────────────────────────────────────────────────
       const masterTl = gsap.timeline({
         defaults: { ease: MotionEases.powerOut },
         onComplete: () => {
-          // Awaken floating canvas energy field particles after entrance
           particlesRef.current.forEach((p) => {
             gsap.to(p, {
               alpha: p.baseAlpha,
@@ -520,7 +495,7 @@ export const HeroSection: React.FC = () => {
         0.0
       );
 
-      // Phase 1: Background grid draws itself from center outward via expanding circular mask
+      // Phase 1: Background grid draws itself from center outward
       if (gridRef.current) {
         masterTl.fromTo(
           gridRef.current,
@@ -530,7 +505,7 @@ export const HeroSection: React.FC = () => {
         );
       }
 
-      // Phase 2: JLT Logo / Symbols scale 0.7 -> 1 with blur reduction
+      // Phase 2: JLT Symbols scale 0.7 -> 1 with blur reduction
       if (symbol1Ref.current && symbol2Ref.current) {
         masterTl.fromTo(
           [symbol1Ref.current, symbol2Ref.current],
@@ -570,15 +545,6 @@ export const HeroSection: React.FC = () => {
         0.42
       );
 
-      // Phase 6: Moving Gradient Light Sweep across "Earn real perks."
-      if (textSweepRef.current) {
-        masterTl.fromTo(
-          textSweepRef.current,
-          { xPercent: -150, opacity: 0 },
-          { xPercent: 250, opacity: 0.9, duration: 1.2, ease: 'power2.inOut' },
-          0.95
-        );
-      }
 
       // Phase 7: Description Fades Upward
       masterTl.fromTo(
@@ -639,7 +605,6 @@ export const HeroSection: React.FC = () => {
       // ──────────────────────────────────────────────────────────────────
       // 2. QUEST CARD — "LIVING UI" (INDEPENDENT CONTINUOUS ANIMATIONS)
       // ──────────────────────────────────────────────────────────────────
-      // Coin Balance gently floats
       if (coinPillRef.current) {
         gsap.to(coinPillRef.current, {
           y: -3.5,
@@ -651,7 +616,6 @@ export const HeroSection: React.FC = () => {
         });
       }
 
-      // "LVL 4" Badge subtle breathing pulse
       if (lvlBadgeRef.current) {
         gsap.to(lvlBadgeRef.current, {
           scale: 1.05,
@@ -664,7 +628,6 @@ export const HeroSection: React.FC = () => {
         });
       }
 
-      // Quest play icon rotates back and forth
       if (questPlayIconRef.current) {
         gsap.to(questPlayIconRef.current, {
           rotation: 8,
@@ -676,7 +639,6 @@ export const HeroSection: React.FC = () => {
         });
       }
 
-      // Loot cards float at different depths
       gsap.utils.toArray<HTMLElement>('.hero-collectible-item').forEach((item, index) => {
         gsap.to(item, {
           y: -4.5 + index * 1.5,
@@ -688,7 +650,6 @@ export const HeroSection: React.FC = () => {
         });
       });
 
-      // User testimonial card floats independently
       if (testimonialRef.current) {
         gsap.to(testimonialRef.current, {
           y: -5.5,
@@ -700,17 +661,6 @@ export const HeroSection: React.FC = () => {
         });
       }
 
-      // Season indicator pulses slowly
-      if (seasonBadgeRef.current) {
-        gsap.to(seasonBadgeRef.current, {
-          boxShadow: '0 0 20px rgba(0,240,255,0.4)',
-          duration: 3.0,
-          repeat: -1,
-          yoyo: true,
-          ease: 'sine.inOut',
-          delay: 1.3,
-        });
-      }
 
       // ──────────────────────────────────────────────────────────────────
       // 9. SCROLL INTERACTION (GSAP SCROLLTRIGGER HERO -> FEATURES)
@@ -778,7 +728,6 @@ export const HeroSection: React.FC = () => {
         '-=0.4'
       );
 
-      // Reversible Numeric Counters
       if (stat1Ref.current) {
         createReversibleCounter(stat1Ref.current, 50000, {
           suffix: '+',
@@ -823,7 +772,6 @@ export const HeroSection: React.FC = () => {
       const ring = pulseRingRef.current;
       const cardGlow = cardGlowRef.current;
       const grid = gridRef.current;
-      const seasonBadge = seasonBadgeRef.current;
 
       if (ring) {
         gsap.fromTo(
@@ -849,15 +797,6 @@ export const HeroSection: React.FC = () => {
         );
       }
 
-      if (seasonBadge) {
-        gsap.fromTo(
-          seasonBadge,
-          { scale: 1 },
-          { scale: 1.08, duration: 0.5, yoyo: true, repeat: 1, ease: 'back.out(2)' }
-        );
-      }
-
-      // Impulse to nearby canvas particles
       if (questCardCenterRef.current) {
         const cx = questCardCenterRef.current.x;
         const cy = questCardCenterRef.current.y;
@@ -887,7 +826,6 @@ export const HeroSection: React.FC = () => {
     setIsCardHovered(true);
 
     if (progressBarRef.current && !questCompleted) {
-      // Visual surge to 78% with glowing aura
       gsap.to(progressBarRef.current, {
         width: '78%',
         duration: 0.45,
@@ -925,7 +863,6 @@ export const HeroSection: React.FC = () => {
     setIsCardHovered(false);
 
     if (progressBarRef.current) {
-      // Return smoothly to exact base progress
       gsap.to(progressBarRef.current, {
         width: `${(questProgress / 3) * 100}%`,
         duration: 0.45,
@@ -958,7 +895,7 @@ export const HeroSection: React.FC = () => {
     <section
       id="hero"
       ref={sectionRef}
-      className="relative w-full pt-36 pb-20 px-6 bg-[#080411] overflow-hidden min-h-screen flex flex-col justify-center select-none"
+      className="relative w-full pt-36 pb-10 px-6 bg-transparent overflow-hidden min-h-screen flex flex-col justify-center select-none"
     >
       {/* ── 8. Background JLT Energy Field (Canvas Particle Engine) ── */}
       <canvas
@@ -1076,19 +1013,10 @@ export const HeroSection: React.FC = () => {
                 </h1>
               </div>
 
-              <div className="overflow-hidden relative">
-                <h1 className="hero-mask-line font-gilroyBold text-5xl sm:text-7xl lg:text-7xl tracking-tight leading-[1.04] relative">
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FFA28D] via-[#E280FF] to-[#8C52FF] drop-shadow-[0_0_40px_rgba(255,162,141,0.45)] animate-text-shimmer">
-                    Earn real perks.
-                  </span>
+              <div className="overflow-hidden">
+                <h1 className="hero-mask-line font-gilroyBold text-5xl sm:text-7xl lg:text-7xl text-white tracking-tight leading-[1.04]">
+                  Earn real perks.
                 </h1>
-                {/* Moving Light Sweep Overlay Flare */}
-                <div
-                  ref={textSweepRef}
-                  className="absolute inset-0 w-1/3 bg-gradient-to-r from-transparent via-white/80 to-transparent pointer-events-none blur-sm"
-                  style={{ transform: 'translateX(-150%) skewX(-20deg)' }}
-                  aria-hidden="true"
-                />
               </div>
 
               <div className="overflow-hidden">
@@ -1177,14 +1105,6 @@ export const HeroSection: React.FC = () => {
               aria-hidden="true"
             />
 
-            {/* Top Floating Badge Chip */}
-            <div
-              ref={seasonBadgeRef}
-              className="hero-floating-chip absolute -top-5 right-4 z-20 glass-pill px-3.5 py-1.5 flex items-center gap-2 border border-purple-400/40 shadow-xl backdrop-blur-xl animate-badge-glow"
-            >
-              <Compass className="w-4 h-4 text-[#00F0FF] animate-spin" style={{ animationDuration: '12s' }} />
-              <span className="font-gilroyBold text-xs text-white">Season 1 Active</span>
-            </div>
 
             {/* Main Interactive Hero Panel */}
             <div
@@ -1390,7 +1310,7 @@ export const HeroSection: React.FC = () => {
         </div>
 
         {/* ── BOTTOM STATS BAR ── */}
-        <div ref={statsSectionRef} className="mt-20 pt-10 relative grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+        <div ref={statsSectionRef} className="mt-14 pt-8 relative grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
           {/* Animated Top Divider */}
           <div className="stats-divider-line absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-[#360C9F] via-[#FFA28D] to-transparent pointer-events-none" />
 

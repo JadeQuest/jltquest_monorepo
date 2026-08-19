@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X, User, Trophy, Star, Target } from 'lucide-react';
 import { DashboardData } from '@/hooks/useDashboard';
 import { useAvatar } from '@/hooks/useAvatar';
@@ -92,34 +93,35 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, das
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div
-        className="relative w-full max-w-md p-6 sm:p-8 rounded-2xl bg-gradient-to-br from-indigo-950/90 to-purple-950/90 border border-white/10 shadow-2xl overflow-hidden"
-        style={{
-          boxShadow: '0 0 40px rgba(139, 92, 246, 0.2)',
-        }}
-      >
-        {/* Glow effect */}
-        <div className="absolute -top-20 -right-20 w-40 h-40 bg-purple-500/20 rounded-full blur-3xl" />
-        <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-indigo-500/20 rounded-full blur-3xl" />
+  if (typeof document === 'undefined') return null;
 
-        <button
-          onClick={handleCloseModal}
-          className="absolute top-4 right-4 p-2 rounded-full text-white/60 hover:text-white hover:bg-white/10 transition-colors z-10"
-        >
-          <X className="w-5 h-5" />
-        </button>
+  return createPortal(
+    <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/70 backdrop-blur-md p-4 animate-fade-in">
+      <div className="glass-panel w-full max-w-lg p-6 sm:p-8 flex flex-col relative shadow-[0_0_50px_rgba(123,44,191,0.35)] border border-white/10 rounded-3xl overflow-hidden">
+        {/* Ambient background glow */}
+        <div className="absolute top-0 right-0 w-48 h-48 bg-purple-600/15 rounded-full blur-3xl pointer-events-none" />
 
-        <h2 className="text-2xl font-gilroyBold text-white mb-6 flex items-center gap-2">
-          Profile
-        </h2>
+        {/* Header */}
+        <div className="flex items-start justify-between gap-3 mb-6 relative z-10">
+          <div className="flex items-center gap-3">
+            <div>
+              <h3 className="text-white font-gilroyBold text-2xl">Profile</h3>
+            </div>
+          </div>
+          <button
+            onClick={handleCloseModal}
+            type="button"
+            className="p-2 rounded-full text-gray-400 hover:text-white hover:bg-white/10 transition-colors shrink-0"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
 
         <div className="space-y-6 relative z-10">
           {/* Avatar Section (Live Preview) */}
-          <div className="flex items-center justify-between bg-white/5 rounded-xl p-4 border border-white/5">
-            <div className="flex items-center gap-4">
-              <div className="relative shrink-0 w-16 h-16 rounded-xl overflow-hidden border-2 border-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.5)]">
+          <div className="flex items-center justify-between bg-white/5 rounded-2xl p-5 border border-white/5">
+            <div className="flex items-center gap-5">
+              <div className="relative shrink-0 w-24 h-24 rounded-2xl overflow-hidden border-2 border-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.5)]">
                 <img
                   src={previewAvatarUrl}
                   onError={(e) => {
@@ -133,7 +135,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, das
                 <p className="text-sm font-gilroyMedium text-white/60">
                   {isChoosingAvatar && selectedVariant ? 'Selected Preview' : 'Current Avatar'}
                 </p>
-                <p className="text-base font-gilroyBold text-white">{previewAvatarName}</p>
+                <p className="text-xl font-gilroyBold text-white mt-1">{previewAvatarName}</p>
               </div>
             </div>
             {!isChoosingAvatar && (
@@ -252,42 +254,35 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, das
             </div>
           ) : (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
-              {/* Stats Grid */}
-              <div className="grid grid-cols-3 gap-3 sm:gap-4">
-                <div className="bg-white/5 rounded-xl p-3 sm:p-4 border border-white/5 flex flex-col items-center justify-center gap-2 relative">
-                  <Star className="w-5 h-5 sm:w-6 sm:h-6 text-blue-400" />
-                  <span className="text-[10px] sm:text-xs font-gilroyMedium text-white/60 uppercase">Level</span>
-                  <span className="text-base sm:text-lg font-gilroyBold text-white">Lvl {level}</span>
+              {/* Stats Grid - 2x2 */}
+              <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                <div className="bg-white/5 rounded-xl p-3 sm:p-4 border border-white/5 flex flex-col items-center justify-center gap-2">
+                  <span className="text-[10px] sm:text-xs font-gilroyMedium text-white/60 uppercase">Gold Points</span>
+                  <div className="flex items-center gap-2">
+                    <div className="w-5 h-5 sm:w-6 sm:h-6 relative">
+                      <img src="/icon/coin.webp" alt="GP" className="w-full h-full object-contain" />
+                    </div>
+                    <span className="text-base sm:text-lg font-gilroyBold text-white">{gp}</span>
+                  </div>
                 </div>
 
                 <div className="bg-white/5 rounded-xl p-3 sm:p-4 border border-white/5 flex flex-col items-center justify-center gap-2">
-                  <div className="w-5 h-5 sm:w-6 sm:h-6 relative">
-                    <img src="/icon/coin.webp" alt="GP" className="w-full h-full object-contain" />
-                  </div>
-                  <span className="text-[10px] sm:text-xs font-gilroyMedium text-white/60 uppercase">GP Balance</span>
-                  <span className="text-base sm:text-lg font-gilroyBold text-white">{gp}</span>
-                </div>
-
-                <div className="bg-white/5 rounded-xl p-3 sm:p-4 border border-white/5 flex flex-col items-center justify-center gap-2">
-                  <div className="w-5 h-5 sm:w-6 sm:h-6 relative">
-                    <img src="/jltcolor.svg" alt="JLT" className="w-full h-full object-contain" />
-                  </div>
                   <span className="text-[10px] sm:text-xs font-gilroyMedium text-white/60 uppercase">JLT Tokens</span>
-                  <span className="text-base sm:text-lg font-gilroyBold text-white">{jlt}</span>
-                </div>
-              </div>
-
-              {/* Seasonal Pass */}
-              <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-xl p-4 border border-purple-500/30 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Target className="w-6 h-6 text-pink-400" />
-                  <div>
-                    <p className="text-sm font-gilroyBold text-white">Seasonal Pass</p>
-                    <p className="text-xs font-gilroyMedium text-white/60">Current Season Progress</p>
+                  <div className="flex items-center gap-2">
+                    <div className="w-5 h-5 sm:w-6 sm:h-6 relative">
+                      <img src="/jltcolor.svg" alt="JLT" className="w-full h-full object-contain" />
+                    </div>
+                    <span className="text-base sm:text-lg font-gilroyBold text-white">{jlt}</span>
                   </div>
                 </div>
-                <div className="text-xl font-gilroyBold text-white">
-                  Lvl {seasonalPassLevel}
+
+                <div className="bg-white/5 rounded-xl p-3 sm:p-4 border border-white/5 flex items-center justify-center gap-3 relative h-full">
+                  <span className="text-base sm:text-lg font-gilroyBold text-white">Level {level}</span>
+                </div>
+
+                {/* Seasonal Pass - Now in Grid */}
+                <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-xl p-3 sm:p-4 border border-purple-500/20 flex items-center justify-center gap-3 relative h-full">
+                  <span className="text-base sm:text-lg font-gilroyBold text-white">Season Level {seasonalPassLevel}</span>
                 </div>
               </div>
             </div>
@@ -295,6 +290,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, das
 
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

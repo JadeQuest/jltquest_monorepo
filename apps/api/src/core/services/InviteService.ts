@@ -13,7 +13,7 @@ export class InviteService {
   ) {}
 
   async getInviteStats(userId: string) {
-    let invite = await this.inviteRepository.findStats(this.prisma, userId);
+    let { invite, milestoneClaims } = await this.inviteRepository.findStats(this.prisma, userId);
     if (!invite) {
       const code = `JLT_${userId.substring(0, 8).toUpperCase()}`;
       invite = await this.prisma.invite.create({
@@ -27,13 +27,20 @@ export class InviteService {
               redeemedByUser: {
                 select: {
                   level: true,
-                  displayName: true
+                  displayName: true,
+                  walletAddress: true,
+                  activeAvatarVariant: {
+                    select: {
+                      imageUrl: true
+                    }
+                  }
                 }
               }
             }
           }
         }
       });
+      milestoneClaims = [];
     }
     const totalInvited = invite.redemptions?.length || 0;
     const gpEarnedFromInvites = invite.redemptions?.reduce((acc: number, r: any) => acc + (r.inviterGpAwarded || 0), 0) || 0;
@@ -47,7 +54,8 @@ export class InviteService {
       totalInvited,
       gpEarnedFromInvites,
       hasRedeemed: !!userRedemption,
-      redemptions: invite.redemptions || []
+      redemptions: invite.redemptions || [],
+      milestoneClaims: milestoneClaims || []
     };
   }
 
@@ -135,6 +143,24 @@ export class InviteService {
           );
         }
 
+        // Prevent circular invites: if newUserId's invite code was already redeemed by the inviter
+        const circularRedemption = await tx.inviteRedemption.findFirst({
+          where: {
+            redeemedByUserId: invite.inviterId,
+            invite: {
+              inviterId: newUserId
+            }
+          }
+        });
+
+        if (circularRedemption) {
+          throw new ConflictError(
+            ErrorMessages[ErrorCode.CIRCULAR_INVITE_NOT_ALLOWED],
+            ErrorCode.CIRCULAR_INVITE_NOT_ALLOWED
+          );
+        }
+
+
         const inviterGp = APP_CONFIG.INVITE.INVITER_GP_REWARD;
         const inviteeGp = APP_CONFIG.INVITE.INVITEE_GP_REWARD;
         const inviterXp = 0; // XP is now awarded at Level 6 milestone
@@ -157,6 +183,82 @@ export class InviteService {
         return {
           success: true,
           inviteeGpAwarded: inviteeGp
+        };
+      },
+      { maxWait: 10000, timeout: 20000 }
+    );
+  }
+  async claimMilestone(inviterId: string, inviteeCount: number, levelReached: number) {
+    return await this.prisma.$transaction(
+      async (tx: any) => {
+        // Verify milestones constraints
+        const validCounts = [1, 5, 10];
+        const validLevels = [6, 11, 16];
+
+        if (!validCounts.includes(inviteeCount) || !validLevels.includes(levelReached)) {
+          throw new BadRequestError(
+            "Invalid milestone parameters",
+            ErrorCode.BAD_REQUEST
+          );
+        }
+
+        // Check if already claimed
+        const existingClaim = await tx.inviteMilestoneClaim.findUnique({
+          where: {
+            inviterId_inviteeCount_levelReached: {
+              inviterId,
+              inviteeCount,
+              levelReached
+            }
+          }
+        });
+
+        if (existingClaim) {
+          throw new ConflictError(
+            ErrorMessages[ErrorCode.ALREADY_CLAIMED],
+            ErrorCode.ALREADY_CLAIMED
+          );
+        }
+
+        // Verify the user actually met the criteria
+        const { invite } = await this.inviteRepository.findStats(tx, inviterId);
+        if (!invite) {
+          throw new BadRequestError(
+            "No invites found",
+            ErrorCode.NOT_FOUND
+          );
+        }
+
+        const eligibleRedemptions = invite.redemptions.filter(
+          (r: any) => r.redeemedByUser && r.redeemedByUser.level >= levelReached
+        );
+
+        if (eligibleRedemptions.length < inviteeCount) {
+          throw new BadRequestError(
+            ErrorMessages[ErrorCode.REQUIREMENTS_NOT_MET],
+            ErrorCode.REQUIREMENTS_NOT_MET
+          );
+        }
+
+        // Grant reward
+        const gpAwarded = inviteeCount * levelReached * 20;
+        const xpAwarded = inviteeCount * levelReached * 10;
+
+        await tx.inviteMilestoneClaim.create({
+          data: {
+            inviterId,
+            inviteeCount,
+            levelReached
+          }
+        });
+
+        await this.ledgerService.awardGp(tx, inviterId, gpAwarded, LedgerSource.INVITE, `milestone_${inviteeCount}_${levelReached}`);
+        await this.ledgerService.awardXp(tx, inviterId, xpAwarded, LedgerSource.INVITE, `milestone_${inviteeCount}_${levelReached}`);
+
+        return {
+          success: true,
+          gpAwarded,
+          xpAwarded
         };
       },
       { maxWait: 10000, timeout: 20000 }

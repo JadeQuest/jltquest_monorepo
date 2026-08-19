@@ -37,10 +37,29 @@ export function useInvites() {
     },
   });
 
+  const claimMilestoneMutation = useMutation({
+    mutationFn: async ({ inviteeCount, levelReached }: { inviteeCount: number, levelReached: number }) => {
+      const response = await fetchWithRetry<{ success: boolean; data: any; error?: any }>(`${getApiUrl()}/invites/claim-milestone`, {
+        method: 'POST',
+        body: JSON.stringify({ inviteeCount, levelReached }),
+      });
+      if (!response.success) {
+        throw new Error(response.error?.message || response.error || 'Claim failed');
+      }
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['invites'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+    },
+  });
+
   return {
     invites: invitesQuery.data,
     isLoading: invitesQuery.isLoading,
     redeemInvite: redeemInviteMutation.mutateAsync,
     isRedeeming: redeemInviteMutation.isPending,
+    claimMilestone: claimMilestoneMutation.mutateAsync,
+    isClaimingMilestone: claimMilestoneMutation.isPending,
   };
 }

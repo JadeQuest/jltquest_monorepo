@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useLeaderboard, LeaderboardEntry, LeaderboardCategory } from '@/hooks/useLeaderboard';
-import { Trophy, Star, Flame, Zap, Award } from 'lucide-react';
+import { Trophy, Star, Flame, Zap, Award, Copy } from 'lucide-react';
 import { JLTLoader } from '@/components/common/JLTLoader';
 
 const getLevelInfo = (lvl: number) => {
@@ -25,7 +25,7 @@ export const LeaderboardCardComponent: React.FC = () => {
   const { leaderboard, isLoading } = useLeaderboard(activeType, 20);
 
   return (
-    <div className="daily-card-panel p-4 sm:p-6 flex flex-col justify-between min-h-[460px] relative overflow-hidden select-none shadow-2xl border border-white/10">
+    <div className="daily-card-panel p-4 sm:p-6 flex flex-col min-h-[calc(100vh-140px)] relative overflow-hidden select-none shadow-2xl border border-white/10">
       {/* Top Header */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-white/10 pb-4">
         <div className="flex items-center gap-3">
@@ -93,11 +93,18 @@ export const LeaderboardCardComponent: React.FC = () => {
                   />
 
                   {/* User Address & Level Details */}
-                  <div className="flex items-center gap-2 sm:gap-3 truncate">
-                    <span className="text-white font-gilroyBold text-xs sm:text-sm tracking-wide truncate">
-                      {user.maskedAddress}
-                    </span>
-                    <span className="text-purple-300 font-gilroyMedium text-[11px] sm:text-xs border-l border-white/10 pl-2 sm:pl-3 shrink-0">
+                  <div className="flex items-center gap-2 sm:gap-3 flex-wrap sm:flex-nowrap">
+                    <div 
+                      className="flex items-center gap-1.5 text-white hover:text-purple-300 transition-colors cursor-pointer group"
+                      onClick={() => navigator.clipboard.writeText(user.walletAddress)}
+                      title="Copy Wallet Address"
+                    >
+                      <span className="font-gilroyBold text-xs sm:text-sm tracking-wide font-mono break-all">
+                        {user.walletAddress}
+                      </span>
+                      <Copy className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                    </div>
+                    <span className="text-purple-300 font-gilroyMedium text-[11px] sm:text-xs sm:border-l border-white/10 sm:pl-3 shrink-0">
                       Lvl {user.level}
                     </span>
                     <span className={`text-[10px] font-gilroyBold px-1.5 py-0.5 rounded border hidden sm:flex items-center gap-1 shrink-0 ${tierColor}`}>

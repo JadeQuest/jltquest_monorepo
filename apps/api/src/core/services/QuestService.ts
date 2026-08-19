@@ -32,9 +32,15 @@ export class QuestService {
 
     const completions = await this.questRepository.findCompletions(this.prisma, userId);
     
-    const canClaimMap = await this.validator.validateQuestConditions(userId, activeQuests);
+    // Attach completedCount before validation so repeatable quests know how many times they've been claimed
+    const questsWithCounts = activeQuests.map((quest: any) => ({
+      ...quest,
+      completedCount: completions.filter((c: any) => c.questId === quest.id).length
+    }));
+    
+    const canClaimMap = await this.validator.validateQuestConditions(userId, questsWithCounts);
 
-    return activeQuests.map((quest: any) => {
+    return questsWithCounts.map((quest: any) => {
       const periodKey = getQuestPeriodKey(quest.frequency);
       
       const isCompleted = completions.some(
@@ -45,7 +51,6 @@ export class QuestService {
         ...quest,
         completed: isCompleted,
         canClaim: isCompleted ? false : (canClaimMap[quest.id] || false),
-        completedCount: completions.filter((c: any) => c.questId === quest.id).length
       };
     });
   }
@@ -58,6 +63,9 @@ export class QuestService {
         ErrorCode.QUEST_NOT_FOUND
       );
     }
+
+    const completions = await this.questRepository.findCompletions(this.prisma, userId);
+    quest.completedCount = completions.filter((c: any) => c.questId === quest.id).length;
 
     const canClaimMap = await this.validator.validateQuestConditions(userId, [quest]);
     if (!canClaimMap[quest.id]) {

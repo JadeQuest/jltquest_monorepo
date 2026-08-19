@@ -161,6 +161,7 @@ model User {
   invitesSent         Invite[]              @relation("Inviter")
   inviteRedemption    InviteRedemption?     @relation("RedeemedByUser")
   cards               UserCard[]
+  inviteMilestoneClaims InviteMilestoneClaim[]
 
   // Rare Pass & Avatar Relations
   activeAvatarVariantId String?
@@ -354,6 +355,18 @@ model InviteRedemption {
   level26RewardClaimed  Boolean @default(false)
 
   @@map("invite_redemptions")
+}
+
+model InviteMilestoneClaim {
+  id              String   @id @default(uuid())
+  inviterId       String
+  inviter         User     @relation(fields: [inviterId], references: [id], onDelete: Cascade)
+  inviteeCount    Int
+  levelReached    Int
+  claimedAt       DateTime @default(now())
+
+  @@unique([inviterId, inviteeCount, levelReached])
+  @@map("invite_milestone_claims")
 }
 
 // ─────────────────────────────────────────────

@@ -41,6 +41,7 @@ export enum ErrorCode {
   INVALID_REFRESH_TOKEN = 'INVALID_REFRESH_TOKEN',
   UNAUTHORIZED_ROLE = 'UNAUTHORIZED_ROLE',
   CSRF_TOKEN_INVALID = 'CSRF_TOKEN_INVALID',
+  CIRCULAR_INVITE_NOT_ALLOWED = 'CIRCULAR_INVITE_NOT_ALLOWED',
 }
 
 export const ErrorMessages: Record<ErrorCode, string> = {
@@ -82,6 +83,7 @@ export const ErrorMessages: Record<ErrorCode, string> = {
   [ErrorCode.INVALID_REFRESH_TOKEN]: 'Invalid refresh token provided.',
   [ErrorCode.UNAUTHORIZED_ROLE]: 'Unauthorized role access.',
   [ErrorCode.CSRF_TOKEN_INVALID]: 'Invalid or missing CSRF token.',
+  [ErrorCode.CIRCULAR_INVITE_NOT_ALLOWED]: 'Circular invites are not allowed.',
 };
 
 export const AuthMessages = {

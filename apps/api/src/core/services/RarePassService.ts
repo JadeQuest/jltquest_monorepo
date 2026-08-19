@@ -352,47 +352,7 @@ export class RarePassService {
       }
     }
 
-    // Check Caps
-    const now = new Date();
-    const startOfDay = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-    const endOfDay = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 23, 59, 59, 999));
-
-    const dayOfWeek = now.getUTCDay();
-    const diffToMonday = now.getUTCDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
-    const startOfWeek = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), diffToMonday));
-
-    const [dailySum, weeklySum] = await Promise.all([
-      db.rpXpLedgerEntry.aggregate({
-        _sum: { amount: true },
-        where: {
-          userId,
-          seasonId: season.id,
-          createdAt: { gte: startOfDay, lte: endOfDay }
-        }
-      }),
-      db.rpXpLedgerEntry.aggregate({
-        _sum: { amount: true },
-        where: {
-          userId,
-          seasonId: season.id,
-          createdAt: { gte: startOfWeek }
-        }
-      })
-    ]);
-
-    const currentDailyXp = dailySum._sum.amount || 0;
-    const currentWeeklyXp = weeklySum._sum.amount || 0;
-
     let allowedAmount = amount;
-    const dailyCap = APP_CONFIG.RARE_PASS.DAILY_CAP_RP_XP;
-    const weeklyCap = APP_CONFIG.RARE_PASS.WEEKLY_CAP_RP_XP;
-
-    if (currentDailyXp + allowedAmount > dailyCap) {
-      allowedAmount = dailyCap - currentDailyXp;
-    }
-    if (currentWeeklyXp + allowedAmount > weeklyCap) {
-      allowedAmount = weeklyCap - currentWeeklyXp;
-    }
 
     if (allowedAmount <= 0) {
       return 0;

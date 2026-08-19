@@ -14,4 +14,10 @@ export class InviteController {
     const data = await this.inviteService.redeem(inviteCode, req.user!.userId);
     res.json({ success: true, data, error: null });
   };
+
+  claimMilestone = async (req: Request, res: Response) => {
+    const { inviteeCount, levelReached } = req.body;
+    const data = await this.inviteService.claimMilestone(req.user!.userId, inviteeCount, levelReached);
+    res.json({ success: true, data, error: null });
+  };
 }

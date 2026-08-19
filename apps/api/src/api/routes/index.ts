@@ -51,6 +51,7 @@ router.post('/spin/purchase', transactionRateLimiter, spinController.purchase.bi
 // Invites
 router.get('/invites', inviteController.list.bind(inviteController));
 router.post('/invites/redeem', transactionRateLimiter, inviteController.redeem.bind(inviteController));
+router.post('/invites/claim-milestone', transactionRateLimiter, inviteController.claimMilestone.bind(inviteController));
 
 // Social Connections
 router.get('/social/quests', socialController.listQuests.bind(socialController));

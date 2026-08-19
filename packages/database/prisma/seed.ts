@@ -51,17 +51,6 @@ export async function seedQuests() {
       category: QuestCategory.REFERRAL,
     },
     {
-      code: 'quest_3_daily_spins',
-      name: 'Complete 3 Daily Spins',
-      description: 'Spin the wheel 3 times today.',
-      gpReward: 100,
-      xpReward: 40,
-      rpXpReward: 20,
-      fragmentReward: 1,
-      frequency: QuestFrequency.DAILY,
-      category: QuestCategory.DAILY,
-    },
-    {
       code: 'quest_connect_x',
       name: 'Connect X (Twitter)',
       description: 'Link your X account to receive rewards.',
@@ -117,6 +106,41 @@ export async function seedQuests() {
       fragmentReward: 0,
       frequency: QuestFrequency.DAILY,
       category: QuestCategory.DAILY,
+    },
+
+    // Weekly Quests
+    {
+      code: 'quest_5_spins_weekly',
+      name: 'Complete 5 Spins',
+      description: 'Spin the wheel 5 times this week.',
+      gpReward: 100,
+      xpReward: 50,
+      rpXpReward: 0,
+      fragmentReward: 0,
+      frequency: QuestFrequency.WEEKLY,
+      category: QuestCategory.WEEKLY,
+    },
+    {
+      code: 'quest_5_checkins_weekly',
+      name: 'Check in 5 times',
+      description: 'Complete your daily check-in 5 times this week.',
+      gpReward: 150,
+      xpReward: 75,
+      rpXpReward: 0,
+      fragmentReward: 0,
+      frequency: QuestFrequency.WEEKLY,
+      category: QuestCategory.WEEKLY,
+    },
+    {
+      code: 'quest_5_daily_streak_weekly',
+      name: '5 Day Streak',
+      description: 'Maintain a 5 day check-in streak.',
+      gpReward: 200,
+      xpReward: 100,
+      rpXpReward: 0,
+      fragmentReward: 0,
+      frequency: QuestFrequency.WEEKLY,
+      category: QuestCategory.WEEKLY,
     },
 
     // Earning Quests
@@ -198,17 +222,6 @@ export async function seedQuests() {
       fragmentReward: 0,
       frequency: QuestFrequency.ONE_TIME,
       category: QuestCategory.MILESTONE,
-    },
-    {
-      code: 'quest_invite_5_level_6',
-      name: '5 Successful Referrals',
-      description: 'Have 5 referred users reach Level 6.',
-      gpReward: 1000,
-      xpReward: 0,
-      rpXpReward: 0,
-      fragmentReward: 0,
-      frequency: QuestFrequency.ONE_TIME,
-      category: QuestCategory.REFERRAL,
     },
 
     // Achievement Quests
@@ -744,7 +757,6 @@ async function main() {
         { seasonId: season.id, code: 'mission_complete_quests_daily', name: 'Complete 2 quests', description: 'Complete any 2 quests today', rpXpReward: 40, type: RarePassMissionType.DAILY, targetCount: 2 },
         { seasonId: season.id, code: 'mission_spin_daily', name: 'Spin the wheel 1 time', description: 'Spin the wheel today', rpXpReward: 20, type: RarePassMissionType.DAILY, targetCount: 1 },
         { seasonId: season.id, code: 'mission_craft_card_weekly', name: 'Craft 1 Card', description: 'Merge 10 fragments into a Rare Card', rpXpReward: 250, type: RarePassMissionType.WEEKLY, targetCount: 1 },
-        { seasonId: season.id, code: 'mission_invite_friends_weekly', name: 'Invite 2 users', description: 'Invite 2 unique friends to link wallets', rpXpReward: 300, type: RarePassMissionType.WEEKLY, targetCount: 2 },
       ],
     });
   } else {

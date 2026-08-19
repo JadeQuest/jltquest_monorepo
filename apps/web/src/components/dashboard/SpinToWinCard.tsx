@@ -33,50 +33,59 @@ const SpinToWinCardComponent: React.FC = () => {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [rotation, setRotation] = useState(0);
-  const [isSpinning, setIsSpinning] = useState(false);
+  const [spinPhase, setSpinPhase] = useState<'idle' | 'fast' | 'stopping'>('idle');
   const [prize, setPrize] = useState<string | null>(null);
 
   const spinTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+  const fastSpinRef = React.useRef<NodeJS.Timeout | null>(null);
 
   React.useEffect(() => {
     return () => {
       if (spinTimeoutRef.current) clearTimeout(spinTimeoutRef.current);
+      if (fastSpinRef.current) clearInterval(fastSpinRef.current);
     };
   }, []);
 
   const handleSpin = React.useCallback(async () => {
-    if (isSpinning || isSpinMutating) return;
+    if (spinPhase !== 'idle' || isSpinMutating) return;
     if (!spinStatus || spinStatus.availableFreeSpins <= 0) return;
 
-    setIsSpinning(true);
+    setSpinPhase('fast');
     setPrize(null);
 
+    let currentRot = rotation;
+    fastSpinRef.current = setInterval(() => {
+      currentRot += 15; // 15 degrees per 16ms ~ 900 deg/sec
+      setRotation(currentRot);
+    }, 16);
+
     try {
-      // 1. Call backend to get outcome
       const result = await spin(true);
       
-      // 2. Map outcome to wheel index
-      let prizeIndex = OUTCOME_TO_INDEX[result.outcome];
+      if (fastSpinRef.current) clearInterval(fastSpinRef.current);
       
-      // 3. Calculate target rotation
+      let prizeIndex = OUTCOME_TO_INDEX[result.outcome];
       const targetDegree = ((8 - prizeIndex) % 8) * 45;
-      const randomOffset = Math.floor(Math.random() * 20) - 10; // -10 to +10 degrees
-      const newRotation = rotation + (360 * 4) - (rotation % 360) + targetDegree + randomOffset;
+      const randomOffset = Math.floor(Math.random() * 20) - 10; 
+      
+      const newRotation = currentRot + (360 * 3) - (currentRot % 360) + targetDegree + randomOffset;
       
       setRotation(newRotation);
+      setSpinPhase('stopping');
 
       if (spinTimeoutRef.current) clearTimeout(spinTimeoutRef.current);
       spinTimeoutRef.current = setTimeout(() => {
-        setIsSpinning(false);
+        setSpinPhase('idle');
         setPrize(PRIZES[prizeIndex]);
       }, 3500);
 
     } catch (error: any) {
+      if (fastSpinRef.current) clearInterval(fastSpinRef.current);
       console.error('Spin failed', error);
-      setIsSpinning(false);
+      setSpinPhase('idle');
       showError(error?.message || 'Failed to spin. Please try again.', 'Spin Failed');
     }
-  }, [isSpinning, isSpinMutating, spinStatus, spin, rotation]);
+  }, [spinPhase, isSpinMutating, spinStatus, spin, rotation]);
 
   const handleCardClick = React.useCallback(() => {
     if (isConnected && address) {
@@ -85,10 +94,10 @@ const SpinToWinCardComponent: React.FC = () => {
   }, [isConnected, address]);
 
   const closeModal = React.useCallback(() => {
-    if (!isSpinning) {
+    if (spinPhase === 'idle') {
       setIsModalOpen(false);
     }
-  }, [isSpinning]);
+  }, [spinPhase]);
 
   const canSpin = spinStatus && spinStatus.availableFreeSpins > 0;
 
@@ -142,7 +151,7 @@ const SpinToWinCardComponent: React.FC = () => {
             <button
               className="absolute top-4 right-4 w-9 h-9 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-gray-300 hover:text-white transition-colors z-50 text-lg font-bold"
               onClick={closeModal}
-              disabled={isSpinning}
+              disabled={spinPhase !== 'idle'}
             >
               ✕
             </button>
@@ -156,8 +165,7 @@ const SpinToWinCardComponent: React.FC = () => {
 
             {/* Wheel Container - Big SVG */}
             <div
-              className={`relative w-[260px] h-[260px] sm:w-[420px] sm:h-[420px] flex items-center justify-center group z-20 mb-4 sm:mb-6 ${canSpin ? 'cursor-pointer' : ''}`}
-              onClick={canSpin ? handleSpin : undefined}
+              className="relative w-[260px] h-[260px] sm:w-[420px] sm:h-[420px] flex items-center justify-center group z-20 mb-4 sm:mb-6"
             >
               <div className="absolute inset-0 bg-gradient-to-tr from-[#FFD166] via-[#EF476F] to-[#118AB2] rounded-full blur-3xl opacity-25 group-hover:opacity-45 transition-opacity" />
 
@@ -165,8 +173,8 @@ const SpinToWinCardComponent: React.FC = () => {
                 className="w-full h-full relative z-20 flex items-center justify-center"
                 style={{
                   transform: `rotate(${rotation}deg)`,
-                  willChange: isSpinning ? 'transform' : 'auto',
-                  transition: isSpinning ? 'transform 3.5s cubic-bezier(0.15, 0.9, 0.15, 1)' : 'none',
+                  willChange: spinPhase !== 'idle' ? 'transform' : 'auto',
+                  transition: spinPhase === 'stopping' ? 'transform 3.5s cubic-bezier(0.15, 0.9, 0.15, 1)' : 'none',
                 }}
               >
                 <img
@@ -197,10 +205,10 @@ const SpinToWinCardComponent: React.FC = () => {
             {/* Action Spin Button */}
             <button
               onClick={handleSpin}
-              disabled={isSpinning || !canSpin || isSpinMutating}
+              disabled={spinPhase !== 'idle' || !canSpin || isSpinMutating}
               className="glass-btn px-10 py-3.5 rounded-2xl text-white font-gilroyBold text-lg sm:text-xl font-bold bg-gradient-to-r from-amber-500 via-purple-600 to-indigo-600 hover:from-amber-400 hover:to-indigo-500 active:scale-95 transition-all duration-300 shadow-[0_0_30px_rgba(168,85,247,0.5)] cursor-pointer disabled:opacity-50 z-20"
             >
-              {isSpinning || isSpinMutating ? 'Spinning...' : 'SPIN NOW'}
+              {spinPhase !== 'idle' || isSpinMutating ? 'Spinning...' : 'SPIN NOW'}
             </button>
 
             {/* Reward Overlay */}

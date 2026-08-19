@@ -29,7 +29,6 @@ const CATEGORIES = [
   'WEEKLY',
   'EARNING',
   'SOCIAL',
-  'REFERRAL',
   'MILESTONE',
   'ACHIEVEMENT',
 ] as const;
@@ -39,7 +38,6 @@ const CATEGORY_META: Record<string, { label: string; icon: React.ReactNode; desc
   WEEKLY: { label: 'Weekly', icon: <Zap className="w-4 h-4" />, desc: 'Refresh every week' },
   EARNING: { label: 'Earning', icon: <Gift className="w-4 h-4" />, desc: 'Earn GP & XP' },
   SOCIAL: { label: 'Social', icon: <Star className="w-4 h-4" />, desc: 'Connect your socials' },
-  REFERRAL: { label: 'Referral', icon: <ArrowRight className="w-4 h-4" />, desc: 'Invite friends' },
   MILESTONE: { label: 'Milestone', icon: <Target className="w-4 h-4" />, desc: 'Long-term goals' },
   ACHIEVEMENT: { label: 'Achievement', icon: <CheckCircle2 className="w-4 h-4" />, desc: 'Special achievements' },
 };
@@ -135,7 +133,7 @@ export default function QuestsPage() {
   };
 
   /* ── Derive quest calculations ── */
-  const visibleQuests = quests?.filter((q) => !q.isHidden || q.completed) ?? [];
+  const visibleQuests = quests ?? [];
   const completedCount = visibleQuests.filter((q) => q.completed).length;
   const claimableCount = visibleQuests.filter((q) => q.canClaim && !q.completed).length;
 
@@ -303,99 +301,30 @@ export default function QuestsPage() {
           <JLTLoader variant="page" />
         )}
 
-        {/* ── RARE PASS MISSIONS TAB ── */}
-        {isConnected && activeTab === 'RARE_PASS' && !isLoadingMissions && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {missions && missions.length > 0 ? (
-              missions.map((mission: RarePassMission) => (
-                <div key={mission.id} className="daily-card-panel p-5 flex flex-col justify-between min-h-[220px] relative overflow-hidden group">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-600/10 rounded-full blur-2xl group-hover:bg-cyan-600/20 transition-all duration-500" />
-
-                  <div className="flex-grow flex flex-col relative z-10">
-                    <div className="flex justify-between items-start mb-3">
-                      <h3 className="text-white font-gilroyBold text-xl font-bold tracking-tight">{mission.name}</h3>
-                      <span className={`text-xs px-2.5 py-1 rounded-md ml-2 whitespace-nowrap font-gilroyMedium border ${mission.completed ? 'bg-black/40 text-gray-500 border-white/5' : 'bg-cyan-500/10 text-cyan-300 border-cyan-500/20'}`}>
-                        {mission.type}
-                      </span>
-                    </div>
-
-                    <p className="text-sm text-gray-400 font-gilroyMedium mb-4 leading-relaxed">{mission.description}</p>
-
-                    {/* Progress indicator */}
-                    <div className="flex flex-col gap-1.5 mb-4">
-                      <div className="flex justify-between text-xs text-gray-300 font-gilroyMedium">
-                        <span>Progress</span>
-                        <span className="text-cyan-300 font-gilroyBold">
-                          {mission.progress} / {mission.targetCount}
-                        </span>
-                      </div>
-                      <div className="w-full h-2 bg-black/50 rounded-full overflow-hidden p-0.5 border border-white/10">
-                        <div
-                          className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-purple-500 transition-all duration-300"
-                          style={{ width: `${Math.min(100, Math.round((mission.progress / mission.targetCount) * 100))}%` }}
-                        />
-                      </div>
-                    </div>
-
-                    <div className="flex items-center text-[#00F0FF] font-gilroyBold text-sm font-semibold tracking-wide mt-auto pt-2">
-                      <Sparkles className="w-4 h-4 mr-1.5 opacity-90 animate-pulse" />
-                      +{mission.rpXpReward} RP XP
-                    </div>
-                  </div>
-
-                  <div className="mt-5 relative z-10">
-                    <button
-                      className={`w-full font-gilroyBold text-sm sm:text-base py-2.5 px-4 rounded-xl flex items-center justify-center transition-all duration-300 cursor-pointer ${mission.completed
-                        ? 'bg-black/40 text-gray-500 border border-white/5 cursor-not-allowed'
-                        : !mission.canClaim
-                          ? 'bg-cyan-900/20 text-cyan-400/50 border border-cyan-500/10 cursor-not-allowed'
-                          : 'glass-btn text-white hover:shadow-[0_0_15px_#00F0FF]'
-                        }`}
-                      disabled={mission.completed || (claimingId === mission.id) || !mission.canClaim}
-                      onClick={() => handleClaimMission(mission.id)}
-                    >
-                      {claimingId === mission.id ? (
-                        <JLTLoader variant="inline" size="sm" text="Claiming..." />
-                      ) : mission.completed ? (
-                        'Completed'
-                      ) : !mission.canClaim ? (
-                        'In Progress'
-                      ) : (
-                        'Claim Mission'
-                      )}
-                    </button>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="col-span-full py-16 text-center text-gray-500 font-gilroyMedium daily-card-panel border-dashed border-white/10 rounded-2xl flex flex-col items-center gap-3">
-                <Sparkles className="w-10 h-10 text-cyan-400/30" />
-                <p>No Rare Pass missions available right now.</p>
-              </div>
-            )}
-          </div>
-        )}
-
         {/* ── STANDARD QUESTS GRID ── */}
-        {isConnected && !isLoadingQuests && quests && activeTab !== 'RARE_PASS' && (
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {groupedQuests[activeTab]?.length > 0 ? (
-                groupedQuests[activeTab].map((quest) => (
+        {isConnected && !isLoadingQuests && !isLoadingMissions && (
+          <div className="space-y-6">
+
+
+            {groupedQuests[activeTab]?.length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {groupedQuests[activeTab].map((quest) => (
                   <QuestCard
                     key={quest.id}
                     quest={quest}
                     onClaim={handleClaimQuest}
                     isClaiming={claimingId === quest.id}
                   />
-                ))
-              ) : (
-                <div className="col-span-full py-16 text-center text-gray-500 font-gilroyMedium daily-card-panel border-dashed border-white/10 rounded-2xl flex flex-col items-center gap-3">
-                  <CheckCircle2 className="w-10 h-10 text-purple-400/30" />
-                  <p>No quests available in this category yet.</p>
-                </div>
-              )}
-            </div>
+                ))}
+              </div>
+            )}
+
+            {!(groupedQuests[activeTab]?.length > 0) && (
+              <div className="py-16 text-center text-gray-500 font-gilroyMedium daily-card-panel border-dashed border-white/10 rounded-2xl flex flex-col items-center gap-3">
+                <CheckCircle2 className="w-10 h-10 text-purple-400/30" />
+                <p>No quests available in this category yet.</p>
+              </div>
+            )}
           </div>
         )}
       </div>

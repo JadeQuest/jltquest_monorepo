@@ -82,24 +82,24 @@ const FEATURE_PROJECTS: FeatureProject[] = [
     statsLabel: 'Lucky Drops',
   },
   {
-    id: 'push-pass',
-    tag: '03 / VIP SYSTEM',
-    category: 'Push Pass Season Track',
-    title: 'Mythic Push Pass',
-    subtitle: 'Tier Track · Rare Pass Drops · VIP Perks',
-    description: 'Unlock the premium battle pass to supercharge your earning potential. Access high-tier quests, permanent XP buffs, collectible NFT cards, and season-end prize pool distributions.',
-    bannerMotto: 'Mythic Push Pass',
-    ctaText: 'VIEW PUSH PASS',
-    href: '/dashboard/push-pass',
+    id: 'rare-pass',
+    tag: '03 / SEASON PROGRESSION',
+    category: 'Season 01: Cosmic Origins',
+    title: 'Cosmic Rare Pass',
+    subtitle: '50 Tiers · 3D Avatars · Mythical Cards',
+    description: 'Level up through 50 tiers of celestial loot in Season 01: Cosmic Origins. Complete daily missions and fortune wheel spins to unlock the Throne of Creation mythical card, 3D avatars, and massive GP pools.',
+    bannerMotto: 'Cosmic Origins Pass',
+    ctaText: 'EXPLORE RARE PASS',
+    href: '/dashboard/rare-pass',
     accentColor: '#E280FF',
     gradientBg: 'from-[#2F064C] via-[#7B2CBF]/40 to-[#080411]',
     glowColor: 'rgba(226, 128, 255, 0.45)',
     icon: '/Push Pass.svg',
     image: '/showcase/push-pass.jpg',
-    badgeImg: '/badge/diamond-badge.webp',
-    extraChip: 'Tier 50 VIP',
+    badgeImg: '/card/pass/s1/premium.webp',
+    extraChip: 'Season 01 Live',
     statsValue: '50 Tiers',
-    statsLabel: 'Unlockable Loot',
+    statsLabel: 'Mythic Rewards',
   },
   {
     id: 'squad',
@@ -328,7 +328,7 @@ export const FeaturesSection: React.FC = () => {
     <section
       id="features"
       ref={sectionRef}
-      className="relative w-full min-h-screen bg-[#080411] overflow-hidden select-none flex flex-col justify-between py-12 sm:py-16"
+      className="relative w-full min-h-screen bg-transparent overflow-hidden select-none flex flex-col justify-between py-12 sm:py-16"
       aria-label="Features Showcase - Built for Quest Champions"
     >
       {/* Top Animated Glowing Border */}

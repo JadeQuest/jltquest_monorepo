@@ -10,6 +10,7 @@ import { ScrollProgressBar } from './ScrollProgressBar';
 import { SmoothScrollProvider } from './SmoothScrollProvider';
 import { CustomCursor } from './CustomCursor';
 
+import { CosmicOriginsSection } from './CosmicOriginsSection';
 import { FeaturesSection } from './FeaturesSection';
 import { HowItWorksSection } from './HowItWorksSection';
 import { CTASection } from './CTASection';
@@ -39,6 +40,11 @@ const LandingPage: React.FC = () => {
         {/* Hero section */}
         <div className="relative z-10">
           <HeroSection />
+        </div>
+
+        {/* Season 01: Cosmic Origins Showcase Section */}
+        <div className="relative z-10">
+          <CosmicOriginsSection />
         </div>
 
         {/* Below-the-fold sections */}

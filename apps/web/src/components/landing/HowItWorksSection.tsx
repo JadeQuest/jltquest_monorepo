@@ -110,29 +110,29 @@ const steps = [
     step: 1,
     title: 'Connect Wallet',
     description: 'Link your wallet to start your JLTQuest journey and secure your rewards.',
-    icon: '/Rectangle 11989.svg',
+    icon: '/icon/connect wallet.svg',
     iconAlt: 'Connect Wallet',
   },
   {
     step: 2,
     title: 'Complete Quests',
     description: 'Discover and finish daily quests inside JaxMart to earn JLT coins.',
-    icon: '/Discover.svg',
-    iconAlt: 'Discover Quests',
+    icon: '/icon/complete quest.svg',
+    iconAlt: 'Complete Quests',
   },
   {
     step: 3,
     title: 'Collect Rares',
     description: 'Use your coins to spin, collect, and upgrade rare passes and NFTs.',
-    icon: '/icon/spin.webp',
+    icon: '/icon/collector rate.svg',
     iconAlt: 'Collect Rares',
   },
   {
     step: 4,
     title: 'Climb & Win',
     description: 'Hit the leaderboard, rack up multipliers, and claim seasonal prizes.',
-    icon: '/LeaderBoard.svg',
-    iconAlt: 'Leaderboard',
+    icon: '/icon/climb and win.svg',
+    iconAlt: 'Climb & Win',
   },
 ];
 
@@ -247,7 +247,7 @@ export const HowItWorksSection: React.FC = () => {
   }, []);
 
   return (
-    <section id="how-it-works" ref={sectionRef} className="relative w-full py-24 sm:py-32 px-6 overflow-hidden select-none bg-[#080411]">
+    <section id="how-it-works" ref={sectionRef} className="relative w-full py-24 sm:py-32 px-6 overflow-hidden select-none bg-transparent">
       {/* Section Separator Line */}
       <div className="hiw-divider-line absolute top-0 left-1/2 -translate-x-1/2 w-[75%] max-w-5xl h-[1.5px] bg-gradient-to-r from-transparent via-[#FFA28D] via-[#00F0FF] to-transparent pointer-events-none" />
 

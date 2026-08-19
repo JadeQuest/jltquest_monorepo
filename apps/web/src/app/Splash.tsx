@@ -57,7 +57,6 @@ const TAGLINE_LETTERS = [
 export default function Splash({ onClick, onStartTransition, onComplete }: SplashProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<HTMLDivElement>(null);
-  const ctaRef = useRef<HTMLDivElement>(null);
   const mascotRef = useRef<HTMLImageElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const bgGlowsGroupRef = useRef<SVGGElement>(null);
@@ -167,19 +166,6 @@ export default function Splash({ onClick, onStartTransition, onComplete }: Splas
 
     timelineRef.current = tl;
 
-    // 0.00s: CTA swiftly fades out
-    if (ctaRef.current) {
-      tl.to(
-        ctaRef.current,
-        {
-          autoAlpha: 0,
-          y: 8,
-          duration: 0.18,
-          ease: 'power2.out',
-        },
-        0
-      );
-    }
 
     // 0.00s - 0.20s: Mascot anticipation (scale 1 -> 1.035, y: 0 -> -5px)
     if (mascotRef.current) {
@@ -642,21 +628,6 @@ export default function Splash({ onClick, onStartTransition, onComplete }: Splas
             willChange: 'transform, opacity',
           }}
         />
-      </div>
-
-      {/* ─── Click / Tap Cue CTA ─── */}
-      <div
-        ref={ctaRef}
-        aria-hidden="true"
-        className="absolute bottom-7 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-1.5 animate-bounce cursor-pointer"
-        style={{ willChange: 'transform, opacity' }}
-      >
-        <span className="font-gilroyMedium text-[11px] sm:text-xs text-white/60 tracking-[0.25em] uppercase glass-pill px-4 py-1.5 border border-white/10 shadow-lg">
-          CLICK OR TAP ANYWHERE TO ENTER
-        </span>
-        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="rgba(255,255,255,0.6)" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-        </svg>
       </div>
     </div>
   );

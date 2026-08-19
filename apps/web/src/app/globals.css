@@ -9,6 +9,30 @@
   [data-rk] {
     font-family: 'Plus Jakarta Sans', system-ui, sans-serif !important;
   }
+
+  /* ── Premium Web3 Custom Scrollbar ── */
+  ::-webkit-scrollbar {
+    width: 7px;
+    height: 7px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #080411;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #360C9F 0%, #7B2CBF 50%, #FFA28D 100%);
+    border-radius: 9999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #4310C2 0%, #9D4EDD 50%, #FFB6A3 100%);
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #7B2CBF #080411;
+  }
 }
 
 @layer utilities {

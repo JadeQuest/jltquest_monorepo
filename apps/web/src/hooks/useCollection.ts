@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAccount } from 'wagmi';
 import { fetchWithRetry, getApiUrl } from '@/lib/apiClient';
-import { getCookie } from '@/lib/authCookie';
+import { hasAuthToken } from '@/lib/authCookie';
 import type { ApiResponse, CollectionDto, CardItemDto, MergeFragmentsResultDto } from '@jlt/types';
 
 export type Card = CardItemDto;
@@ -10,7 +10,6 @@ export type CollectionData = CollectionDto;
 export const useCollection = () => {
   const queryClient = useQueryClient();
   const { isConnected, address } = useAccount();
-  const token = getCookie('jlt_auth_token');
 
   const { data: queryData, isLoading, error, refetch } = useQuery({
     queryKey: ['collection', address],
@@ -18,7 +17,7 @@ export const useCollection = () => {
       const response = await fetchWithRetry<ApiResponse<CollectionDto>>(`${getApiUrl()}/collection`);
       return response.data;
     },
-    enabled: isConnected && !!address && !!token,
+    enabled: isConnected && !!address && hasAuthToken(),
     staleTime: 30_000,
     retry: 1,
   });

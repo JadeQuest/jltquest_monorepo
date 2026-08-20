@@ -5,7 +5,7 @@ import { useAccount, useSignMessage } from 'wagmi';
 import { useAuth } from '@/hooks/useAuth';
 import { useDashboard } from '@/hooks/useDashboard';
 import { isUserRejectedError } from '@/lib/web3Error';
-import { getCookie } from '@/lib/authCookie';
+import { hasAuthToken } from '@/lib/authCookie';
 import { ConvertGPModal } from './ConvertGPModal';
 import { ProfileModal } from './ProfileModal';
 import { RefreshCw, Sparkles, User, Wallet } from 'lucide-react';
@@ -44,7 +44,7 @@ const HeaderStatusComponent: React.FC<HeaderStatusProps> = ({
 
   useEffect(() => {
     const handleLogin = async () => {
-      if (isConnected && address && !getCookie('jlt_auth_token') && !isSigningRef.current) {
+      if (isConnected && address && !hasAuthToken() && !isSigningRef.current) {
         isSigningRef.current = true;
         const timestamp = Date.now();
         const message = `Welcome to JadeQuest!\n\nSign this message to secure your session.\nTimestamp: ${timestamp}`;

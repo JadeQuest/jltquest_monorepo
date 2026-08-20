@@ -25,6 +25,10 @@ export function WalletExtensionErrorHandler() {
         msg.includes('Failed to execute inlined telemetry script') ||
         msg.includes('telemetry script') ||
         msg.includes('initCCA') ||
+        msg.includes('ObjectMultiplex') ||
+        msg.includes('MaxListenersExceededWarning') ||
+        msg.includes('app-init-liveness') ||
+        msg.includes('background-liveness') ||
         stack.includes('chrome-extension://') ||
         stack.includes('moz-extension://')
       ) {

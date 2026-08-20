@@ -67,7 +67,7 @@ const nextConfig = {
                             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
                             "img-src 'self' data: blob: https: https://*.coinbase.com https://*.walletconnect.com",
                             "font-src 'self' data: https://fonts.gstatic.com",
-                            "connect-src 'self' http: https: ws: wss: http://192.168.*.*:* http://localhost:* ws://192.168.*.*:* ws://localhost:* https://*.coinbase.com https://cca-lite.coinbase.com https://*.walletconnect.com https://*.walletconnect.org wss://*.walletconnect.org wss://*.walletconnect.com",
+                            "connect-src 'self' http: https: ws: wss: https://*.coinbase.com https://cca-lite.coinbase.com https://*.walletconnect.com https://*.walletconnect.org wss://*.walletconnect.org wss://*.walletconnect.com",
                             "frame-ancestors 'none'",
                         ].join('; '),
                     },

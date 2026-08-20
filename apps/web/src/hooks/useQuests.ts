@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAccount } from 'wagmi';
 import { fetchWithRetry, getApiUrl } from '@/lib/apiClient';
-import { getCookie } from '@/lib/authCookie';
+import { hasAuthToken } from '@/lib/authCookie';
 import type { ApiResponse, QuestDto, QuestClaimResultDto } from '@jlt/types';
 
 export type Quest = QuestDto;
@@ -9,7 +9,6 @@ export type Quest = QuestDto;
 export function useQuests() {
   const queryClient = useQueryClient();
   const { isConnected, address } = useAccount();
-  const token = getCookie('jlt_auth_token');
 
   const questsQuery = useQuery({
     queryKey: ['quests', address],
@@ -17,7 +16,7 @@ export function useQuests() {
       const response = await fetchWithRetry<ApiResponse<QuestDto[]>>(`${getApiUrl()}/quests`);
       return response.data || [];
     },
-    enabled: isConnected && !!address && !!token,
+    enabled: isConnected && !!address && hasAuthToken(),
     staleTime: 30_000,
     retry: 1,
   });

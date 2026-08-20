@@ -4,8 +4,6 @@ import { CookieConsentLoader } from '@/components/common/CookieConsentLoader';
 import { ServiceWorkerRegistration } from '@/components/common/ServiceWorkerRegistration';
 import { WalletExtensionErrorHandler } from '@/components/common/WalletExtensionErrorHandler';
 import { AlertModalProvider } from '@/components/common/AlertModal';
-// Plus Jakarta Sans standard CSS variable fallback for Turbopack compatibility
-const fontVariable = '--font-plus-jakarta-sans';
 
 export const metadata: Metadata = {
   title: 'JLTQuest — Play Daily, Earn Real Perks & Collect Rares',
@@ -38,9 +36,9 @@ export const metadata: Metadata = {
     images: ['/dashboard-bg.webp'],
   },
   icons: {
-    icon: [{ url: '/jlt.svg', type: 'image/svg+xml' }],
-    shortcut: '/jlt.svg',
-    apple: '/jlt.svg',
+    icon: [{ url: '/jltcolor.svg', type: 'image/svg+xml' }],
+    shortcut: '/jltcolor.svg',
+    apple: '/jltcolor.svg',
   },
 };
 
@@ -60,48 +58,83 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
-                function shouldIgnore(msg, url, err) {
-                  var str = (msg || '') + ' ' + (url || '') + ' ' + (err && (err.stack || err.message) || '');
-                  return str.indexOf('Failed to connect to MetaMask') !== -1 ||
-                         str.indexOf('nkbihfbeogaeaoehlefnkodbefgpgknn') !== -1 ||
-                         str.indexOf('chrome-extension://') !== -1 ||
-                         str.indexOf('moz-extension://') !== -1 ||
-                         str.indexOf('UserRejectedRequestError') !== -1 ||
-                         str.indexOf('User rejected') !== -1 ||
-                         str.indexOf('-32002') !== -1 ||
-                         str.indexOf('4001') !== -1 ||
-                         str.indexOf('Failed to execute inlined telemetry script') !== -1 ||
-                         str.indexOf('telemetry script') !== -1 ||
-                         str.indexOf('initCCA') !== -1 ||
-                         str.indexOf('ObjectMultiplex') !== -1 ||
-                         str.indexOf('MaxListenersExceededWarning') !== -1;
+                var IGNORED_PATTERNS = [
+                  'Failed to connect to MetaMask',
+                  'nkbihfbeogaeaoehlefnkodbefgpgknn',
+                  'chrome-extension://',
+                  'moz-extension://',
+                  'UserRejectedRequestError',
+                  'User rejected',
+                  'user denied',
+                  '-32002',
+                  '4001',
+                  'Failed to execute inlined telemetry script',
+                  'telemetry script',
+                  'initCCA',
+                  'ObjectMultiplex',
+                  'MaxListenersExceededWarning',
+                  'app-init-liveness',
+                  'background-liveness',
+                  'Lit is in dev mode',
+                  'Download the React DevTools',
+                  'preloaded using link preload but not used'
+                ];
+
+                function shouldIgnore(args) {
+                  try {
+                    var str = '';
+                    for (var i = 0; i < args.length; i++) {
+                      var a = args[i];
+                      if (typeof a === 'string') {
+                        str += a + ' ';
+                      } else if (a && (a.message || a.stack)) {
+                        str += (a.message || '') + ' ' + (a.stack || '') + ' ';
+                      }
+                    }
+                    for (var j = 0; j < IGNORED_PATTERNS.length; j++) {
+                      if (str.indexOf(IGNORED_PATTERNS[j]) !== -1) {
+                        return true;
+                      }
+                    }
+                  } catch (e) {}
+                  return false;
                 }
+
+                var origConsoleWarn = console.warn;
+                console.warn = function() {
+                  if (shouldIgnore(arguments)) return;
+                  return origConsoleWarn.apply(console, arguments);
+                };
+
                 var origConsoleError = console.error;
                 console.error = function() {
-                  var firstArg = arguments[0];
-                  var text = (typeof firstArg === 'string' ? firstArg : (firstArg && firstArg.message) || '') + '';
-                  if (shouldIgnore(text, '', firstArg)) {
-                    return;
-                  }
+                  if (shouldIgnore(arguments)) return;
                   return origConsoleError.apply(console, arguments);
                 };
+
+                var origConsoleInfo = console.info;
+                console.info = function() {
+                  if (shouldIgnore(arguments)) return;
+                  return origConsoleInfo.apply(console, arguments);
+                };
+
                 var origOnError = window.onerror;
                 window.onerror = function(msg, url, line, col, error) {
-                  if (shouldIgnore(msg, url, error)) {
-                    return true;
-                  }
+                  if (shouldIgnore([msg, url, error])) return true;
                   if (origOnError) return origOnError.apply(this, arguments);
                 };
+
                 window.addEventListener('error', function(e) {
-                  if (shouldIgnore(e.message, e.filename, e.error)) {
+                  if (shouldIgnore([e.message, e.filename, e.error])) {
                     e.preventDefault();
                     e.stopImmediatePropagation();
                   }
                 }, true);
+
                 window.addEventListener('unhandledrejection', function(e) {
                   var r = e.reason;
                   var m = r && (r.message || r.stack || String(r)) || '';
-                  if (shouldIgnore(m, '', r)) {
+                  if (shouldIgnore([m, r])) {
                     e.preventDefault();
                     e.stopImmediatePropagation();
                   }
@@ -113,9 +146,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-        {/* Preload critical assets for instant splash rendering */}
         <link rel="preload" href="/icon/mascot.webp" as="image" type="image/webp" fetchPriority="high" />
-        <link rel="preload" href="/jltcolor.svg" as="image" type="image/svg+xml" />
       </head>
       <body
         className="bg-[#080411] text-white antialiased selection:bg-[#FFA28D]/30 selection:text-white"

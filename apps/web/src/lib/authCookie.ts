@@ -32,7 +32,7 @@ const DEFAULT_OPTIONS: CookieOptions = {
 
 function safeGetLocalStorage(key: string): string | null {
   try {
-    return localStorage.getItem(key);
+    return typeof window !== 'undefined' ? localStorage.getItem(key) : null;
   } catch {
     return null;
   }
@@ -40,7 +40,9 @@ function safeGetLocalStorage(key: string): string | null {
 
 function safeSetLocalStorage(key: string, value: string): void {
   try {
-    localStorage.setItem(key, value);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(key, value);
+    }
   } catch {
     // Browsers can block storage in private or restricted contexts.
   }
@@ -48,7 +50,9 @@ function safeSetLocalStorage(key: string, value: string): void {
 
 function safeRemoveLocalStorage(key: string): void {
   try {
-    localStorage.removeItem(key);
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(key);
+    }
   } catch {
     // Ignore errors
   }
@@ -100,7 +104,6 @@ export function getCookie(name: string): string | null {
 
 /**
  * Delete a cookie cleanly upon logout or session termination
- * Supports path string or options object, and reliably purges across HTTP and HTTPS environments.
  */
 export function deleteCookie(name: string, pathOrOptions: string | CookieOptions = '/'): void {
   if (typeof document === 'undefined') return;
@@ -123,22 +126,24 @@ export function deleteCookie(name: string, pathOrOptions: string | CookieOptions
  * Direct typed helpers for Auth & Refresh tokens
  */
 export function getAuthToken(): string | null {
-  return getCookie(AUTH_COOKIE_NAME);
+  return getCookie(AUTH_COOKIE_NAME) || safeGetLocalStorage('jlt_auth_token');
 }
 
 export function setAuthToken(token: string, days: number = 7): void {
   setCookie(AUTH_COOKIE_NAME, token, { days });
+  safeSetLocalStorage('jlt_auth_token', token);
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new CustomEvent('auth-state-change', { detail: { isAuthenticated: true } }));
   }
 }
 
 export function getRefreshToken(): string | null {
-  return getCookie(REFRESH_COOKIE_NAME);
+  return getCookie(REFRESH_COOKIE_NAME) || safeGetLocalStorage('jlt_refresh_token');
 }
 
 export function setRefreshToken(token: string, days: number = 30): void {
   setCookie(REFRESH_COOKIE_NAME, token, { days });
+  safeSetLocalStorage('jlt_refresh_token', token);
 }
 
 export function hasAuthToken(): boolean {

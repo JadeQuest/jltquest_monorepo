@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useAccount } from 'wagmi';
 import { fetchWithRetry, getApiUrl } from '@/lib/apiClient';
-import { getCookie } from '@/lib/authCookie';
+import { hasAuthToken } from '@/lib/authCookie';
 import type { ApiResponse, LeaderboardEntryDto, LeaderboardCategory as CategoryType } from '@jlt/types';
 
 export type LeaderboardCategory = CategoryType;
@@ -9,7 +9,6 @@ export type LeaderboardEntry = LeaderboardEntryDto;
 
 export function useLeaderboard(type: LeaderboardCategory = 'total_gp', limit = 20) {
   const { isConnected, address } = useAccount();
-  const token = getCookie('jlt_auth_token');
 
   const leaderboardQuery = useQuery({
     queryKey: ['leaderboard', type, limit],
@@ -19,7 +18,7 @@ export function useLeaderboard(type: LeaderboardCategory = 'total_gp', limit = 2
       );
       return response.data || [];
     },
-    enabled: isConnected && !!address && !!token,
+    enabled: isConnected && !!address && hasAuthToken(),
     staleTime: 30_000,
     retry: 1,
   });

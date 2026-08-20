@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAccount } from 'wagmi';
-import { getCookie } from '@/lib/authCookie';
+import { getAuthToken, hasAuthToken } from '@/lib/authCookie';
 import { getApiUrl, fetchWithRetry } from '@/lib/apiClient';
 import type { ApiResponse, SpinStatusDto, SpinResultDto, SpinPurchaseResultDto } from '@jlt/types';
 
@@ -10,7 +10,6 @@ export type SpinResult = SpinResultDto;
 export const useSpin = () => {
   const queryClient = useQueryClient();
   const { isConnected, address } = useAccount();
-  const token = getCookie('jlt_auth_token');
 
   const {
     data: spinStatus,
@@ -19,6 +18,7 @@ export const useSpin = () => {
   } = useQuery({
     queryKey: ['spinStatus', address],
     queryFn: async (): Promise<SpinStatusDto> => {
+      const token = getAuthToken();
       if (!address || !token) throw new Error('Not connected');
       const response = await fetchWithRetry<ApiResponse<SpinStatusDto>>(`${getApiUrl()}/spin/status`, {
         headers: {
@@ -31,13 +31,14 @@ export const useSpin = () => {
       }
       return response.data;
     },
-    enabled: isConnected && !!address && !!token,
+    enabled: isConnected && !!address && hasAuthToken(),
     staleTime: 30_000,
     retry: 1,
   });
 
   const spinMutation = useMutation({
     mutationFn: async (useFreeSpin: boolean = true): Promise<SpinResultDto> => {
+      const token = getAuthToken();
       if (!address || !token) throw new Error('Not connected');
       const response = await fetchWithRetry<ApiResponse<SpinResultDto>>(`${getApiUrl()}/spin`, {
         method: 'POST',
@@ -70,6 +71,7 @@ export const useSpin = () => {
 
   const purchaseSpinMutation = useMutation({
     mutationFn: async (): Promise<SpinPurchaseResultDto | null> => {
+      const token = getAuthToken();
       if (!address || !token) throw new Error('Not connected');
       const response = await fetchWithRetry<ApiResponse<SpinPurchaseResultDto>>(`${getApiUrl()}/spin/purchase`, {
         method: 'POST',

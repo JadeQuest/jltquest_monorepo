@@ -1,14 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
 import { useAccount } from 'wagmi';
 import { fetchWithRetry, getApiUrl } from '@/lib/apiClient';
-import { getCookie } from '@/lib/authCookie';
+import { hasAuthToken } from '@/lib/authCookie';
 import type { ApiResponse, UserDashboardDto } from '@jlt/types';
 
 export type DashboardData = UserDashboardDto;
 
 export function useDashboard() {
   const { isConnected, address } = useAccount();
-  const token = getCookie('jlt_auth_token');
 
   return useQuery({
     queryKey: ['dashboard', address],
@@ -19,7 +18,7 @@ export function useDashboard() {
       }
       return response.data;
     },
-    enabled: isConnected && !!address && !!token,
+    enabled: isConnected && !!address && hasAuthToken(),
     staleTime: 30_000,
     retry: 1,
   });

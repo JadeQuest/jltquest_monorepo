@@ -1,13 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAccount } from 'wagmi';
 import { fetchWithRetry, getApiUrl } from '@/lib/apiClient';
+import { hasAuthToken } from '@/lib/authCookie';
 import type { ApiResponse, AvatarDto, AvatarVariantDto, AvatarSelectResultDto, AvatarUnlockResultDto } from '@jlt/types';
 
 export type AvatarVariant = AvatarVariantDto;
 export type Avatar = AvatarDto;
 
 export function useAvatar() {
-  const { address } = useAccount();
+  const { isConnected, address } = useAccount();
   const queryClient = useQueryClient();
 
   const avatarsQuery = useQuery({
@@ -16,7 +17,7 @@ export function useAvatar() {
       const response = await fetchWithRetry<ApiResponse<AvatarDto[]>>(`${getApiUrl()}/avatars`);
       return response.data || [];
     },
-    enabled: !!address,
+    enabled: isConnected && !!address && hasAuthToken(),
     staleTime: 60_000,
     retry: 1,
   });

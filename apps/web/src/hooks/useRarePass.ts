@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAccount } from 'wagmi';
 import { fetchWithRetry, getApiUrl } from '@/lib/apiClient';
-import { getCookie } from '@/lib/authCookie';
+import { hasAuthToken } from '@/lib/authCookie';
 import type {
   ApiResponse,
   RarePassStatusDto,
@@ -21,8 +21,7 @@ export type RarePassMission = RarePassMissionDto;
 export function useRarePass() {
   const queryClient = useQueryClient();
   const { isConnected, address } = useAccount();
-  const token = getCookie('jlt_auth_token');
-  const isEnabled = isConnected && !!address && !!token;
+  const isEnabled = isConnected && !!address && hasAuthToken();
 
   const statusQuery = useQuery({
     queryKey: ['rarepassStatus', address],

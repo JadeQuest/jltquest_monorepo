@@ -30,6 +30,7 @@ const StreakCardComponent: React.FC = () => {
           src="/icon/flame.webp"
           alt="Flame Badge"
           fill
+          priority
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           className="w-full h-full object-contain drop-shadow-[0_10px_20px_rgba(234,88,12,0.7)]"
         />
@@ -43,4 +44,3 @@ const StreakCardComponent: React.FC = () => {
 };
 
 export const StreakCard = React.memo(StreakCardComponent);
-

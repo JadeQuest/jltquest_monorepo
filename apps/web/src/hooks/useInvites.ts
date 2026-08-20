@@ -1,5 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useAccount } from 'wagmi';
 import { fetchWithRetry, getApiUrl } from '@/lib/apiClient';
+import { hasAuthToken } from '@/lib/authCookie';
 import type { ApiResponse, InviteStatsDto, RedeemInviteResultDto, ClaimMilestoneResultDto } from '@jlt/types';
 
 export type Invite = any;
@@ -7,13 +9,15 @@ export type InviteStats = InviteStatsDto;
 
 export function useInvites() {
   const queryClient = useQueryClient();
+  const { isConnected, address } = useAccount();
 
   const invitesQuery = useQuery({
-    queryKey: ['invites'],
+    queryKey: ['invites', address],
     queryFn: async (): Promise<InviteStatsDto | null> => {
       const response = await fetchWithRetry<ApiResponse<InviteStatsDto>>(`${getApiUrl()}/invites`);
       return response.data;
     },
+    enabled: isConnected && !!address && hasAuthToken(),
     staleTime: 30_000,
     retry: 1,
   });
@@ -53,8 +57,9 @@ export function useInvites() {
   });
 
   return {
-    invites: (invitesQuery.data as any)?.redemptions || (invitesQuery.data as any) || [],
+    invites: invitesQuery.data,
     stats: invitesQuery.data,
+    redemptions: invitesQuery.data?.redemptions || [],
     isLoading: invitesQuery.isLoading,
     redeemInvite: redeemInviteMutation.mutateAsync,
     isRedeeming: redeemInviteMutation.isPending,

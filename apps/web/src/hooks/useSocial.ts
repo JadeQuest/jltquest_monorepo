@@ -1,5 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useAccount } from 'wagmi';
 import { fetchWithRetry, getApiUrl } from '@/lib/apiClient';
+import { hasAuthToken } from '@/lib/authCookie';
 import type {
   ApiResponse,
   SocialOAuthUrlDto,
@@ -13,6 +15,7 @@ export type SocialQuest = SocialQuestDto;
 
 export function useSocial() {
   const queryClient = useQueryClient();
+  const { isConnected, address } = useAccount();
 
   const connectMutation = useMutation({
     mutationFn: async ({ platform, payload }: { platform: string; payload?: any }): Promise<SocialCallbackResultDto | null> => {
@@ -54,11 +57,12 @@ export function useSocial() {
   };
 
   const socialQuestsQuery = useQuery({
-    queryKey: ['socialQuests'],
+    queryKey: ['socialQuests', address],
     queryFn: async (): Promise<SocialQuestDto[]> => {
       const response = await fetchWithRetry<ApiResponse<SocialQuestDto[]>>(`${getApiUrl()}/social/quests`);
       return response.data || [];
     },
+    enabled: isConnected && !!address && hasAuthToken(),
   });
 
   const claimQuestMutation = useMutation({

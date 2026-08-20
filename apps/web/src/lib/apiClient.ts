@@ -7,20 +7,14 @@ import { sanitizeInput, getAuthToken, setAuthToken, getRefreshToken, clearUserSe
 export function getApiUrl(): string {
   if (typeof window !== 'undefined') {
     const hostname = window.location.hostname;
-    // When accessing over LAN IP (e.g. 192.168.x.x) or domain, dynamically connect to API on same host
-    if (hostname && hostname !== 'localhost' && hostname !== '127.0.0.1') {
-      const envUrl = process.env.NEXT_PUBLIC_API_URL;
-      if (envUrl && envUrl.includes('localhost')) {
-        return envUrl.replace('localhost', hostname);
-      }
-      if (envUrl && envUrl.includes('127.0.0.1')) {
-        return envUrl.replace('127.0.0.1', hostname);
-      }
-      return `http://${hostname}:4000/api/v1`;
+    // When accessing over Cloudflare Tunnel (*.trycloudflare.com) or external hostnames,
+    // route requests relatively via Next.js reverse-proxy rewrites to prevent CORS and SSL/Mixed-Content errors.
+    if (hostname && (hostname.endsWith('.trycloudflare.com') || (hostname !== 'localhost' && hostname !== '127.0.0.1'))) {
+      return '/api/v1';
     }
   }
   if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
-  return 'http://localhost:4000/api/v1';
+  return '/api/v1';
 }
 
 interface FetchOptions extends RequestInit {

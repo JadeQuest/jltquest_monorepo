@@ -15,6 +15,25 @@ const nextConfig = {
     optimizePackageImports: ['lucide-react', 'wagmi', 'viem'],
   },
 
+  // Allow Cloudflare tunnels and local network origins for Next.js dev server
+  allowedDevOrigins: [
+    '*.trycloudflare.com',
+    'localhost',
+    'localhost:3000',
+    '127.0.0.1',
+    '127.0.0.1:3000',
+  ],
+
+  // Reverse proxy API calls to backend server so a single frontend tunnel handles both
+  async rewrites() {
+    return [
+      {
+        source: '/api/v1/:path*',
+        destination: 'http://localhost:4000/api/v1/:path*',
+      },
+    ];
+  },
+
   // ─── Turbopack (Next.js 16 default for `next dev`) ────────────────────────
   // Silences the "webpack config but no turbopack config" hard-error and
   // provides Turbopack-native equivalents of the webpack resolve.alias overrides.

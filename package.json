@@ -7,6 +7,8 @@
     "dev": "turbo dev",
     "dev:web": "turbo dev --filter=web",
     "dev:no-mobile": "turbo dev --filter=!mobile",
+    "tunnel": "cloudflared tunnel --url http://localhost:3000",
+    "tunnel:web": "cloudflared tunnel --url http://localhost:3000",
     "postinstall": "pnpm --filter @jlt/database db:generate",
     "db:generate": "pnpm --filter @jlt/database db:generate",
     "db:push": "pnpm --filter @jlt/database db:push",

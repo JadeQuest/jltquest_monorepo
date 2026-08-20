@@ -29,6 +29,16 @@ const nextConfig = {
     // Turbopack options
     experimental: {},
 
+    // Reverse proxy API calls to backend server
+    async rewrites() {
+        return [
+            {
+                source: '/api/v1/:path*',
+                destination: 'http://localhost:4000/api/v1/:path*',
+            },
+        ];
+    },
+
     // Standard Web Security Headers
     async headers() {
         return [

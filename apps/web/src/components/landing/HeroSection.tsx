@@ -19,6 +19,12 @@ import {
   ScrollTrigger,
   prefersReducedMotion,
   isTouchDevice,
+  hasFineHoverPointer,
+  createDebouncedCallback,
+  createRafThrottle,
+  isDocumentVisible,
+  observeElementVisibility,
+  resizeCanvasToDisplaySize,
   createReversibleCounter,
   createParticleBurst,
   ReversibleToggleActions,
@@ -114,6 +120,8 @@ export const HeroSection: React.FC = () => {
   const [questProgress, setQuestProgress] = useState(2);
   const [questCompleted, setQuestCompleted] = useState(false);
   const [isCardHovered, setIsCardHovered] = useState(false);
+  const initialQuestProgressRef = useRef(questProgress);
+  const didMountProgressEffectRef = useRef(false);
 
   // Cycle live activity notifications
   useEffect(() => {
@@ -175,15 +183,33 @@ export const HeroSection: React.FC = () => {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext('2d', { alpha: true });
+    const ctx = canvas.getContext('2d', { alpha: true, desynchronized: true });
     if (!ctx) return;
-
-    let animFrameId: number;
-    let width = (canvas.width = canvas.parentElement?.clientWidth || window.innerWidth);
-    let height = (canvas.height = canvas.parentElement?.clientHeight || window.innerHeight);
+    if (prefersReducedMotion()) return;
 
     const isTouch = isTouchDevice();
-    const particleCount = isTouch ? 16 : 42;
+    let animFrameId: number | null = null;
+    let width = 1;
+    let height = 1;
+    let isActive = true;
+    let lastRenderTime = 0;
+    const frameInterval = isTouch ? 1000 / 30 : 1000 / 45;
+    const resizeCanvas = () => {
+      const parent = canvas.parentElement;
+      const size = resizeCanvasToDisplaySize(
+        canvas,
+        ctx,
+        parent?.clientWidth || window.innerWidth,
+        parent?.clientHeight || window.innerHeight,
+        isTouch ? 1.15 : 1.35
+      );
+      width = size.width;
+      height = size.height;
+    };
+
+    resizeCanvas();
+
+    const particleCount = isTouch ? 12 : 30;
     const colors = ['#FFA28D', '#8C52FF', '#00F0FF', '#FFD700', '#FFFFFF', '#360C9F'];
 
     // Initialize particles
@@ -208,15 +234,17 @@ export const HeroSection: React.FC = () => {
     }
     particlesRef.current = particles;
 
-    const handleResize = () => {
-      if (!canvas || !canvas.parentElement) return;
-      width = canvas.width = canvas.parentElement.clientWidth;
-      height = canvas.height = canvas.parentElement.clientHeight;
-    };
-
-    window.addEventListener('resize', handleResize, { passive: true });
+    const handleResize = createDebouncedCallback(resizeCanvas, 140);
 
     const render = (time: number) => {
+      animFrameId = null;
+      if (!isActive || !isDocumentVisible()) return;
+      if (time - lastRenderTime < frameInterval) {
+        scheduleRender();
+        return;
+      }
+      lastRenderTime = time;
+
       ctx.clearRect(0, 0, width, height);
 
       const mx = mousePosRef.current.x;
@@ -269,7 +297,6 @@ export const HeroSection: React.FC = () => {
         const currentAlpha = p.alpha * (0.8 + Math.sin(time * 0.002 + p.phase) * 0.2);
 
         // Draw particle with ambient glow
-        ctx.save();
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
         ctx.fillStyle = p.color;
@@ -277,17 +304,44 @@ export const HeroSection: React.FC = () => {
         ctx.shadowColor = p.color;
         ctx.shadowBlur = p.radius * 3.5;
         ctx.fill();
-        ctx.restore();
       }
 
-      animFrameId = requestAnimationFrame(render);
+      ctx.globalAlpha = 1;
+      ctx.shadowBlur = 0;
+      scheduleRender();
     };
 
-    animFrameId = requestAnimationFrame(render);
+    const scheduleRender = () => {
+      if (animFrameId === null) {
+        animFrameId = requestAnimationFrame(render);
+      }
+    };
+
+    const cleanupVisibilityObserver = sectionRef.current
+      ? observeElementVisibility(
+          sectionRef.current,
+          (isVisible) => {
+            isActive = isVisible;
+            if (isVisible) scheduleRender();
+          },
+          { rootMargin: '360px 0px' }
+        )
+      : () => {};
+
+    const handleVisibilityChange = () => {
+      if (isDocumentVisible()) scheduleRender();
+    };
+
+    window.addEventListener('resize', handleResize, { passive: true });
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    scheduleRender();
 
     return () => {
-      cancelAnimationFrame(animFrameId);
+      if (animFrameId !== null) cancelAnimationFrame(animFrameId);
+      handleResize.cancel();
+      cleanupVisibilityObserver();
       window.removeEventListener('resize', handleResize);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []);
 
@@ -295,7 +349,7 @@ export const HeroSection: React.FC = () => {
   // 3 & 4. MOUSE-BASED 3D ENVIRONMENT & "QUEST SCAN" CURSOR INTERACTION
   // ══════════════════════════════════════════════════════════════════════════
   useEffect(() => {
-    if (isTouchDevice() || prefersReducedMotion()) return;
+    if (isTouchDevice() || !hasFineHoverPointer() || prefersReducedMotion()) return;
 
     const section = sectionRef.current;
     const card = dashboardCardRef.current;
@@ -352,6 +406,7 @@ export const HeroSection: React.FC = () => {
     let heroRaf: number | null = null;
     let clientX = 0;
     let clientY = 0;
+    let scannerVisible = false;
 
     const processHeroParallax = () => {
       heroRaf = null;
@@ -412,7 +467,8 @@ export const HeroSection: React.FC = () => {
       clientX = e.clientX;
       clientY = e.clientY;
 
-      if (scanner && !scanner.classList.contains('opacity-100')) {
+      if (scanner && !scannerVisible) {
+        scannerVisible = true;
         gsap.to(scanner, { opacity: 1, duration: 0.25, overwrite: 'auto' });
       }
 
@@ -429,6 +485,7 @@ export const HeroSection: React.FC = () => {
       mousePosRef.current.y = -1000;
 
       if (scanner) {
+        scannerVisible = false;
         gsap.to(scanner, { opacity: 0, duration: 0.4, overwrite: 'auto' });
       }
 
@@ -445,17 +502,22 @@ export const HeroSection: React.FC = () => {
       if (sym2X && sym2Y) { sym2X(0); sym2Y(0); }
     };
 
+    const scheduleRectUpdate = createRafThrottle(updateRects);
+    const debouncedRectUpdate = createDebouncedCallback(updateRects, 140);
+
     section.addEventListener('mousemove', handleMouseMove, { passive: true });
     section.addEventListener('mouseleave', handleMouseLeave);
-    window.addEventListener('resize', updateRects, { passive: true });
-    window.addEventListener('scroll', updateRects, { passive: true });
+    window.addEventListener('resize', debouncedRectUpdate, { passive: true });
+    window.addEventListener('scroll', scheduleRectUpdate, { passive: true });
 
     return () => {
       if (heroRaf) cancelAnimationFrame(heroRaf);
+      scheduleRectUpdate.cancel();
+      debouncedRectUpdate.cancel();
       section.removeEventListener('mousemove', handleMouseMove);
       section.removeEventListener('mouseleave', handleMouseLeave);
-      window.removeEventListener('resize', updateRects);
-      window.removeEventListener('scroll', updateRects);
+      window.removeEventListener('resize', debouncedRectUpdate);
+      window.removeEventListener('scroll', scheduleRectUpdate);
     };
   }, []);
 
@@ -597,7 +659,7 @@ export const HeroSection: React.FC = () => {
         masterTl.fromTo(
           progressBarRef.current,
           { width: '0%' },
-          { width: `${(questProgress / 3) * 100}%`, duration: 1.3, ease: 'power2.out' },
+          { width: `${(initialQuestProgressRef.current / 3) * 100}%`, duration: 1.3, ease: 'power2.out' },
           0.78
         );
       }
@@ -817,7 +879,22 @@ export const HeroSection: React.FC = () => {
       clearInterval(pulseInterval);
       ctx.revert();
     };
-  }, [questProgress]);
+  }, []);
+
+  useEffect(() => {
+    if (!didMountProgressEffectRef.current) {
+      didMountProgressEffectRef.current = true;
+      return;
+    }
+    if (!progressBarRef.current || isCardHovered || prefersReducedMotion()) return;
+
+    gsap.to(progressBarRef.current, {
+      width: `${(questProgress / 3) * 100}%`,
+      duration: 0.45,
+      ease: 'power2.out',
+      overwrite: 'auto',
+    });
+  }, [isCardHovered, questProgress]);
 
   // ══════════════════════════════════════════════════════════════════════════
   // 6 & 7. QUEST CARD HOVER & INTERACTIVE "2 / 3 DONE" PREVIEW SURGE

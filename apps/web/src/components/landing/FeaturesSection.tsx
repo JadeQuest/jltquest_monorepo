@@ -247,6 +247,19 @@ export const FeaturesSection: React.FC = () => {
 
       const track = trackRef.current!;
       const totalCards = FEATURE_PROJECTS.length;
+      const scaleSetters = cardRefs.current.map((card) =>
+        card ? (gsap.quickSetter(card, 'scale') as (value: number) => void) : null
+      );
+      const opacitySetters = cardRefs.current.map((card) =>
+        card ? (gsap.quickSetter(card, 'opacity') as (value: number) => void) : null
+      );
+      const rotationSetters = cardRefs.current.map((card) =>
+        card ? (gsap.quickSetter(card, 'rotationY') as (value: number) => void) : null
+      );
+      let cardCenters: number[] = [];
+      let cachedScrollAmount = 0;
+      let windowCenterX = window.innerWidth / 2;
+      let maxDistance = window.innerWidth * 0.7;
 
       // Calculate total horizontal scroll translation
       const getScrollAmount = () => {
@@ -254,6 +267,41 @@ export const FeaturesSection: React.FC = () => {
         const windowWidth = window.innerWidth;
         return -(trackWidth - windowWidth + 60);
       };
+
+      const refreshCardMetrics = () => {
+        cachedScrollAmount = getScrollAmount();
+        windowCenterX = window.innerWidth / 2;
+        maxDistance = window.innerWidth * 0.7;
+        cardCenters = cardRefs.current.map((card) =>
+          card ? card.offsetLeft + card.offsetWidth / 2 : 0
+        );
+      };
+
+      const updateCardFocus = (progress: number) => {
+        const trackX = cachedScrollAmount * progress;
+
+        cardCenters.forEach((cardCenterOffset, index) => {
+          const scaleSetter = scaleSetters[index];
+          const opacitySetter = opacitySetters[index];
+          const rotationSetter = rotationSetters[index];
+          if (!scaleSetter || !opacitySetter || !rotationSetter) return;
+
+          const cardCenterX = cardCenterOffset + trackX;
+          const distanceFromCenter = Math.abs(windowCenterX - cardCenterX);
+          const normalizedDist = Math.min(1, distanceFromCenter / maxDistance);
+
+          scaleSetter(1 - normalizedDist * 0.14);
+          opacitySetter(1 - normalizedDist * 0.65);
+          rotationSetter(((cardCenterX - windowCenterX) / window.innerWidth) * -12);
+        });
+      };
+
+      refreshCardMetrics();
+      gsap.set(cardRefs.current.filter(Boolean), {
+        transformPerspective: 1000,
+        transformOrigin: 'center center',
+        force3D: true,
+      });
 
       // Master Pinned ScrollTrigger Timeline with comfortable, responsive pin distance
       const pinTimeline = gsap.timeline({
@@ -265,6 +313,7 @@ export const FeaturesSection: React.FC = () => {
           scrub: 0.65,
           anticipatePin: 1,
           invalidateOnRefresh: true,
+          onRefresh: refreshCardMetrics,
           onUpdate: (self) => {
             const progress = self.progress;
 
@@ -277,34 +326,11 @@ export const FeaturesSection: React.FC = () => {
 
             if (currentIdx !== activeIndexRef.current) {
               activeIndexRef.current = currentIdx;
-              setActiveIndex(currentIdx);
+                setActiveIndex(currentIdx);
             }
 
-            // Real-time dynamic center-focus scaling & depth for each card
-            const cards = cardRefs.current;
-            const windowCenterX = window.innerWidth / 2;
-
-            cards.forEach((card) => {
-              if (!card) return;
-              const rect = card.getBoundingClientRect();
-              const cardCenterX = rect.left + rect.width / 2;
-              const distanceFromCenter = Math.abs(windowCenterX - cardCenterX);
-              const maxDistance = window.innerWidth * 0.7;
-              const normalizedDist = Math.min(1, distanceFromCenter / maxDistance);
-
-              const scale = 1 - normalizedDist * 0.14; // 1.0 down to 0.86
-              const opacity = 1 - normalizedDist * 0.65; // 1.0 down to 0.35
-              const rotY = ((cardCenterX - windowCenterX) / window.innerWidth) * -12;
-
-              gsap.set(card, {
-                scale,
-                opacity,
-                rotationY: rotY,
-                transformPerspective: 1000,
-                transformOrigin: 'center center',
-                force3D: true,
-              });
-            });
+            // Real-time center-focus scaling using cached layout metrics.
+            updateCardFocus(progress);
           },
         },
       });

@@ -1,12 +1,17 @@
 'use client';
 
 import React, { useRef, useEffect, useLayoutEffect } from 'react';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
-if (typeof window !== 'undefined') {
-  gsap.registerPlugin(ScrollTrigger);
-}
+import {
+  gsap,
+  ScrollTrigger,
+  createDebouncedCallback,
+  createRafThrottle,
+  hasFineHoverPointer,
+  isDocumentVisible,
+  isTouchDevice,
+  prefersReducedMotion,
+  resizeCanvasToDisplaySize,
+} from '@/lib/animations';
 
 const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
@@ -75,23 +80,35 @@ export const JLTBackgroundMotion: React.FC = () => {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext('2d', { alpha: true });
+    const ctx = canvas.getContext('2d', { alpha: true, desynchronized: true });
     if (!ctx) return;
 
-    let animFrameId: number;
-    let width = (canvas.width = window.innerWidth);
-    let height = (canvas.height = window.innerHeight);
+    const isTouch = isTouchDevice();
+    const reduceMotion = prefersReducedMotion();
+    const shouldTrackPointer = hasFineHoverPointer() && !isTouch;
 
-    const isTouchDevice =
-      typeof window !== 'undefined' &&
-      ('ontouchstart' in window || navigator.maxTouchPoints > 0);
-    const prefersReducedMotion =
-      typeof window !== 'undefined' &&
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduceMotion) return;
 
-    if (prefersReducedMotion) return;
+    let animFrameId: number | null = null;
+    let width = 1;
+    let height = 1;
+    let lastRenderTime = 0;
+    const frameInterval = isTouch ? 1000 / 30 : 1000 / 45;
+    const resizeCanvas = () => {
+      const size = resizeCanvasToDisplaySize(
+        canvas,
+        ctx,
+        window.innerWidth,
+        window.innerHeight,
+        isTouch ? 1.15 : 1.35
+      );
+      width = size.width;
+      height = size.height;
+    };
 
-    const particleCount = isTouchDevice ? 18 : 46;
+    resizeCanvas();
+
+    const particleCount = isTouch ? 14 : 34;
     const colors = ['#FFA28D', '#8C52FF', '#00F0FF', '#FFD700', '#FFFFFF', '#360C9F', '#E280FF'];
 
     const particles: GlobalParticle[] = [];
@@ -112,15 +129,15 @@ export const JLTBackgroundMotion: React.FC = () => {
       });
     }
 
-    const handleResize = () => {
-      if (!canvas) return;
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
-    };
+    const handleResize = createDebouncedCallback(resizeCanvas, 140);
+
+    const applyMouseMove = createRafThrottle((clientX: number, clientY: number) => {
+      mousePosRef.current.x = clientX;
+      mousePosRef.current.y = clientY;
+    });
 
     const handleMouseMove = (e: MouseEvent) => {
-      mousePosRef.current.x = e.clientX;
-      mousePosRef.current.y = e.clientY;
+      applyMouseMove(e.clientX, e.clientY);
     };
 
     const handleMouseLeave = () => {
@@ -128,11 +145,21 @@ export const JLTBackgroundMotion: React.FC = () => {
       mousePosRef.current.y = -1000;
     };
 
-    window.addEventListener('resize', handleResize, { passive: true });
-    window.addEventListener('mousemove', handleMouseMove, { passive: true });
-    document.addEventListener('mouseleave', handleMouseLeave);
+    const scheduleRender = () => {
+      if (animFrameId === null) {
+        animFrameId = requestAnimationFrame(render);
+      }
+    };
 
     const render = (time: number) => {
+      animFrameId = null;
+      if (!isDocumentVisible()) return;
+      if (time - lastRenderTime < frameInterval) {
+        scheduleRender();
+        return;
+      }
+      lastRenderTime = time;
+
       ctx.clearRect(0, 0, width, height);
 
       const mx = mousePosRef.current.x;
@@ -173,7 +200,6 @@ export const JLTBackgroundMotion: React.FC = () => {
         const currentAlpha = p.alpha * (0.8 + Math.sin(time * 0.002 + p.phase) * 0.25);
 
         // Draw particle with ambient glow
-        ctx.save();
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
         ctx.fillStyle = p.color;
@@ -181,19 +207,37 @@ export const JLTBackgroundMotion: React.FC = () => {
         ctx.shadowColor = p.color;
         ctx.shadowBlur = p.radius * 3.5;
         ctx.fill();
-        ctx.restore();
       }
 
-      animFrameId = requestAnimationFrame(render);
+      ctx.globalAlpha = 1;
+      ctx.shadowBlur = 0;
+      scheduleRender();
     };
 
-    animFrameId = requestAnimationFrame(render);
+    const handleVisibilityChange = () => {
+      if (isDocumentVisible()) {
+        scheduleRender();
+      }
+    };
+
+    window.addEventListener('resize', handleResize, { passive: true });
+    if (shouldTrackPointer) {
+      window.addEventListener('mousemove', handleMouseMove, { passive: true });
+      document.addEventListener('mouseleave', handleMouseLeave);
+    }
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    scheduleRender();
 
     return () => {
-      cancelAnimationFrame(animFrameId);
+      if (animFrameId !== null) cancelAnimationFrame(animFrameId);
+      handleResize.cancel();
+      applyMouseMove.cancel();
       window.removeEventListener('resize', handleResize);
-      window.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseleave', handleMouseLeave);
+      if (shouldTrackPointer) {
+        window.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseleave', handleMouseLeave);
+      }
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []);
 
@@ -201,14 +245,13 @@ export const JLTBackgroundMotion: React.FC = () => {
   // 2. TOKENS FLOATING & PARALLAX GSAP TIMELINES
   // ══════════════════════════════════════════════════════════
   useIsomorphicLayoutEffect(() => {
-    const isTouchDevice =
-      typeof window !== 'undefined' &&
-      ('ontouchstart' in window || navigator.maxTouchPoints > 0);
-    const prefersReducedMotion =
-      typeof window !== 'undefined' &&
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const isTouch = isTouchDevice();
+    const reduceMotion = prefersReducedMotion();
+    const shouldTrackPointer = hasFineHoverPointer() && !isTouch;
 
-    if (prefersReducedMotion) return;
+    if (reduceMotion) return;
+
+    let cleanupPointerParallax: (() => void) | null = null;
 
     const ctx = gsap.context(() => {
       // 1. Initial entrance for background tokens
@@ -271,7 +314,7 @@ export const JLTBackgroundMotion: React.FC = () => {
       });
 
       // 3. Desktop Mouse Parallax Magnetism with Cached Coordinates
-      if (!isTouchDevice) {
+      if (shouldTrackPointer) {
         const quickTos = new Map<
           string,
           { x: (v: number) => void; y: (v: number) => void; rot: (v: number) => void }
@@ -302,6 +345,8 @@ export const JLTBackgroundMotion: React.FC = () => {
         };
 
         updateTokenPositions();
+        const scheduleTokenPositionUpdate = createRafThrottle(updateTokenPositions);
+        const resizeTokenPositionUpdate = createDebouncedCallback(updateTokenPositions, 140);
 
         let mouseRaf: number | null = null;
         let lastClientX = 0;
@@ -343,19 +388,24 @@ export const JLTBackgroundMotion: React.FC = () => {
         };
 
         window.addEventListener('mousemove', handleMouseMove, { passive: true });
-        window.addEventListener('resize', updateTokenPositions, { passive: true });
-        window.addEventListener('scroll', updateTokenPositions, { passive: true });
+        window.addEventListener('resize', resizeTokenPositionUpdate, { passive: true });
+        window.addEventListener('scroll', scheduleTokenPositionUpdate, { passive: true });
 
-        return () => {
+        cleanupPointerParallax = () => {
           if (mouseRaf) cancelAnimationFrame(mouseRaf);
+          scheduleTokenPositionUpdate.cancel();
+          resizeTokenPositionUpdate.cancel();
           window.removeEventListener('mousemove', handleMouseMove);
-          window.removeEventListener('resize', updateTokenPositions);
-          window.removeEventListener('scroll', updateTokenPositions);
+          window.removeEventListener('resize', resizeTokenPositionUpdate);
+          window.removeEventListener('scroll', scheduleTokenPositionUpdate);
         };
       }
     }, containerRef);
 
-    return () => ctx.revert();
+    return () => {
+      cleanupPointerParallax?.();
+      ctx.revert();
+    };
   }, []);
 
   return (

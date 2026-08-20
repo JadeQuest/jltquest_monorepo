@@ -6,6 +6,7 @@ import {
   gsap,
   prefersReducedMotion,
   isTouchDevice,
+  observeElementVisibility,
   ReversibleToggleActions,
   MotionEases,
 } from '@/lib/animations';
@@ -23,7 +24,10 @@ export const CTASection: React.FC = () => {
   const ctaBtnRef = useMagneticButton<HTMLAnchorElement>({ maxDistance: 15, strength: 0.28 });
 
   useIsomorphicLayoutEffect(() => {
-    if (prefersReducedMotion()) return;
+    if (prefersReducedMotion() || !sectionRef.current) return;
+
+    let mascotFloatTween: gsap.core.Tween | null = null;
+    let glowRingTween: gsap.core.Tween | null = null;
 
     const ctx = gsap.context(() => {
       // Reversible Divider Line
@@ -36,6 +40,8 @@ export const CTASection: React.FC = () => {
           transformOrigin: 'center',
           duration: 0.7,
           ease: 'power2.out',
+          force3D: true,
+          overwrite: 'auto',
           scrollTrigger: {
             trigger: sectionRef.current,
             start: 'top 90%',
@@ -46,6 +52,10 @@ export const CTASection: React.FC = () => {
 
       // Reversible Master Entrance Sequence
       const tl = gsap.timeline({
+        defaults: {
+          force3D: true,
+          overwrite: 'auto',
+        },
         scrollTrigger: {
           trigger: sectionRef.current,
           start: 'top 80%',
@@ -89,45 +99,70 @@ export const CTASection: React.FC = () => {
           '-=0.25'
         );
 
-      // 13. Mascot space animation: Floating y: ±12px, Sway rotation ±3°, Breathing Glow
+      // Mascot space animation: Floating y: ±12px, Sway rotation ±3°, Breathing Glow
       if (mascotImgRef.current) {
-        gsap.to(mascotImgRef.current, {
+        mascotFloatTween = gsap.to(mascotImgRef.current, {
           y: -12,
           rotation: 3,
           duration: 3.4,
           repeat: -1,
           yoyo: true,
           ease: 'sine.inOut',
+          force3D: true,
+          overwrite: 'auto',
         });
       }
 
       if (glowRingRef.current) {
-        gsap.to(glowRingRef.current, {
+        glowRingTween = gsap.to(glowRingRef.current, {
           scale: 1.6,
           opacity: 0.7,
           duration: 2.8,
           repeat: -1,
           yoyo: true,
           ease: 'sine.inOut',
+          force3D: true,
+          overwrite: 'auto',
         });
       }
 
-      // 14. Mascot scroll scale transformation: scale 1 -> 1.15 on scroll
+      // Mascot scroll scale transformation: scale 1 -> 1.12 on scroll
       if (mascotRef.current) {
         gsap.to(mascotRef.current, {
           scale: 1.12,
           ease: 'none',
+          force3D: true,
+          overwrite: 'auto',
           scrollTrigger: {
             trigger: sectionRef.current,
             start: 'top 75%',
             end: 'bottom bottom',
             scrub: 0.8,
+            invalidateOnRefresh: true,
           },
         });
       }
     }, sectionRef);
 
-    return () => ctx.revert();
+    // Pause mascot idle loops when scrolled out of viewport
+    const unobserve = observeElementVisibility(
+      sectionRef.current,
+      (isVisible) => {
+        if (isVisible) {
+          mascotFloatTween?.resume();
+          glowRingTween?.resume();
+        } else {
+          mascotFloatTween?.pause();
+          glowRingTween?.pause();
+        }
+      },
+      { threshold: 0.05 }
+    );
+
+    return () => {
+      unobserve();
+      ctx.revert();
+    };
   }, []);
 
   return (

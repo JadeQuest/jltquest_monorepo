@@ -2,12 +2,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import Lenis from 'lenis';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
-if (typeof window !== 'undefined') {
-  gsap.registerPlugin(ScrollTrigger);
-}
+import { gsap, ScrollTrigger, createDebouncedCallback, isTouchDevice, prefersReducedMotion } from '@/lib/animations';
 
 declare global {
   interface Window {
@@ -19,14 +14,10 @@ export const SmoothScrollProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const lenisRef = useRef<Lenis | null>(null);
 
   useEffect(() => {
-    const isTouchDevice =
-      typeof window !== 'undefined' &&
-      ('ontouchstart' in window || navigator.maxTouchPoints > 0);
-    const prefersReducedMotion =
-      typeof window !== 'undefined' &&
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const isTouch = isTouchDevice();
+    const reduceMotion = prefersReducedMotion();
 
-    if (prefersReducedMotion) return;
+    if (reduceMotion) return;
 
     const lenis = new Lenis({
       duration: 1.2,
@@ -35,7 +26,7 @@ export const SmoothScrollProvider: React.FC<{ children: React.ReactNode }> = ({ 
       gestureOrientation: 'vertical',
       smoothWheel: true,
       wheelMultiplier: 1.0,
-      touchMultiplier: isTouchDevice ? 1.2 : 1.5,
+      touchMultiplier: isTouch ? 1.2 : 1.5,
       infinite: false,
     });
 
@@ -50,23 +41,36 @@ export const SmoothScrollProvider: React.FC<{ children: React.ReactNode }> = ({ 
     };
 
     gsap.ticker.add(tickerCallback);
-    gsap.ticker.lagSmoothing(0);
+    gsap.ticker.lagSmoothing(500, 33);
+
+    const refresh = () => {
+      lenis.resize();
+      ScrollTrigger.refresh();
+    };
+
+    const debouncedRefresh = createDebouncedCallback(refresh, 140);
 
     // Initial settle refreshes
     const initialRefreshTimer = setTimeout(() => {
-      ScrollTrigger.refresh();
-      lenis.resize();
+      refresh();
     }, 150);
 
     const secondaryRefreshTimer = setTimeout(() => {
-      ScrollTrigger.refresh();
-      lenis.resize();
+      refresh();
     }, 600);
 
     // Handle external refresh events
     const handleRefresh = () => {
-      ScrollTrigger.refresh();
-      lenis.resize();
+      debouncedRefresh();
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        lenis.stop();
+      } else {
+        lenis.start();
+        debouncedRefresh();
+      }
     };
 
     const handleScrollTo = (e: Event) => {
@@ -80,16 +84,19 @@ export const SmoothScrollProvider: React.FC<{ children: React.ReactNode }> = ({ 
       }
     };
 
-    window.addEventListener('resize', handleRefresh);
+    window.addEventListener('resize', handleRefresh, { passive: true });
     window.addEventListener('refresh-scroll-trigger', handleRefresh);
     window.addEventListener('scroll-to-target', handleScrollTo);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
       clearTimeout(initialRefreshTimer);
       clearTimeout(secondaryRefreshTimer);
+      debouncedRefresh.cancel();
       window.removeEventListener('resize', handleRefresh);
       window.removeEventListener('refresh-scroll-trigger', handleRefresh);
       window.removeEventListener('scroll-to-target', handleScrollTo);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       gsap.ticker.remove(tickerCallback);
       lenis.destroy();
       delete window.__lenis;

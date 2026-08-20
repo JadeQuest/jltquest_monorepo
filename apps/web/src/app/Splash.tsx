@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef, useCallback, useEffect, useLayoutEffect } from 'react';
-import gsap from 'gsap';
+import { gsap, prefersReducedMotion } from '@/lib/animations';
 
 interface SplashProps {
   onClick?: () => void;
@@ -83,6 +83,8 @@ export default function Splash({ onClick, onStartTransition, onComplete }: Splas
 
   // ─── Setup GSAP Context & Ambient Idle Breathing ───
   useIsomorphicLayoutEffect(() => {
+    if (prefersReducedMotion()) return;
+
     const ctx = gsap.context(() => {
       // 1. Initial Subtle Idle Movement on Mascot (1 -> 1.015, y: 0 -> -3px)
       if (mascotRef.current) {
@@ -93,6 +95,8 @@ export default function Splash({ onClick, onStartTransition, onComplete }: Splas
           ease: 'sine.inOut',
           yoyo: true,
           repeat: -1,
+          force3D: true,
+          overwrite: 'auto',
         });
       }
 
@@ -107,6 +111,8 @@ export default function Splash({ onClick, onStartTransition, onComplete }: Splas
           yoyo: true,
           repeat: -1,
           stagger: 0.15,
+          force3D: true,
+          overwrite: 'auto',
         });
       }
     }, containerRef);
@@ -129,12 +135,14 @@ export default function Splash({ onClick, onStartTransition, onComplete }: Splas
     }
 
     // Support prefers-reduced-motion
-    if (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    if (prefersReducedMotion()) {
       if (containerRef.current) {
         gsap.to(containerRef.current, {
           autoAlpha: 0,
           duration: 0.35,
           ease: 'power2.inOut',
+          force3D: true,
+          overwrite: 'auto',
           onComplete: () => {
             onClick?.();
             onComplete?.();

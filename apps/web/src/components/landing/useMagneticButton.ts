@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import gsap from 'gsap';
+import { gsap, createRafThrottle, hasFineHoverPointer, isTouchDevice, prefersReducedMotion } from '@/lib/animations';
 
 interface MagneticOptions {
   strength?: number;
@@ -18,41 +18,51 @@ export function useMagneticButton<T extends HTMLElement = HTMLButtonElement>(opt
     const el = ref.current;
     if (!el) return;
 
-    const isTouchDevice =
-      typeof window !== 'undefined' &&
-      ('ontouchstart' in window || navigator.maxTouchPoints > 0 || window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-
-    if (isTouchDevice) return;
+    if (isTouchDevice() || !hasFineHoverPointer() || prefersReducedMotion()) return;
 
     const xTo = gsap.quickTo(el, 'x', { duration, ease, force3D: true });
     const yTo = gsap.quickTo(el, 'y', { duration, ease, force3D: true });
 
-    const handleMouseMove = (e: MouseEvent) => {
-      const rect = el.getBoundingClientRect();
+    let rect = el.getBoundingClientRect();
+    const updateRect = () => {
+      rect = el.getBoundingClientRect();
+    };
+
+    const applyMouseMove = createRafThrottle((clientX: number, clientY: number) => {
       const centerX = rect.left + rect.width / 2;
       const centerY = rect.top + rect.height / 2;
 
-      const deltaX = (e.clientX - centerX) * strength;
-      const deltaY = (e.clientY - centerY) * strength;
+      const deltaX = (clientX - centerX) * strength;
+      const deltaY = (clientY - centerY) * strength;
 
       const clampedX = Math.max(-maxDistance, Math.min(maxDistance, deltaX));
       const clampedY = Math.max(-maxDistance, Math.min(maxDistance, deltaY));
 
       xTo(clampedX);
       yTo(clampedY);
+    });
+
+    const handleMouseMove = (e: MouseEvent) => {
+      applyMouseMove(e.clientX, e.clientY);
     };
 
     const handleMouseLeave = () => {
+      applyMouseMove.cancel();
       xTo(0);
       yTo(0);
     };
 
-    el.addEventListener('mousemove', handleMouseMove);
+    el.addEventListener('mouseenter', updateRect);
+    el.addEventListener('mousemove', handleMouseMove, { passive: true });
     el.addEventListener('mouseleave', handleMouseLeave);
+    window.addEventListener('resize', updateRect, { passive: true });
 
     return () => {
+      applyMouseMove.cancel();
+      el.removeEventListener('mouseenter', updateRect);
       el.removeEventListener('mousemove', handleMouseMove);
       el.removeEventListener('mouseleave', handleMouseLeave);
+      window.removeEventListener('resize', updateRect);
       xTo(0);
       yTo(0);
     };

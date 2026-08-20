@@ -17,20 +17,37 @@ export const LandingNav: React.FC = () => {
   const enterAppBtnRef = useMagneticButton<HTMLAnchorElement>({ maxDistance: 12, strength: 0.25 });
 
   useIsomorphicLayoutEffect(() => {
-    if (prefersReducedMotion()) return;
+    if (prefersReducedMotion() || !navRef.current) return;
 
     const ctx = gsap.context(() => {
       // 1. Initial Load: Logo scales from 0.7 -> 1 with blur reduction, Nav slides down from y: -30
       gsap.fromTo(
         logoRef.current,
         { scale: 0.7, opacity: 0, filter: 'blur(12px)' },
-        { scale: 1, opacity: 1, filter: 'blur(0px)', duration: 0.85, ease: MotionEases.backOut, delay: 0.15 }
+        {
+          scale: 1,
+          opacity: 1,
+          filter: 'blur(0px)',
+          duration: 0.85,
+          ease: MotionEases.backOut,
+          delay: 0.15,
+          force3D: true,
+          overwrite: 'auto',
+        }
       );
 
       gsap.fromTo(
         navRef.current,
         { y: -30, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.6, ease: 'power3.out', delay: 0.2 }
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.6,
+          ease: 'power3.out',
+          delay: 0.2,
+          force3D: true,
+          overwrite: 'auto',
+        }
       );
 
       // Button initial entrance animation
@@ -38,7 +55,15 @@ export const LandingNav: React.FC = () => {
         gsap.fromTo(
           btnEnterRef.current,
           { y: -15, opacity: 0 },
-          { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out', delay: 0.3 }
+          {
+            y: 0,
+            opacity: 1,
+            duration: 0.5,
+            ease: 'power3.out',
+            delay: 0.3,
+            force3D: true,
+            overwrite: 'auto',
+          }
         );
       }
 
@@ -51,6 +76,8 @@ export const LandingNav: React.FC = () => {
           autoAlpha: 0,
           filter: 'blur(4px)',
           ease: 'power2.inOut',
+          force3D: true,
+          overwrite: 'auto',
           scrollTrigger: {
             trigger: document.body,
             start: 'top top',
@@ -69,6 +96,8 @@ export const LandingNav: React.FC = () => {
           autoAlpha: 0,
           filter: 'blur(4px)',
           ease: 'power2.inOut',
+          force3D: true,
+          overwrite: 'auto',
           scrollTrigger: {
             trigger: document.body,
             start: 'top top',

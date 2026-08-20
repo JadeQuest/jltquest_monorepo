@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { gsap, prefersReducedMotion, isTouchDevice } from '@/lib/animations';
+import { gsap, prefersReducedMotion, isTouchDevice, hasFineHoverPointer, createRafThrottle } from '@/lib/animations';
 
 const TRAIL_COUNT = 12; // 12 trailing dots for the smooth comet tail
 const BURST_COUNT = 6;  // 6 click burst particles
@@ -51,7 +51,7 @@ export const CustomCursor: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (isTouchDevice() || prefersReducedMotion()) return;
+    if (isTouchDevice() || !hasFineHoverPointer() || prefersReducedMotion()) return;
 
     const container = containerRef.current;
     const head = headRef.current;
@@ -86,14 +86,11 @@ export const CustomCursor: React.FC = () => {
       // ══════════════════════════════════════════════════════════
       // 2. POINTER MOVE: PASS COORDINATES TO HEAD & ALL 12 TRAIL DOTS
       // ══════════════════════════════════════════════════════════
-      const handlePointerMove = (e: PointerEvent) => {
+      const applyPointerMove = createRafThrottle((clientX: number, clientY: number, eventTarget: EventTarget | null) => {
         if (!isVisible) {
           isVisible = true;
           gsap.to(container, { opacity: 1, duration: 0.2, overwrite: 'auto' });
         }
-
-        const clientX = e.clientX;
-        const clientY = e.clientY;
 
         // Pass coordinates to head
         headX(clientX);
@@ -115,7 +112,7 @@ export const CustomCursor: React.FC = () => {
         prevY = clientY;
 
         // Check hovered interactive elements
-        const target = e.target as HTMLElement | null;
+        const target = eventTarget as HTMLElement | null;
         const cursorTarget = target ? (target.closest('[data-cursor]') as HTMLElement | null) : null;
         const clickableTarget = target ? (target.closest('a, button, [role="button"], input, select') as HTMLElement | null) : null;
 
@@ -171,6 +168,10 @@ export const CustomCursor: React.FC = () => {
           setter.scale(scaleBonus);
           setter.opacity(opacityBonus);
         });
+      });
+
+      const handlePointerMove = (e: PointerEvent) => {
+        applyPointerMove(e.clientX, e.clientY, e.target);
       };
 
       // ══════════════════════════════════════════════════════════
@@ -232,6 +233,7 @@ export const CustomCursor: React.FC = () => {
       };
 
       const handlePointerLeave = () => {
+        applyPointerMove.cancel();
         isVisible = false;
         gsap.to(container, { opacity: 0, duration: 0.25, overwrite: 'auto' });
       };
@@ -241,6 +243,7 @@ export const CustomCursor: React.FC = () => {
       document.addEventListener('pointerleave', handlePointerLeave);
 
       return () => {
+        applyPointerMove.cancel();
         window.removeEventListener('pointermove', handlePointerMove);
         window.removeEventListener('pointerdown', handlePointerDown);
         document.removeEventListener('pointerleave', handlePointerLeave);
@@ -251,7 +254,7 @@ export const CustomCursor: React.FC = () => {
   }, []);
 
   // Don't render during SSR, or on touch / reduced-motion devices
-  if (!mounted || isTouchDevice() || prefersReducedMotion()) {
+  if (!mounted || isTouchDevice() || !hasFineHoverPointer() || prefersReducedMotion()) {
     return null;
   }
 

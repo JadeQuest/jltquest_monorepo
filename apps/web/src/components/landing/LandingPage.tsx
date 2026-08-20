@@ -4,16 +4,31 @@ import React from 'react';
 import dynamic from 'next/dynamic';
 import { LandingNav } from './LandingNav';
 import { HeroSection } from './HeroSection';
-import { LandingFooter } from './LandingFooter';
 import { JLTBackgroundMotion } from './JLTBackgroundMotion';
 import { ScrollProgressBar } from './ScrollProgressBar';
 import { SmoothScrollProvider } from './SmoothScrollProvider';
 import { CustomCursor } from './CustomCursor';
 
-import { CosmicOriginsSection } from './CosmicOriginsSection';
-import { FeaturesSection } from './FeaturesSection';
-import { HowItWorksSection } from './HowItWorksSection';
-import { CTASection } from './CTASection';
+const CosmicOriginsSection = dynamic(
+  () => import('./CosmicOriginsSection').then((mod) => mod.CosmicOriginsSection),
+  { ssr: false }
+);
+const FeaturesSection = dynamic(
+  () => import('./FeaturesSection').then((mod) => mod.FeaturesSection),
+  { ssr: false }
+);
+const HowItWorksSection = dynamic(
+  () => import('./HowItWorksSection').then((mod) => mod.HowItWorksSection),
+  { ssr: false }
+);
+const CTASection = dynamic(
+  () => import('./CTASection').then((mod) => mod.CTASection),
+  { ssr: false }
+);
+const LandingFooter = dynamic(
+  () => import('./LandingFooter').then((mod) => mod.LandingFooter),
+  { ssr: false }
+);
 
 /**
  * LandingPage

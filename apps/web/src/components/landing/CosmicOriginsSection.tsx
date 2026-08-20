@@ -23,6 +23,9 @@ import {
   createHeaderReveal,
   prefersReducedMotion,
   isTouchDevice,
+  hasFineHoverPointer,
+  createDebouncedCallback,
+  createRafThrottle,
   ReversibleToggleActions,
   MotionEases,
 } from '@/lib/animations';
@@ -408,7 +411,7 @@ export const CosmicOriginsSection: React.FC = () => {
   // 2. ULTRA-SMOOTH MOUSE PARALLAX TILT VIA gsap.quickTo() (Layer 2)
   // ══════════════════════════════════════════════════════════
   useEffect(() => {
-    if (prefersReducedMotion() || isTouchDevice() || !arenaContainerRef.current) return;
+    if (prefersReducedMotion() || isTouchDevice() || !hasFineHoverPointer() || !arenaContainerRef.current) return;
 
     const arena = arenaContainerRef.current;
     const cardTilt = cardMouseTiltRef.current;
@@ -417,29 +420,49 @@ export const CosmicOriginsSection: React.FC = () => {
     const setRotX = gsap.quickTo(cardTilt, 'rotationX', { duration: 0.35, ease: 'power2.out', force3D: true });
     const setRotY = gsap.quickTo(cardTilt, 'rotationY', { duration: 0.35, ease: 'power2.out', force3D: true });
 
-    const handleMouseMove = (e: MouseEvent) => {
-      const rect = cardTilt.getBoundingClientRect();
+    let rect = cardTilt.getBoundingClientRect();
+    const updateRect = () => {
+      rect = cardTilt.getBoundingClientRect();
+    };
+    const scheduleRectUpdate = createRafThrottle(updateRect);
+    const debouncedRectUpdate = createDebouncedCallback(updateRect, 140);
+
+    const applyMouseMove = createRafThrottle((clientX: number, clientY: number) => {
       const centerX = rect.left + rect.width / 2;
       const centerY = rect.top + rect.height / 2;
 
-      const normX = Math.max(-1, Math.min(1, (e.clientX - centerX) / (rect.width / 2)));
-      const normY = Math.max(-1, Math.min(1, (e.clientY - centerY) / (rect.height / 2)));
+      const normX = Math.max(-1, Math.min(1, (clientX - centerX) / (rect.width / 2)));
+      const normY = Math.max(-1, Math.min(1, (clientY - centerY) / (rect.height / 2)));
 
       setRotX(-normY * 6); // Max ±6deg
       setRotY(normX * 8); // Max ±8deg
+    });
+
+    const handleMouseMove = (e: MouseEvent) => {
+      applyMouseMove(e.clientX, e.clientY);
     };
 
     const handleMouseLeave = () => {
+      applyMouseMove.cancel();
       setRotX(0);
       setRotY(0);
     };
 
+    arena.addEventListener('mouseenter', updateRect);
     arena.addEventListener('mousemove', handleMouseMove, { passive: true });
     arena.addEventListener('mouseleave', handleMouseLeave);
+    window.addEventListener('resize', debouncedRectUpdate, { passive: true });
+    window.addEventListener('scroll', scheduleRectUpdate, { passive: true });
 
     return () => {
+      applyMouseMove.cancel();
+      scheduleRectUpdate.cancel();
+      debouncedRectUpdate.cancel();
+      arena.removeEventListener('mouseenter', updateRect);
       arena.removeEventListener('mousemove', handleMouseMove);
       arena.removeEventListener('mouseleave', handleMouseLeave);
+      window.removeEventListener('resize', debouncedRectUpdate);
+      window.removeEventListener('scroll', scheduleRectUpdate);
     };
   }, []);
 

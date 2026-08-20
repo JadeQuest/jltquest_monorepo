@@ -8,6 +8,7 @@ import {
   createReversibleReveal,
   createParticleBurst,
   prefersReducedMotion,
+  hasFineHoverPointer,
   ReversibleToggleActions,
   MotionEases,
 } from '@/lib/animations';
@@ -34,7 +35,7 @@ const Step: React.FC<StepProps> = React.memo(
 
     const handleMouseEnter = () => {
       onHoverStep?.(step);
-      if (stepCircleRef.current) {
+      if (stepCircleRef.current && hasFineHoverPointer() && !prefersReducedMotion()) {
         createParticleBurst(stepCircleRef.current, { count: 12, radius: 45 });
       }
     };
@@ -165,6 +166,8 @@ export const HowItWorksSection: React.FC = () => {
           transformOrigin: 'center',
           duration: 0.7,
           ease: 'power2.out',
+          force3D: true,
+          overwrite: 'auto',
           scrollTrigger: {
             trigger: sectionRef.current,
             start: 'top 90%',
@@ -187,6 +190,7 @@ export const HowItWorksSection: React.FC = () => {
           start: 'top 78%',
           end: 'center 45%',
           scrub: 0.5,
+          invalidateOnRefresh: true,
           onUpdate: (self) => {
             const progress = self.progress;
 
@@ -206,6 +210,7 @@ export const HowItWorksSection: React.FC = () => {
               gsap.set(laserBeadRef.current, {
                 left: `${progress * 100}%`,
                 opacity: progress > 0.02 && progress < 0.99 ? 1 : progress >= 0.99 ? 0 : 0.4,
+                force3D: true,
               });
             }
           },
@@ -216,14 +221,14 @@ export const HowItWorksSection: React.FC = () => {
       lineTl.fromTo(
         lineFillRef.current,
         { scaleX: 0, transformOrigin: 'left center' },
-        { scaleX: 1, ease: 'none' }
+        { scaleX: 1, ease: 'none', force3D: true, overwrite: 'auto' }
       );
 
       // Mobile vertical line fill
       lineTl.fromTo(
         '.hiw-connector-line-vertical',
         { scaleY: 0, transformOrigin: 'top center' },
-        { scaleY: 1, ease: 'none' },
+        { scaleY: 1, ease: 'none', force3D: true, overwrite: 'auto' },
         0
       );
 

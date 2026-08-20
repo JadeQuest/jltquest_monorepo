@@ -1,4 +1,13 @@
-import { gsap, ScrollTrigger, prefersReducedMotion, isTouchDevice, MotionEases, ReversibleToggleActions } from './gsapCore';
+import {
+  gsap,
+  ScrollTrigger,
+  prefersReducedMotion,
+  isTouchDevice,
+  hasFineHoverPointer,
+  createRafThrottle,
+  MotionEases,
+  ReversibleToggleActions,
+} from './gsapCore';
 
 export interface RevealOptions {
   trigger?: string | Element;
@@ -61,6 +70,8 @@ export function createReversibleReveal(
       delay,
       stagger,
       ease,
+      force3D: true,
+      overwrite: 'auto',
       scrollTrigger: {
         trigger: trigger as gsap.DOMTarget,
         start,
@@ -110,7 +121,7 @@ export function createHeaderReveal(
     .fromTo(
       desc,
       { y: 20, opacity: 0 },
-      { y: 0, opacity: 1, duration: duration * 0.9, ease: MotionEases.powerOut },
+      { y: 0, opacity: 1, duration: duration * 0.9, ease: MotionEases.powerOut, force3D: true },
       '-=0.3'
     );
 
@@ -124,18 +135,22 @@ export function createCardTiltEffect(
   card: HTMLElement,
   options: { maxRotation?: number; translateY?: number } = {}
 ) {
-  if (isTouchDevice() || prefersReducedMotion()) return () => {};
+  if (isTouchDevice() || !hasFineHoverPointer() || prefersReducedMotion()) return () => {};
 
   const { maxRotation = 4, translateY = -6 } = options;
 
-  const rotX = gsap.quickTo(card, 'rotationX', { duration: 0.35, ease: 'power2.out' });
-  const rotY = gsap.quickTo(card, 'rotationY', { duration: 0.35, ease: 'power2.out' });
-  const yTo = gsap.quickTo(card, 'y', { duration: 0.35, ease: 'power2.out' });
+  const rotX = gsap.quickTo(card, 'rotationX', { duration: 0.35, ease: 'power2.out', force3D: true });
+  const rotY = gsap.quickTo(card, 'rotationY', { duration: 0.35, ease: 'power2.out', force3D: true });
+  const yTo = gsap.quickTo(card, 'y', { duration: 0.35, ease: 'power2.out', force3D: true });
 
-  const handleMouseMove = (e: MouseEvent) => {
-    const rect = card.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+  let rect = card.getBoundingClientRect();
+  const updateRect = () => {
+    rect = card.getBoundingClientRect();
+  };
+
+  const applyMouseMove = createRafThrottle((clientX: number, clientY: number) => {
+    const x = clientX - rect.left;
+    const y = clientY - rect.top;
     const centerX = rect.width / 2;
     const centerY = rect.height / 2;
 
@@ -145,20 +160,30 @@ export function createCardTiltEffect(
     rotX(rotateXVal);
     rotY(rotateYVal);
     yTo(translateY);
+  });
+
+  const handleMouseMove = (e: MouseEvent) => {
+    applyMouseMove(e.clientX, e.clientY);
   };
 
   const handleMouseLeave = () => {
+    applyMouseMove.cancel();
     rotX(0);
     rotY(0);
     yTo(0);
   };
 
-  card.addEventListener('mousemove', handleMouseMove);
+  card.addEventListener('mouseenter', updateRect);
+  card.addEventListener('mousemove', handleMouseMove, { passive: true });
   card.addEventListener('mouseleave', handleMouseLeave);
+  window.addEventListener('resize', updateRect, { passive: true });
 
   return () => {
+    applyMouseMove.cancel();
+    card.removeEventListener('mouseenter', updateRect);
     card.removeEventListener('mousemove', handleMouseMove);
     card.removeEventListener('mouseleave', handleMouseLeave);
+    window.removeEventListener('resize', updateRect);
     rotX(0);
     rotY(0);
     yTo(0);
@@ -169,27 +194,41 @@ export function createCardTiltEffect(
  * Attaches a dynamic Web3 light beam / spotlight sweep following the cursor over a card.
  */
 export function createCardLightBeamEffect(card: HTMLElement) {
-  if (isTouchDevice() || prefersReducedMotion()) return () => {};
+  if (isTouchDevice() || !hasFineHoverPointer() || prefersReducedMotion()) return () => {};
 
-  const handleMouseMove = (e: MouseEvent) => {
-    const rect = card.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+  let rect = card.getBoundingClientRect();
+  const updateRect = () => {
+    rect = card.getBoundingClientRect();
+  };
+
+  const applyMouseMove = createRafThrottle((clientX: number, clientY: number) => {
+    const x = clientX - rect.left;
+    const y = clientY - rect.top;
     card.style.setProperty('--mouse-x', `${x}px`);
     card.style.setProperty('--mouse-y', `${y}px`);
     card.style.setProperty('--mouse-active', '1');
+  });
+
+  const handleMouseMove = (e: MouseEvent) => {
+    applyMouseMove(e.clientX, e.clientY);
   };
 
   const handleMouseLeave = () => {
+    applyMouseMove.cancel();
     card.style.setProperty('--mouse-active', '0');
   };
 
-  card.addEventListener('mousemove', handleMouseMove);
+  card.addEventListener('mouseenter', updateRect);
+  card.addEventListener('mousemove', handleMouseMove, { passive: true });
   card.addEventListener('mouseleave', handleMouseLeave);
+  window.addEventListener('resize', updateRect, { passive: true });
 
   return () => {
+    applyMouseMove.cancel();
+    card.removeEventListener('mouseenter', updateRect);
     card.removeEventListener('mousemove', handleMouseMove);
     card.removeEventListener('mouseleave', handleMouseLeave);
+    window.removeEventListener('resize', updateRect);
   };
 }
 
@@ -201,7 +240,7 @@ export function createMagneticButtonEffect(
   button: HTMLElement,
   options: { maxDistance?: number; strength?: number; iconSelector?: string } = {}
 ) {
-  if (isTouchDevice() || prefersReducedMotion()) return () => {};
+  if (isTouchDevice() || !hasFineHoverPointer() || prefersReducedMotion()) return () => {};
 
   const { maxDistance = 14, strength = 0.28, iconSelector = 'svg, img, .magnetic-icon' } = options;
 
@@ -212,13 +251,17 @@ export function createMagneticButtonEffect(
   const iconXTo = iconEl ? gsap.quickTo(iconEl, 'x', { duration: 0.3, ease: 'power2.out' }) : null;
   const iconYTo = iconEl ? gsap.quickTo(iconEl, 'y', { duration: 0.3, ease: 'power2.out' }) : null;
 
-  const handleMouseMove = (e: MouseEvent) => {
-    const rect = button.getBoundingClientRect();
+  let rect = button.getBoundingClientRect();
+  const updateRect = () => {
+    rect = button.getBoundingClientRect();
+  };
+
+  const applyMouseMove = createRafThrottle((clientX: number, clientY: number) => {
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
 
-    const deltaX = (e.clientX - centerX) * strength;
-    const deltaY = (e.clientY - centerY) * strength;
+    const deltaX = (clientX - centerX) * strength;
+    const deltaY = (clientY - centerY) * strength;
 
     const clampedX = Math.max(-maxDistance, Math.min(maxDistance, deltaX));
     const clampedY = Math.max(-maxDistance, Math.min(maxDistance, deltaY));
@@ -230,14 +273,21 @@ export function createMagneticButtonEffect(
       iconXTo(clampedX * 0.45);
       iconYTo(clampedY * 0.45);
     }
+  });
+
+  const handleMouseMove = (e: MouseEvent) => {
+    applyMouseMove(e.clientX, e.clientY);
   };
 
   const handleMouseLeave = () => {
+    applyMouseMove.cancel();
     gsap.to(button, {
       x: 0,
       y: 0,
       duration: 0.7,
       ease: MotionEases.elasticOut,
+      force3D: true,
+      overwrite: 'auto',
     });
     if (iconEl) {
       gsap.to(iconEl, {
@@ -245,16 +295,23 @@ export function createMagneticButtonEffect(
         y: 0,
         duration: 0.6,
         ease: MotionEases.elasticOut,
+        force3D: true,
+        overwrite: 'auto',
       });
     }
   };
 
-  button.addEventListener('mousemove', handleMouseMove);
+  button.addEventListener('mouseenter', updateRect);
+  button.addEventListener('mousemove', handleMouseMove, { passive: true });
   button.addEventListener('mouseleave', handleMouseLeave);
+  window.addEventListener('resize', updateRect, { passive: true });
 
   return () => {
+    applyMouseMove.cancel();
+    button.removeEventListener('mouseenter', updateRect);
     button.removeEventListener('mousemove', handleMouseMove);
     button.removeEventListener('mouseleave', handleMouseLeave);
+    window.removeEventListener('resize', updateRect);
     xTo(0);
     yTo(0);
     if (iconEl) {

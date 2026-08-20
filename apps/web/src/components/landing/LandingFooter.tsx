@@ -5,6 +5,7 @@ import Link from 'next/link';
 import {
   gsap,
   prefersReducedMotion,
+  hasFineHoverPointer,
   createParticleBurst,
   ReversibleToggleActions,
   MotionEases,
@@ -26,13 +27,13 @@ export const LandingFooter: React.FC = () => {
   };
 
   const handleLogoHover = () => {
-    if (logoWrapperRef.current) {
+    if (logoWrapperRef.current && hasFineHoverPointer() && !prefersReducedMotion()) {
       createParticleBurst(logoWrapperRef.current, { count: 16, radius: 45 });
     }
   };
 
   useIsomorphicLayoutEffect(() => {
-    if (prefersReducedMotion()) return;
+    if (prefersReducedMotion() || !footerRef.current) return;
 
     const ctx = gsap.context(() => {
       // Reversible Divider line animation
@@ -45,6 +46,8 @@ export const LandingFooter: React.FC = () => {
           transformOrigin: 'center',
           duration: 0.8,
           ease: 'power2.out',
+          force3D: true,
+          overwrite: 'auto',
           scrollTrigger: {
             trigger: footerRef.current,
             start: 'top bottom',
@@ -63,6 +66,8 @@ export const LandingFooter: React.FC = () => {
           duration: 0.65,
           stagger: 0.08,
           ease: MotionEases.powerOut,
+          force3D: true,
+          overwrite: 'auto',
           scrollTrigger: {
             trigger: footerRef.current,
             start: 'top bottom',

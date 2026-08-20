@@ -51,6 +51,8 @@ export const SplitText: React.FC<SplitTextProps> = ({
         duration,
         delay,
         ease: MotionEases.powerOut,
+        force3D: true,
+        overwrite: 'auto',
       };
 
       if (blur) {

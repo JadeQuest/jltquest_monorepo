@@ -1,32 +1,29 @@
 'use client';
 
-import React, { useRef, useEffect } from 'react';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import React, { useRef, useEffect, useLayoutEffect } from 'react';
+import { gsap, prefersReducedMotion } from '@/lib/animations';
 
-if (typeof window !== 'undefined') {
-  gsap.registerPlugin(ScrollTrigger);
-}
+const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 export const ScrollProgressBar: React.FC = () => {
   const barRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     const el = barRef.current;
-    if (!el) return;
-
-    const prefersReducedMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReducedMotion) return;
+    if (!el || prefersReducedMotion()) return;
 
     const ctx = gsap.context(() => {
       gsap.to(el, {
         scaleX: 1,
         ease: 'none',
+        force3D: true,
+        overwrite: 'auto',
         scrollTrigger: {
           trigger: document.documentElement,
           start: 'top top',
           end: 'bottom bottom',
           scrub: 0.3,
+          invalidateOnRefresh: true,
         },
       });
     });

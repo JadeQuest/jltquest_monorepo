@@ -1,11 +1,14 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useAccount } from 'wagmi';
 import { useRarePass, RarePassLevelConfig, RarePassRewardItem, RarePassMission } from '@/hooks/useRarePass';
 import { JLTLoader } from '@/components/common/JLTLoader';
 import { showError } from '@/components/common/AlertModal';
+import { gsap, prefersReducedMotion, MotionEases } from '@/lib/animations';
+
+const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 import {
   Sparkles,
   Zap,
@@ -43,6 +46,16 @@ const getRewardImage = (type: string, level?: number, track?: 'FREE' | 'PREMIUM'
     return '/card/pass/s1/basic.webp';
   }
   return null;
+};
+
+const formatSeasonDate = (dateVal?: string | Date) => {
+  if (!dateVal) return 'TBA';
+  try {
+    const d = typeof dateVal === 'string' ? new Date(dateVal) : dateVal;
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  } catch {
+    return 'TBA';
+  }
 };
 
 const getRewardTitle = (reward: { rewardType: string; amount?: number | null; track?: 'FREE' | 'PREMIUM' }, level?: number) => {
@@ -282,15 +295,41 @@ export default function RarePassPage() {
     }
   };
 
+  const pageContainerRef = useRef<HTMLDivElement>(null);
+
+  useIsomorphicLayoutEffect(() => {
+    if (prefersReducedMotion() || !pageContainerRef.current) return;
+
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        '.rp-section-anim',
+        { opacity: 0, y: 20, scale: 0.98 },
+        {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          duration: 0.55,
+          stagger: 0.08,
+          ease: MotionEases.powerOut,
+          force3D: true,
+          overwrite: 'auto',
+          clearProps: 'transform,opacity',
+        }
+      );
+    }, pageContainerRef);
+
+    return () => ctx.revert();
+  }, [status, missions]);
+
   const startDateFormatted = formatSeasonDate(status?.season?.startAt);
   const endDateFormatted = formatSeasonDate(status?.season?.endAt);
 
   return (
-    <div className="flex flex-col gap-8 max-w-[1550px] w-full mx-auto">
+    <div ref={pageContainerRef} className="flex flex-col gap-8 max-w-[1550px] w-full mx-auto select-none">
       {/* ════════════════════════════════════════════════════════
           RARE PASS HERO / SEASON STATUS BANNER
           ════════════════════════════════════════════════════════ */}
-      <div className="daily-card-panel p-6 sm:p-8 relative overflow-hidden flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 shadow-2xl">
+      <div className="rp-section-anim will-change-transform daily-card-panel p-6 sm:p-8 relative overflow-hidden flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 shadow-2xl">
         <div className="absolute inset-0 bg-radial from-[#7B2CBF]/30 via-transparent to-transparent pointer-events-none" />
 
         {/* Left Section */}
@@ -525,7 +564,7 @@ export default function RarePassPage() {
 
                             {/* Premium Action / Status Slot */}
                             <div className="w-full h-7 flex items-center justify-center">
-                              {premiumReward?.isClaimed ? (
+                              {(premiumReward?.claimed || premiumReward?.isClaimed) ? (
                                 <div className="w-full h-full rounded-lg bg-emerald-500/15 border border-emerald-400/30 text-emerald-300 text-[11px] font-gilroyBold flex items-center justify-center gap-1">
                                   <CheckCircle2 className="w-3 h-3" /> Claimed
                                 </div>
@@ -533,7 +572,7 @@ export default function RarePassPage() {
                                 <div className="w-full h-full rounded-lg bg-amber-500/5 border border-amber-400/10 text-amber-300/60 text-[10px] font-gilroyMedium flex items-center justify-center gap-1">
                                   <Lock className="w-2.5 h-2.5" /> Premium
                                 </div>
-                              ) : isPremium && premiumReward && !premiumReward.isClaimed && premiumReward.isClaimable ? (
+                              ) : isPremium && premiumReward && !(premiumReward.claimed || premiumReward.isClaimed) && (premiumReward.canClaim || premiumReward.isClaimable) ? (
                                 <button
                                   onClick={() => handleClaimReward(premiumReward, levelConfig.level)}
                                   disabled={claimingId === premiumReward.id}
@@ -613,11 +652,11 @@ export default function RarePassPage() {
 
                             {/* Free Action / Status Slot */}
                             <div className="w-full h-7 flex items-center justify-center">
-                              {freeReward?.isClaimed ? (
+                              {(freeReward?.claimed || freeReward?.isClaimed) ? (
                                 <div className="w-full h-full rounded-lg bg-emerald-500/15 border border-emerald-400/30 text-emerald-300 text-[11px] font-gilroyBold flex items-center justify-center gap-1">
                                   <CheckCircle2 className="w-3 h-3" /> Claimed
                                 </div>
-                              ) : freeReward && !freeReward.isClaimed && freeReward.isClaimable ? (
+                              ) : freeReward && !(freeReward.claimed || freeReward.isClaimed) && (freeReward.canClaim || freeReward.isClaimable) ? (
                                 <button
                                   onClick={() => handleClaimReward(freeReward, levelConfig.level)}
                                   disabled={claimingId === freeReward.id}

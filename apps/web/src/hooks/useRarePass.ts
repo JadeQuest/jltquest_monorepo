@@ -2,53 +2,21 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAccount } from 'wagmi';
 import { fetchWithRetry, getApiUrl } from '@/lib/apiClient';
 import { getCookie } from '@/lib/authCookie';
+import type {
+  ApiResponse,
+  RarePassStatusDto,
+  RarePassLevelConfigDto,
+  RarePassRewardItemDto,
+  RarePassMissionDto,
+  RarePassClaimResultDto,
+  RarePassMissionClaimResultDto,
+  RarePassPurchaseResultDto
+} from '@jlt/types';
 
-export interface RarePassStatus {
-  season: {
-    id: string;
-    name: string;
-    startAt: string;
-    endAt: string;
-    maxLevel: number;
-  };
-  progression: {
-    totalRpXp: number;
-    currentLevel: number;
-    xpInCurrentLevel: number;
-    xpRequiredForNext: number;
-    progress: number;
-    isPremium: boolean;
-  };
-}
-
-export interface RarePassRewardItem {
-  id: string;
-  track: 'FREE' | 'PREMIUM';
-  rewardType: 'GP' | 'XP' | 'FRAGMENT' | 'SPIN' | 'CARD' | 'AVATAR';
-  amount: number | null;
-  metadata?: any;
-  isClaimed: boolean;
-  isClaimable: boolean;
-}
-
-export interface RarePassLevelConfig {
-  level: number;
-  requiredRpXp: number;
-  rewards: RarePassRewardItem[];
-}
-
-export interface RarePassMission {
-  id: string;
-  code: string;
-  name: string;
-  description: string;
-  rpXpReward: number;
-  type: 'DAILY' | 'WEEKLY' | 'SEASONAL';
-  targetCount: number;
-  progress: number;
-  completed: boolean;
-  canClaim: boolean;
-}
+export type RarePassStatus = RarePassStatusDto;
+export type RarePassRewardItem = RarePassRewardItemDto;
+export type RarePassLevelConfig = RarePassLevelConfigDto;
+export type RarePassMission = RarePassMissionDto;
 
 export function useRarePass() {
   const queryClient = useQueryClient();
@@ -58,39 +26,45 @@ export function useRarePass() {
 
   const statusQuery = useQuery({
     queryKey: ['rarepassStatus', address],
-    queryFn: async () => {
-      const response = await fetchWithRetry<{ success: boolean; data: RarePassStatus }>(`${getApiUrl()}/rarepass/status`);
+    queryFn: async (): Promise<RarePassStatusDto | null> => {
+      const response = await fetchWithRetry<ApiResponse<RarePassStatusDto>>(`${getApiUrl()}/rarepass/status`);
       return response.data;
     },
     enabled: isEnabled,
+    staleTime: 30_000,
+    retry: 1,
   });
 
   const rewardsQuery = useQuery({
     queryKey: ['rarepassRewards', address],
-    queryFn: async () => {
-      const response = await fetchWithRetry<{ success: boolean; data: RarePassLevelConfig[] }>(`${getApiUrl()}/rarepass/rewards`);
-      return response.data;
+    queryFn: async (): Promise<RarePassLevelConfigDto[]> => {
+      const response = await fetchWithRetry<ApiResponse<RarePassLevelConfigDto[]>>(`${getApiUrl()}/rarepass/rewards`);
+      return response.data || [];
     },
     enabled: isEnabled,
+    staleTime: 60_000,
+    retry: 1,
   });
 
   const missionsQuery = useQuery({
     queryKey: ['rarepassMissions', address],
-    queryFn: async () => {
-      const response = await fetchWithRetry<{ success: boolean; data: RarePassMission[] }>(`${getApiUrl()}/rarepass/missions`);
-      return response.data;
+    queryFn: async (): Promise<RarePassMissionDto[]> => {
+      const response = await fetchWithRetry<ApiResponse<RarePassMissionDto[]>>(`${getApiUrl()}/rarepass/missions`);
+      return response.data || [];
     },
     enabled: isEnabled,
+    staleTime: 30_000,
+    retry: 1,
   });
 
   const claimRewardMutation = useMutation({
-    mutationFn: async (rewardId: string) => {
-      const response = await fetchWithRetry<{ success: boolean; data: any; error?: any }>(`${getApiUrl()}/rarepass/claim`, {
+    mutationFn: async (rewardId: string): Promise<RarePassClaimResultDto> => {
+      const response = await fetchWithRetry<ApiResponse<RarePassClaimResultDto>>(`${getApiUrl()}/rarepass/claim`, {
         method: 'POST',
         body: JSON.stringify({ rewardId }),
       });
-      if (!response.success) {
-        throw new Error(response.error?.message || response.error || 'Claim failed');
+      if (!response.success || !response.data) {
+        throw new Error(response.error?.message || 'Claim failed');
       }
       return response.data;
     },
@@ -102,12 +76,12 @@ export function useRarePass() {
   });
 
   const claimMissionMutation = useMutation({
-    mutationFn: async (missionId: string) => {
-      const response = await fetchWithRetry<{ success: boolean; data: any; error?: any }>(`${getApiUrl()}/rarepass/missions/${missionId}/claim`, {
+    mutationFn: async (missionId: string): Promise<RarePassMissionClaimResultDto> => {
+      const response = await fetchWithRetry<ApiResponse<RarePassMissionClaimResultDto>>(`${getApiUrl()}/rarepass/missions/${missionId}/claim`, {
         method: 'POST',
       });
-      if (!response.success) {
-        throw new Error(response.error?.message || response.error || 'Mission claim failed');
+      if (!response.success || !response.data) {
+        throw new Error(response.error?.message || 'Mission claim failed');
       }
       return response.data;
     },
@@ -119,12 +93,12 @@ export function useRarePass() {
   });
 
   const buyPremiumMutation = useMutation({
-    mutationFn: async () => {
-      const response = await fetchWithRetry<{ success: boolean; data: any; error?: any }>(`${getApiUrl()}/rarepass/buy-premium`, {
+    mutationFn: async (): Promise<RarePassPurchaseResultDto> => {
+      const response = await fetchWithRetry<ApiResponse<RarePassPurchaseResultDto>>(`${getApiUrl()}/rarepass/buy-premium`, {
         method: 'POST',
       });
-      if (!response.success) {
-        throw new Error(response.error?.message || response.error || 'Purchase failed');
+      if (!response.success || !response.data) {
+        throw new Error(response.error?.message || 'Purchase failed');
       }
       return response.data;
     },
@@ -138,9 +112,9 @@ export function useRarePass() {
   return {
     status: statusQuery.data,
     isLoadingStatus: statusQuery.isLoading,
-    rewards: rewardsQuery.data,
+    rewards: rewardsQuery.data || [],
     isLoadingRewards: rewardsQuery.isLoading,
-    missions: missionsQuery.data,
+    missions: missionsQuery.data || [],
     isLoadingMissions: missionsQuery.isLoading,
     claimReward: claimRewardMutation.mutateAsync,
     isClaimingReward: claimRewardMutation.isPending,

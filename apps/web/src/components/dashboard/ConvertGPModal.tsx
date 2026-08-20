@@ -39,10 +39,12 @@ export const ConvertGPModal: React.FC<ConvertGPModalProps> = ({ isOpen, onClose 
     }
     try {
       const res = await convertGp(gpInput);
-      setSuccessResult({
-        convertedGp: res.convertedGp,
-        jltReceived: res.jltReceived,
-      });
+      if (res) {
+        setSuccessResult({
+          convertedGp: res.convertedGp,
+          jltReceived: res.jltReceived,
+        });
+      }
     } catch (err: any) {
       showError(err.message || 'Failed to convert GP', 'Conversion Failed');
     }

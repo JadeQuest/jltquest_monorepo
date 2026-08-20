@@ -64,12 +64,12 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
         {/* Scrollable Dashboard Content Container */}
         <main className="flex-1 overflow-y-auto p-3 sm:p-6 lg:p-6 space-y-6">
-          {mounted && children}
+          {children}
         </main>
       </div>
 
       {/* Centered Glassmorphic Connect Wallet Modal Popup covering entire viewport including Sidebar */}
-      {isConnectModalOpen && <ConnectWalletModal isOpen={isConnectModalOpen} onClose={closeConnectModal} />}
+      {mounted && isConnectModalOpen && <ConnectWalletModal isOpen={isConnectModalOpen} onClose={closeConnectModal} />}
     </div>
   );
 };

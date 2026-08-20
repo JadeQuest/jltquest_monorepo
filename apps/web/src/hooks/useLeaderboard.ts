@@ -2,37 +2,10 @@ import { useQuery } from '@tanstack/react-query';
 import { useAccount } from 'wagmi';
 import { fetchWithRetry, getApiUrl } from '@/lib/apiClient';
 import { getCookie } from '@/lib/authCookie';
+import type { ApiResponse, LeaderboardEntryDto, LeaderboardCategory as CategoryType } from '@jlt/types';
 
-export type LeaderboardCategory =
-  | 'gp'
-  | 'jlt'
-  | 'level'
-  | 'streak'
-  | 'pass'
-  | 'total_gp'
-  | 'total_jlt'
-  | 'highest_streak'
-  | 'season_rank';
-
-export interface LeaderboardEntry {
-  rank: number;
-  id: string;
-  walletAddress: string;
-  maskedAddress: string;
-  level: number;
-  levelTier: string;
-  xp: number;
-  totalLifetimeXp: number;
-  gp: number;
-  totalGp: number;
-  jlt: number;
-  totalJlt: number;
-  currentStreak: number;
-  longestStreak: number;
-  seasonRpXp: number;
-  seasonName: string;
-  avatarUrl: string;
-}
+export type LeaderboardCategory = CategoryType;
+export type LeaderboardEntry = LeaderboardEntryDto;
 
 export function useLeaderboard(type: LeaderboardCategory = 'total_gp', limit = 20) {
   const { isConnected, address } = useAccount();
@@ -40,13 +13,15 @@ export function useLeaderboard(type: LeaderboardCategory = 'total_gp', limit = 2
 
   const leaderboardQuery = useQuery({
     queryKey: ['leaderboard', type, limit],
-    queryFn: async () => {
-      const response = await fetchWithRetry<{ success: boolean; data: LeaderboardEntry[] }>(
+    queryFn: async (): Promise<LeaderboardEntryDto[]> => {
+      const response = await fetchWithRetry<ApiResponse<LeaderboardEntryDto[]>>(
         `${getApiUrl()}/leaderboard?type=${type}&limit=${limit}`
       );
-      return response.data;
+      return response.data || [];
     },
     enabled: isConnected && !!address && !!token,
+    staleTime: 30_000,
+    retry: 1,
   });
 
   return {

@@ -1,32 +1,23 @@
+import { CollectionRepository } from '../../infrastructure/database/repositories/CollectionRepository';
+import { UserRepository } from '../../infrastructure/database/repositories/UserRepository';
+import { RarePassService } from './RarePassService';
 import { BadRequestError, NotFoundError } from '../errors/AppError';
 import { ErrorCode, ErrorMessages, APP_CONFIG } from '@jlt/constants';
 import { RpXpSource } from '@jlt/database';
-import { RarePassService } from './RarePassService';
+import type { CollectionDto, MergeFragmentsResultDto } from '@jlt/types';
 
 export class CollectionService {
-  constructor(private prisma: any) {}
+  constructor(
+    private collectionRepository: CollectionRepository,
+    private userRepository: UserRepository,
+    private rarePassService: RarePassService,
+    private prisma: any
+  ) {}
 
-  async getCollection(userId: string) {
+  async getCollection(userId: string): Promise<CollectionDto> {
     const [user, cards] = await Promise.all([
-      this.prisma.user.findUnique({
-        where: { id: userId },
-        select: { fragments: true }
-      }),
-      this.prisma.userCard.findMany({
-        where: { userId },
-        select: {
-          quantity: true,
-          updatedAt: true,
-          card: {
-            select: {
-              id: true,
-              name: true,
-              imageUrl: true,
-              rarity: true,
-            },
-          },
-        },
-      })
+      this.userRepository.findById(this.prisma, userId),
+      this.collectionRepository.findUserCards(this.prisma, userId)
     ]);
 
     if (!user) {
@@ -46,11 +37,11 @@ export class CollectionService {
     };
   }
 
-  async mergeFragments(userId: string) {
+  async mergeFragments(userId: string): Promise<MergeFragmentsResultDto> {
     const requiredFragments = APP_CONFIG.COLLECTION.MERGE_FRAGMENTS_REQUIRED;
 
     return await this.prisma.$transaction(async (tx: any) => {
-      const user = await tx.user.findUnique({ where: { id: userId } });
+      const user = await this.userRepository.findById(tx, userId);
       if (!user) {
         throw new NotFoundError(ErrorMessages[ErrorCode.USER_NOT_FOUND], ErrorCode.USER_NOT_FOUND);
       }
@@ -63,9 +54,8 @@ export class CollectionService {
       }
 
       // Deduct fragments
-      await tx.user.update({
-        where: { id: userId },
-        data: { fragments: { decrement: requiredFragments } }
+      await this.userRepository.update(tx, userId, {
+        fragments: { decrement: requiredFragments }
       });
 
       // Roll for card rarity first
@@ -84,15 +74,11 @@ export class CollectionService {
       }
 
       // Query cards matching targetRarity
-      let eligibleCards = await tx.rareCard.findMany({
-        where: { rarity: targetRarity }
-      });
+      let eligibleCards = await this.collectionRepository.findRareCardsByRarity(tx, targetRarity);
 
       // Fallback: if no cards of that rarity exist, select from all non-mythical cards
       if (eligibleCards.length === 0) {
-        eligibleCards = await tx.rareCard.findMany({
-          where: { rarity: { not: 'MYTHICAL' } }
-        });
+        eligibleCards = await this.collectionRepository.findRareCardsNonMythical(tx);
       }
 
       if (eligibleCards.length === 0) {
@@ -107,37 +93,21 @@ export class CollectionService {
       const selectedCard = eligibleCards[randomIndex];
 
       // Add to user collection or increment quantity
-      const existingUserCard = await tx.userCard.findUnique({
-        where: {
-          userId_cardId: {
-            userId,
-            cardId: selectedCard.id
-          }
-        }
-      });
+      const existingUserCard = await this.collectionRepository.findUserCard(tx, userId, selectedCard.id);
 
       let result;
       if (existingUserCard) {
-        result = await tx.userCard.update({
-          where: { id: existingUserCard.id },
-          data: { quantity: { increment: 1 } },
-          include: { card: true }
-        });
+        result = await this.collectionRepository.incrementUserCard(tx, existingUserCard.id);
       } else {
-        result = await tx.userCard.create({
-          data: {
-            userId,
-            cardId: selectedCard.id,
-            quantity: 1
-          },
-          include: { card: true }
+        result = await this.collectionRepository.createUserCard(tx, {
+          userId,
+          cardId: selectedCard.id,
+          quantity: 1
         });
       }
 
       // Award RP XP & update missions
-      const rarePassService = new RarePassService(this.prisma);
-      
-      const rpXpAwarded = await rarePassService.awardRpXp(
+      const rpXpAwarded = await this.rarePassService.awardRpXp(
         tx,
         userId,
         100,
@@ -146,7 +116,7 @@ export class CollectionService {
         `card_craft_rpxp:${userId}:${result.id}:${Date.now()}`
       );
 
-      await rarePassService.updateMissionProgress(tx, userId, 'mission_craft_card_weekly', 1);
+      await this.rarePassService.updateMissionProgress(tx, userId, 'mission_craft_card_weekly', 1);
 
       return {
         success: true,

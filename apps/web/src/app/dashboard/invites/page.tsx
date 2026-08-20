@@ -1,11 +1,14 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useInvites } from '@/hooks/useInvites';
 import { Users, Copy, Check, Gift, ShieldCheck, Sparkles, UserPlus, CheckCircle2, Ticket, Star } from 'lucide-react';
 import { JLTLoader } from '@/components/common/JLTLoader';
 import { createPortal } from 'react-dom';
+import { gsap, prefersReducedMotion, MotionEases } from '@/lib/animations';
+
+const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 export default function InvitesPage() {
   const searchParams = useSearchParams();
@@ -59,7 +62,7 @@ export default function InvitesPage() {
       const res = await redeemInvite(redeemInput.trim());
       setStatusMsg({
         type: 'success',
-        text: `Success! You earned +${res.inviteeGpAwarded || 150} GP for redeeming code ${redeemInput.trim()}`,
+        text: `Success! You earned +${res?.inviteeGpAwarded || 150} GP for redeeming code ${redeemInput.trim()}`,
       });
       setRedeemInput('');
     } catch (err: any) {
@@ -75,8 +78,8 @@ export default function InvitesPage() {
       setStatusMsg(null);
       const res = await claimMilestone({ inviteeCount: count, levelReached: level });
       setPopupData({
-        gpAwarded: res.gpAwarded,
-        xpAwarded: res.xpAwarded,
+        gpAwarded: res?.gpAwarded ?? 0,
+        xpAwarded: res?.xpAwarded ?? 0,
         message: `Milestone: ${count} Squad Member(s) reached Level ${level}!`
       });
       setShowPopup(true);
@@ -96,8 +99,34 @@ export default function InvitesPage() {
     return (inviteData.redemptions || []).filter((r: any) => (r.redeemedByUser?.level || 1) >= level).length;
   };
 
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useIsomorphicLayoutEffect(() => {
+    if (prefersReducedMotion() || !containerRef.current || isLoading) return;
+
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        '.invite-card-anim',
+        { opacity: 0, y: 16, scale: 0.98 },
+        {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          duration: 0.45,
+          stagger: 0.06,
+          ease: MotionEases.backOut,
+          force3D: true,
+          overwrite: 'auto',
+          clearProps: 'transform,opacity',
+        }
+      );
+    }, containerRef);
+
+    return () => ctx.revert();
+  }, [activeTab, isLoading]);
+
   return (
-    <div className="flex flex-col gap-6 max-w-[1550px] w-full mx-auto animate-fade-in select-none">
+    <div ref={containerRef} className="flex flex-col gap-6 max-w-[1550px] w-full mx-auto select-none">
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-2 mt-4 sm:mt-8">
         <div className="flex flex-col gap-2">
@@ -122,8 +151,6 @@ export default function InvitesPage() {
           </div>
         </div>
       </div>
-
-
 
       {/* Tabs */}
       <div className="flex flex-col gap-4">

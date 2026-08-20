@@ -43,3 +43,15 @@ export class ConflictError extends AppError {
     super(message, code, 409);
   }
 }
+
+export class ValidationError extends AppError {
+  constructor(message: string, code: string = 'INVALID_INPUT') {
+    super(message, code, 400);
+  }
+}
+
+export class InternalServerError extends AppError {
+  constructor(message: string = 'An unexpected internal error occurred', code: string = 'INTERNAL_ERROR') {
+    super(message, code, 500);
+  }
+}

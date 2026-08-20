@@ -1,32 +1,40 @@
 import { SpinRepository } from '../../infrastructure/database/repositories/SpinRepository';
+import { UserRepository } from '../../infrastructure/database/repositories/UserRepository';
+import { LedgerRepository } from '../../infrastructure/database/repositories/LedgerRepository';
+import { AuditLogRepository } from '../../infrastructure/database/repositories/AuditLogRepository';
 import { LedgerService } from './LedgerService';
 import { RarePassService } from './RarePassService';
-import { LedgerSource, SpinOutcome, RpXpSource } from '@jlt/database';
+import { LedgerSource, SpinOutcome, RpXpSource, LedgerType } from '@jlt/database';
 import { BadRequestError } from '../errors/AppError';
 import { ErrorCode, ErrorMessages, APP_CONFIG } from '@jlt/constants';
+import type { SpinStatusDto, SpinResultDto, SpinPurchaseResultDto } from '@jlt/types';
 
 export class SpinService {
   constructor(
     private spinRepository: SpinRepository,
+    private userRepository: UserRepository,
+    private ledgerRepository: LedgerRepository,
     private ledgerService: LedgerService,
+    private rarePassService: RarePassService,
+    private auditLogRepository: AuditLogRepository,
     private prisma: any
   ) {}
 
-  async getStatus(userId: string) {
+  async getStatus(userId: string): Promise<SpinStatusDto> {
     const spinState = await this.spinRepository.findStateByUserId(this.prisma, userId);
-    
+
     if (!spinState) {
-      return { 
-        availableFreeSpins: APP_CONFIG.SPIN.FREE_SPINS_DEFAULT, 
+      return {
+        availableFreeSpins: APP_CONFIG.SPIN.FREE_SPINS_DEFAULT,
         purchasedSpinsAvailable: 0,
-        lastFreeSpinAt: null, 
-        totalSpins: 0 
+        lastFreeSpinAt: null,
+        totalSpins: 0
       };
     }
 
     const now = new Date();
     let freeSpins = spinState.availableFreeSpins ?? APP_CONFIG.SPIN.FREE_SPINS_DEFAULT;
-    
+
     if (spinState.lastFreeSpinAt) {
       const lastSpinUTC = new Date(Date.UTC(spinState.lastFreeSpinAt.getUTCFullYear(), spinState.lastFreeSpinAt.getUTCMonth(), spinState.lastFreeSpinAt.getUTCDate()));
       const todayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
@@ -36,7 +44,7 @@ export class SpinService {
         freeSpins = APP_CONFIG.SPIN.FREE_SPINS_DEFAULT; // Reset to default at midnight UTC
       }
     } else {
-       freeSpins = APP_CONFIG.SPIN.FREE_SPINS_DEFAULT;
+      freeSpins = APP_CONFIG.SPIN.FREE_SPINS_DEFAULT;
     }
 
     return {
@@ -47,18 +55,20 @@ export class SpinService {
     };
   }
 
-  async spin(userId: string, useFreeSpin: boolean) {
+  async spin(userId: string, useFreeSpin: boolean): Promise<SpinResultDto> {
     return await this.prisma.$transaction(
       async (tx: any) => {
         // 1. Lock the user row to prevent race conditions
         await tx.$executeRaw`SELECT id FROM users WHERE id = ${userId} FOR UPDATE`;
 
         let spinState = await this.spinRepository.findStateByUserId(tx, userId);
-        
+
         const now = new Date();
         if (!spinState) {
-          spinState = await tx.spinState.create({
-            data: { userId, availableFreeSpins: APP_CONFIG.SPIN.FREE_SPINS_DEFAULT, purchasedSpinsAvailable: 0 }
+          spinState = await this.spinRepository.createState(tx, {
+            userId,
+            availableFreeSpins: APP_CONFIG.SPIN.FREE_SPINS_DEFAULT,
+            purchasedSpinsAvailable: 0
           });
         }
 
@@ -72,7 +82,7 @@ export class SpinService {
             freeSpins = APP_CONFIG.SPIN.FREE_SPINS_DEFAULT;
           }
         } else {
-           freeSpins = APP_CONFIG.SPIN.FREE_SPINS_DEFAULT;
+          freeSpins = APP_CONFIG.SPIN.FREE_SPINS_DEFAULT;
         }
 
         // 2. Validate and deduct spin balance based on type
@@ -83,7 +93,7 @@ export class SpinService {
               ErrorCode.INSUFFICIENT_SPINS
             );
           }
-          
+
           await this.spinRepository.updateState(tx, userId, {
             availableFreeSpins: freeSpins - 1,
             lastFreeSpinAt: now,
@@ -97,7 +107,7 @@ export class SpinService {
               ErrorCode.INSUFFICIENT_SPINS
             );
           }
-          
+
           await this.spinRepository.updateState(tx, userId, {
             purchasedSpinsAvailable: purchasedAvailable - 1,
             totalSpins: (spinState.totalSpins || 0) + 1
@@ -165,18 +175,15 @@ export class SpinService {
         }
 
         if (fragmentsAwarded > 0) {
-          await tx.user.update({
-            where: { id: userId },
-            data: { fragments: { increment: fragmentsAwarded } }
+          await this.userRepository.update(tx, userId, {
+            fragments: { increment: fragmentsAwarded }
           });
         }
 
         // Award Rare Pass XP & update mission progress
-        const rarePassService = new RarePassService(this.prisma);
-        
         let finalRpXpAwarded = 0;
         if (rpXpAwarded > 0) {
-          finalRpXpAwarded = await rarePassService.awardRpXp(
+          finalRpXpAwarded = await this.rarePassService.awardRpXp(
             tx,
             userId,
             rpXpAwarded,
@@ -186,7 +193,7 @@ export class SpinService {
           );
         }
 
-        await rarePassService.updateMissionProgress(tx, userId, 'mission_spin_daily', 1);
+        await this.rarePassService.updateMissionProgress(tx, userId, 'mission_spin_daily', 1);
 
         return {
           outcome,
@@ -201,58 +208,57 @@ export class SpinService {
     );
   }
 
-  async purchase(userId: string) {
+  async purchase(userId: string): Promise<SpinPurchaseResultDto> {
     const COST = APP_CONFIG.SPIN.COST_GP;
     return await this.prisma.$transaction(
       async (tx: any) => {
-      // Lock user row
-      await tx.$executeRaw`SELECT id FROM users WHERE id = ${userId} FOR UPDATE`;
+        // Lock user row
+        await tx.$executeRaw`SELECT id FROM users WHERE id = ${userId} FOR UPDATE`;
 
-      const user = await tx.user.findUnique({ where: { id: userId }});
-      if (!user || user.gp < COST) {
-        throw new BadRequestError(
-          ErrorMessages[ErrorCode.INSUFFICIENT_GP],
-          ErrorCode.INSUFFICIENT_GP
-        );
-      }
+        const user = await this.userRepository.findById(tx, userId);
+        if (!user || user.gp < COST) {
+          throw new BadRequestError(
+            ErrorMessages[ErrorCode.INSUFFICIENT_GP],
+            ErrorCode.INSUFFICIENT_GP
+          );
+        }
 
-      // Deduct GP
-      await tx.user.update({
-        where: { id: userId },
-        data: { gp: { decrement: COST } }
-      });
-      
-      await tx.gpLedgerEntry.create({
-        data: {
+        // Deduct GP
+        await this.userRepository.update(tx, userId, {
+          gp: { decrement: COST }
+        });
+
+        await this.ledgerRepository.createGpLedger(tx, {
           userId,
           amount: -COST,
-          type: 'DEBIT',
-          source: 'SPIN_PURCHASE'
+          type: LedgerType.DEBIT,
+          source: LedgerSource.SPIN
+        });
+
+        // Increment purchased spins counter
+        let spinState = await this.spinRepository.findStateByUserId(tx, userId);
+        if (!spinState) {
+          await this.spinRepository.createState(tx, {
+            userId,
+            availableFreeSpins: APP_CONFIG.SPIN.FREE_SPINS_DEFAULT,
+            purchasedSpinsAvailable: 1
+          });
+        } else {
+          await this.spinRepository.updateState(tx, userId, {
+            purchasedSpinsAvailable: (spinState.purchasedSpinsAvailable || 0) + 1
+          });
         }
-      });
 
-      // Increment purchased spins counter
-      let spinState = await this.spinRepository.findStateByUserId(tx, userId);
-      if (!spinState) {
-        await tx.spinState.create({
-          data: { userId, availableFreeSpins: APP_CONFIG.SPIN.FREE_SPINS_DEFAULT, purchasedSpinsAvailable: 1 }
-        });
-      } else {
-        await this.spinRepository.updateState(tx, userId, {
-          purchasedSpinsAvailable: (spinState.purchasedSpinsAvailable || 0) + 1
-        });
-      }
-
-      // Log spin purchase audit trail
-      await tx.auditLog.create({
-        data: {
+        // Log spin purchase audit trail
+        await this.auditLogRepository.log(tx, {
           userId,
           action: 'SPIN_PURCHASE',
           metadata: { cost: COST }
-        }
-      });
+        });
 
-      return { success: true };
-    }, { maxWait: 10000, timeout: 20000 });
+        return { success: true };
+      },
+      { maxWait: 10000, timeout: 20000 }
+    );
   }
 }

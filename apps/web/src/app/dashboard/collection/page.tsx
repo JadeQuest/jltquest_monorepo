@@ -1,22 +1,53 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useCollection, Card } from '../../../hooks/useCollection';
 import { JLTLoader } from '@/components/common/JLTLoader';
 import { showError } from '@/components/common/AlertModal';
 import { Sparkles, Layers, Shield, Zap, Award, ArrowRight } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { gsap, prefersReducedMotion, MotionEases } from '@/lib/animations';
+
+const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 export default function CollectionPage() {
   const { data, loading, error, isMerging, mergeFragments } = useCollection();
   const [newCard, setNewCard] = useState<Card | null>(null);
   const [selectedRarity, setSelectedRarity] = useState<string>('all');
+  const cardsGridRef = useRef<HTMLDivElement>(null);
+
+  useIsomorphicLayoutEffect(() => {
+    if (prefersReducedMotion() || !cardsGridRef.current || loading) return;
+
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        '.collection-card-item',
+        { opacity: 0, y: 16, scale: 0.96 },
+        {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          duration: 0.4,
+          stagger: 0.04,
+          ease: MotionEases.backOut,
+          force3D: true,
+          overwrite: 'auto',
+          clearProps: 'transform,opacity',
+        }
+      );
+    }, cardsGridRef);
+
+    return () => ctx.revert();
+  }, [selectedRarity, data, loading]);
 
   const handleMerge = async () => {
     try {
       const card = await mergeFragments();
-      setNewCard(card);
+      if (card) {
+        setNewCard(card);
+      }
     } catch (e: any) {
       showError(e.message || 'Failed to merge fragments. Please try again.', 'Merge Failed');
     }
@@ -221,7 +252,7 @@ export default function CollectionPage() {
                 <button
                   key={rarity}
                   onClick={() => setSelectedRarity(rarity)}
-                  className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-[11px] sm:text-xs font-gilroyBold uppercase tracking-wider transition-all duration-300 border ${isActive
+                  className={`px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-xl text-[11px] sm:text-xs font-gilroyBold uppercase tracking-wider transition-all duration-300 border ${isActive
                     ? 'bg-purple-600/90 text-white shadow-[0_0_15px_rgba(123,44,191,0.5)] border-purple-400/40'
                     : 'bg-white/5 text-purple-200 border-white/5 hover:bg-white/10 hover:text-white'
                     }`}
@@ -285,13 +316,13 @@ export default function CollectionPage() {
 
           return (
             /* Cards Grid */
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 gap-4 sm:gap-6">
+            <div ref={cardsGridRef} className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 gap-4 sm:gap-6">
               {filteredCards.map((card, idx) => {
                 const rStyle = getRarityStyle(card.rarity);
                 return (
                   <div
                     key={card.id || idx}
-                    className={`group relative glass-panel rounded-2xl overflow-hidden border border-white/10 ${rStyle.hoverBorder} ${rStyle.shadow} hover:scale-[1.03] transition-all duration-300 ease-out cursor-pointer shadow-xl will-change-transform`}
+                    className={`collection-card-item group relative glass-panel rounded-2xl overflow-hidden border border-white/10 ${rStyle.hoverBorder} ${rStyle.shadow} hover:scale-[1.03] transition-all duration-300 ease-out cursor-pointer shadow-xl will-change-transform`}
                     style={{ transform: 'translate3d(0,0,0)' }}
                   >
                     {/* Aspect ratio 3:4 card image container */}
@@ -340,8 +371,8 @@ export default function CollectionPage() {
         if ((newCard.rarity || '').toUpperCase() === 'LEGENDARY') glowColor = 'rgba(245,158,11,0.7)';
         if ((newCard.rarity || '').toUpperCase() === 'MYTHICAL') glowColor = 'rgba(244,63,94,0.8)';
 
-        return (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-xl p-4 animate-fade-in">
+        return createPortal(
+          <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/85 backdrop-blur-xl p-4 animate-fade-in select-none">
             <div className={`glass-panel p-8 sm:p-10 rounded-3xl max-w-sm w-full flex flex-col items-center text-center relative overflow-hidden border ${rStyle.border} shadow-2xl animate-fade-up`}>
               <div className={`absolute inset-0 bg-radial from-${(newCard.rarity || 'common').toLowerCase() === 'mythical' ? 'rose-500' : 'purple-600'}/30 via-transparent to-transparent pointer-events-none`} />
 
@@ -382,7 +413,8 @@ export default function CollectionPage() {
                 Awesome! Claim Card
               </button>
             </div>
-          </div>
+          </div>,
+          document.body
         );
       })()}
     </div>

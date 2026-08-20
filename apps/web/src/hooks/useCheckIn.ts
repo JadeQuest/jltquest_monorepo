@@ -2,13 +2,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAccount } from 'wagmi';
 import { fetchWithRetry, getApiUrl } from '@/lib/apiClient';
 import { getCookie } from '@/lib/authCookie';
+import type { ApiResponse, CheckInStatusDto, CheckInClaimResultDto } from '@jlt/types';
 
-export interface CheckInStatus {
-  streak: number;
-  canClaim: boolean;
-  nextRewardGp: number;
-  nextRewardXp: number;
-}
+export type CheckInStatus = CheckInStatusDto;
 
 export function useCheckIn() {
   const queryClient = useQueryClient();
@@ -17,20 +13,22 @@ export function useCheckIn() {
 
   const statusQuery = useQuery({
     queryKey: ['checkInStatus', address],
-    queryFn: async () => {
-      const response = await fetchWithRetry<{ success: boolean; data: CheckInStatus }>(`${getApiUrl()}/checkin/status`);
+    queryFn: async (): Promise<CheckInStatusDto | null> => {
+      const response = await fetchWithRetry<ApiResponse<CheckInStatusDto>>(`${getApiUrl()}/checkin/status`);
       return response.data;
     },
     enabled: isConnected && !!address && !!token,
+    staleTime: 30_000,
+    retry: 1,
   });
 
   const claimMutation = useMutation({
-    mutationFn: async () => {
-      const response = await fetchWithRetry<{ success: boolean; data: any; error?: string }>(`${getApiUrl()}/checkin/claim`, {
+    mutationFn: async (): Promise<CheckInClaimResultDto | null> => {
+      const response = await fetchWithRetry<ApiResponse<CheckInClaimResultDto>>(`${getApiUrl()}/checkin/claim`, {
         method: 'POST',
       });
       if (!response.success) {
-        throw new Error(response.error || 'Claim failed');
+        throw new Error(response.error?.message || 'Claim failed');
       }
       return response.data;
     },

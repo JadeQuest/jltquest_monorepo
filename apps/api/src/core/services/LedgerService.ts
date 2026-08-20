@@ -1,10 +1,11 @@
 import { LedgerType, LedgerSource } from '@jlt/database';
 import { LedgerRepository } from '../../infrastructure/database/repositories/LedgerRepository';
+import { calculateXpRequiredForLevel } from '../utils/leveling';
 
 export class LedgerService {
   constructor(private ledgerRepository: LedgerRepository) {}
 
-  async awardGp(tx: any, userId: string, amount: number, source: LedgerSource, refId?: string) {
+  async awardGp(tx: any, userId: string, amount: number, source: LedgerSource, refId?: string): Promise<void> {
     if (amount <= 0) return;
     await tx.user.update({
       where: { id: userId },
@@ -19,15 +20,13 @@ export class LedgerService {
     });
   }
 
-  async awardXp(tx: any, userId: string, amount: number, source: LedgerSource, refId?: string) {
+  async awardXp(tx: any, userId: string, amount: number, source: LedgerSource, refId?: string): Promise<void> {
     if (amount <= 0) return;
 
-    // We need to fetch the user to check their current level and xp
+    // Fetch the user to check their current level and xp
     const user = await tx.user.findUnique({ where: { id: userId } });
     if (!user) return;
 
-    const { calculateXpRequiredForLevel } = require('../utils/leveling');
-    
     let currentXp = user.xp + amount;
     let currentLevel = user.level;
     let fragmentsAwarded = 0;
@@ -43,7 +42,7 @@ export class LedgerService {
 
     await tx.user.update({
       where: { id: userId },
-      data: { 
+      data: {
         xp: currentXp,
         level: currentLevel,
         fragments: { increment: fragmentsAwarded }
@@ -70,7 +69,7 @@ export class LedgerService {
           });
         }
       }
-      
+
       // Check for referral milestones
       const redemption = await tx.inviteRedemption.findUnique({
         where: { redeemedByUserId: userId },

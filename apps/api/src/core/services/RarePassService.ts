@@ -1,43 +1,61 @@
+import { RarePassRepository } from '../../infrastructure/database/repositories/RarePassRepository';
+import { UserRepository } from '../../infrastructure/database/repositories/UserRepository';
+import { LedgerRepository } from '../../infrastructure/database/repositories/LedgerRepository';
+import { AuditLogRepository } from '../../infrastructure/database/repositories/AuditLogRepository';
+import { LedgerService } from './LedgerService';
 import { BadRequestError, ConflictError, NotFoundError } from '../errors/AppError';
 import { ErrorCode, ErrorMessages, APP_CONFIG } from '@jlt/constants';
-import { RarePassSeasonStatus, RarePassTrack, RarePassRewardType, RpXpSource, RarePassMissionType, LedgerSource, CardRarity } from '@jlt/database';
+import { RarePassSeasonStatus, RarePassTrack, RarePassRewardType, RpXpSource, RarePassMissionType, CardRarity } from '@jlt/database';
+import { cacheService } from './CacheService';
+import type {
+  RarePassStatusDto,
+  RarePassLevelConfigDto,
+  RarePassMissionDto,
+  RarePassClaimResultDto,
+  RarePassMissionClaimResultDto,
+  RarePassPurchaseResultDto
+} from '@jlt/types';
 
 export class RarePassService {
-  constructor(private prisma: any) {}
+  constructor(
+    private rarePassRepository: RarePassRepository,
+    private userRepository: UserRepository,
+    private ledgerRepository: LedgerRepository,
+    private auditLogRepository: AuditLogRepository,
+    private prisma: any
+  ) {}
 
   async getActiveSeason(tx?: any) {
-    const db = tx || this.prisma;
-    const now = new Date();
-    const season = await db.rarePassSeason.findFirst({
-      where: {
-        status: RarePassSeasonStatus.ACTIVE,
-        startAt: { lte: now },
-        endAt: { gte: now }
-      },
-      include: {
-        levels: {
-          orderBy: { level: 'asc' }
-        }
-      }
-    });
+    if (!tx) {
+      const cached = cacheService.get<any>('active_rare_pass_season');
+      if (cached) return cached;
+    }
+
+    const season = await this.rarePassRepository.findActiveSeason(tx || this.prisma);
     if (!season) {
       throw new NotFoundError(
         ErrorMessages[ErrorCode.SEASON_NOT_ACTIVE],
         ErrorCode.SEASON_NOT_ACTIVE
       );
     }
+
+    if (!tx) {
+      cacheService.set('active_rare_pass_season', season, 60);
+    }
     return season;
   }
 
-  async getPassStatus(userId: string) {
+  async getPassStatus(userId: string): Promise<RarePassStatusDto> {
     const season = await this.getActiveSeason();
-    
-    // Sum user's total RP XP earned in this season
-    const ledgerSum = await this.prisma.rpXpLedgerEntry.aggregate({
-      _sum: { amount: true },
-      where: { userId, seasonId: season.id }
-    });
+
+    // Concurrently fetch RP XP ledger sum and purchase status
+    const [ledgerSum, purchase] = await Promise.all([
+      this.rarePassRepository.aggregateUserRpXp(this.prisma, userId, season.id),
+      this.rarePassRepository.findPurchase(this.prisma, userId, season.id)
+    ]);
+
     const totalRpXp = ledgerSum._sum.amount || 0;
+    const isPremium = !!purchase;
 
     // Find the user's current level
     let currentLevel = 1;
@@ -51,22 +69,15 @@ export class RarePassService {
 
     const nextLevelConfig = season.levels.find((l: any) => l.level === currentLevel + 1);
     const currentLevelConfig = season.levels.find((l: any) => l.level === currentLevel);
-    
+
     const xpInCurrentLevel = totalRpXp - (currentLevelConfig?.requiredRpXp || 0);
-    const xpRequiredForNext = nextLevelConfig 
+    const xpRequiredForNext = nextLevelConfig
       ? (nextLevelConfig.requiredRpXp - (currentLevelConfig?.requiredRpXp || 0))
       : 0;
 
     const progress = nextLevelConfig && xpRequiredForNext > 0
       ? (xpInCurrentLevel / xpRequiredForNext) * 100
       : 100;
-
-    const purchase = await this.prisma.rarePassPurchase.findUnique({
-      where: {
-        userId_seasonId: { userId, seasonId: season.id }
-      }
-    });
-    const isPremium = !!purchase;
 
     return {
       season: {
@@ -87,28 +98,38 @@ export class RarePassService {
     };
   }
 
-  async getRewards(userId: string) {
+  async getRewards(userId: string): Promise<RarePassLevelConfigDto[]> {
     const status = await this.getPassStatus(userId);
     const seasonId = status.season.id;
     const userLevel = status.progression.currentLevel;
     const isPremium = status.progression.isPremium;
 
-    const levelsWithRewards = await this.prisma.rarePassLevel.findMany({
-      where: { seasonId },
-      include: {
-        rewards: {
-          orderBy: { sortOrder: 'asc' }
-        }
-      },
-      orderBy: { level: 'asc' }
-    });
+    const cacheKey = `levels_with_rewards:${seasonId}`;
+    let levelsWithRewards = cacheService.get<any[]>(cacheKey);
 
-    const claims = await this.prisma.rarePassRewardClaim.findMany({
-      where: { userId, seasonId }
-    });
+    const [fetchedLevels, claims] = await Promise.all([
+      levelsWithRewards
+        ? Promise.resolve(levelsWithRewards)
+        : this.prisma.rarePassLevel.findMany({
+            where: { seasonId },
+            include: {
+              rewards: {
+                orderBy: { sortOrder: 'asc' }
+              }
+            },
+            orderBy: { level: 'asc' }
+          }),
+      this.rarePassRepository.findUserRewardClaimsForSeason(this.prisma, userId, seasonId)
+    ]);
+
+    const finalLevels: any[] = levelsWithRewards || fetchedLevels || [];
+    if (!levelsWithRewards && fetchedLevels) {
+      cacheService.set(cacheKey, fetchedLevels, 120);
+    }
+
     const claimedRewardIds = new Set(claims.map((c: any) => c.rewardId));
 
-    return levelsWithRewards.map((levelConfig: any) => {
+    return finalLevels.map((levelConfig: any) => {
       return {
         level: levelConfig.level,
         requiredRpXp: levelConfig.requiredRpXp,
@@ -124,24 +145,19 @@ export class RarePassService {
             rewardType: reward.rewardType,
             amount: reward.amount,
             metadata: reward.metadata,
-            isClaimed,
-            isClaimable
+            claimed: isClaimed,
+            canClaim: isClaimable
           };
         })
       };
     });
   }
 
-  async claimReward(userId: string, rewardId: string) {
+  async claimReward(userId: string, rewardId: string): Promise<RarePassClaimResultDto> {
     return await this.prisma.$transaction(async (tx: any) => {
       const season = await this.getActiveSeason(tx);
-      
-      const reward = await tx.rarePassReward.findUnique({
-        where: { id: rewardId },
-        include: {
-          level: true
-        }
-      });
+
+      const reward = await this.rarePassRepository.findRewardById(tx, rewardId);
 
       if (!reward || reward.level.seasonId !== season.id) {
         throw new NotFoundError(
@@ -151,11 +167,7 @@ export class RarePassService {
       }
 
       // Check if already claimed
-      const existingClaim = await tx.rarePassRewardClaim.findUnique({
-        where: {
-          userId_rewardId: { userId, rewardId }
-        }
-      });
+      const existingClaim = await this.rarePassRepository.findRewardClaim(tx, userId, rewardId);
       if (existingClaim) {
         throw new ConflictError(
           ErrorMessages[ErrorCode.REWARD_ALREADY_CLAIMED],
@@ -164,10 +176,7 @@ export class RarePassService {
       }
 
       // Calculate user's current level
-      const ledgerSum = await tx.rpXpLedgerEntry.aggregate({
-        _sum: { amount: true },
-        where: { userId, seasonId: season.id }
-      });
+      const ledgerSum = await this.rarePassRepository.aggregateUserRpXp(tx, userId, season.id);
       const totalRpXp = ledgerSum._sum.amount || 0;
 
       let userLevel = 1;
@@ -187,11 +196,7 @@ export class RarePassService {
       }
 
       if (reward.track === RarePassTrack.PREMIUM) {
-        const purchase = await tx.rarePassPurchase.findUnique({
-          where: {
-            userId_seasonId: { userId, seasonId: season.id }
-          }
-        });
+        const purchase = await this.rarePassRepository.findPurchase(tx, userId, season.id);
         if (!purchase) {
           throw new BadRequestError(
             ErrorMessages[ErrorCode.PREMIUM_NOT_PURCHASED],
@@ -201,29 +206,22 @@ export class RarePassService {
       }
 
       // Create the claim record
-      await tx.rarePassRewardClaim.create({
-        data: {
-          userId,
-          seasonId: season.id,
-          rewardId
-        }
+      await this.rarePassRepository.createRewardClaim(tx, {
+        userId,
+        seasonId: season.id,
+        rewardId
       });
 
       // Grant actual reward
-      let grantDetails: any = { type: reward.rewardType, amount: reward.amount };
-
-      const { LedgerService } = require('./LedgerService');
-      const { LedgerRepository } = require('../../infrastructure/database/repositories/LedgerRepository');
-      const ledgerService = new LedgerService(new LedgerRepository());
+      const ledgerService = new LedgerService(this.ledgerRepository);
 
       if (reward.rewardType === RarePassRewardType.GP) {
         await ledgerService.awardGp(tx, userId, reward.amount || 0, 'RARE_PASS' as any, reward.id);
       } else if (reward.rewardType === RarePassRewardType.XP) {
         await ledgerService.awardXp(tx, userId, reward.amount || 0, 'RARE_PASS' as any, reward.id);
       } else if (reward.rewardType === RarePassRewardType.FRAGMENT) {
-        await tx.user.update({
-          where: { id: userId },
-          data: { fragments: { increment: reward.amount || 0 } }
+        await this.userRepository.update(tx, userId, {
+          fragments: { increment: reward.amount || 0 }
         });
       } else if (reward.rewardType === RarePassRewardType.SPIN) {
         const spinState = await tx.spinState.findUnique({ where: { userId } });
@@ -243,10 +241,8 @@ export class RarePassService {
         if (!cardId) {
           let eligibleCards;
           if (reward.track === RarePassTrack.PREMIUM) {
-            // Premium track card reward can award any card (including mythical)
             eligibleCards = await tx.rareCard.findMany();
           } else {
-            // Free track card reward can only award non-mythical cards
             eligibleCards = await tx.rareCard.findMany({
               where: {
                 rarity: {
@@ -270,25 +266,18 @@ export class RarePassService {
           where: { userId_cardId: { userId, cardId } }
         });
 
-        let cardResult;
         if (existingUserCard) {
-          cardResult = await tx.userCard.update({
+          await tx.userCard.update({
             where: { id: existingUserCard.id },
             data: { quantity: { increment: 1 } },
             include: { card: true }
           });
         } else {
-          cardResult = await tx.userCard.create({
+          await tx.userCard.create({
             data: { userId, cardId, quantity: 1 },
             include: { card: true }
           });
         }
-        grantDetails.card = {
-          id: cardResult.card.id,
-          name: cardResult.card.name,
-          imageUrl: cardResult.card.imageUrl,
-          rarity: cardResult.card.rarity
-        };
       } else if (reward.rewardType === RarePassRewardType.AVATAR) {
         const variantId = reward.metadata && (reward.metadata as any).variantId;
         if (!variantId) {
@@ -315,31 +304,24 @@ export class RarePassService {
             data: { userId, variantId }
           });
         }
-
-        grantDetails.avatar = {
-          variantId,
-          type: variant.type,
-          name: variant.avatar.name,
-          characterKey: variant.avatar.characterKey
-        };
       }
 
       return {
         success: true,
-        grantDetails
+        rewardType: reward.rewardType,
+        amount: reward.amount || undefined
       };
     }, { maxWait: 10000, timeout: 20000 });
   }
 
-  async awardRpXp(tx: any, userId: string, amount: number, source: RpXpSource, sourceId?: string, idempotencyKey?: string) {
+  async awardRpXp(tx: any, userId: string, amount: number, source: RpXpSource, sourceId?: string, idempotencyKey?: string): Promise<number> {
     const db = tx || this.prisma;
-    
+
     // Check if season active
     let season;
     try {
       season = await this.getActiveSeason(db);
     } catch (e) {
-      // No active season, do not award
       return 0;
     }
 
@@ -353,47 +335,37 @@ export class RarePassService {
     }
 
     let allowedAmount = amount;
-
     if (allowedAmount <= 0) {
       return 0;
     }
 
-    await db.rpXpLedgerEntry.create({
-      data: {
-        userId,
-        seasonId: season.id,
-        amount: allowedAmount,
-        source,
-        sourceId,
-        idempotencyKey
-      }
+    await this.rarePassRepository.createRpXpLedger(db, {
+      userId,
+      seasonId: season.id,
+      amount: allowedAmount,
+      source,
+      sourceId,
+      idempotencyKey
     });
 
     return allowedAmount;
   }
 
-  async buyPremium(userId: string) {
+  async buyPremium(userId: string): Promise<RarePassPurchaseResultDto> {
     const season = await this.getActiveSeason();
     const COST = APP_CONFIG.RARE_PASS.PREMIUM_COST_JLT;
-    
+
     return await this.prisma.$transaction(async (tx: any) => {
       // 1. Lock user row to prevent race conditions
       await tx.$executeRaw`SELECT id FROM users WHERE id = ${userId} FOR UPDATE`;
 
-      const user = await tx.user.findUnique({ where: { id: userId } });
+      const user = await this.userRepository.findById(tx, userId);
       if (!user) {
         throw new NotFoundError(ErrorMessages[ErrorCode.USER_NOT_FOUND], ErrorCode.USER_NOT_FOUND);
       }
 
       // Check if already premium
-      const existingPurchase = await tx.rarePassPurchase.findUnique({
-        where: {
-          userId_seasonId: {
-            userId,
-            seasonId: season.id
-          }
-        }
-      });
+      const existingPurchase = await this.rarePassRepository.findPurchase(tx, userId, season.id);
 
       if (existingPurchase) {
         return { success: true, message: 'Already premium' };
@@ -408,46 +380,35 @@ export class RarePassService {
       }
 
       // Debit JLT
-      await tx.user.update({
-        where: { id: userId },
-        data: { jlt: { decrement: COST } }
+      await this.userRepository.update(tx, userId, {
+        jlt: { decrement: COST }
       });
 
       // Create Rare Pass purchase
-      await tx.rarePassPurchase.create({
-        data: {
-          userId,
-          seasonId: season.id
-        }
+      await this.rarePassRepository.createPurchase(tx, {
+        userId,
+        seasonId: season.id
       });
 
       // Log audit trail
-      await tx.auditLog.create({
-        data: {
-          userId,
-          action: 'RARE_PASS_PREMIUM_PURCHASE',
-          metadata: { cost: COST, seasonId: season.id }
-        }
+      await this.auditLogRepository.log(tx, {
+        userId,
+        action: 'RARE_PASS_PREMIUM_PURCHASE',
+        metadata: { cost: COST, seasonId: season.id }
       });
 
       return { success: true };
     }, { maxWait: 10000, timeout: 20000 });
   }
 
-  async getMissions(userId: string) {
+  async getMissions(userId: string): Promise<RarePassMissionDto[]> {
     const season = await this.getActiveSeason();
-    
-    const missions = await this.prisma.rarePassMission.findMany({
-      where: { seasonId: season.id }
-    });
+
+    const missions = await this.rarePassRepository.findMissionsForSeason(this.prisma, season.id);
 
     const now = new Date();
-    const todayStr = now.toISOString().split('T')[0]; // "YYYY-MM-DD"
-    
-    const dayOfWeek = now.getUTCDay();
-    const diffToMonday = now.getUTCDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
-    const startOfWeek = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), diffToMonday));
-    // Simple week representation: e.g. "2026-W32"
+    const todayStr = now.toISOString().split('T')[0];
+
     const getWeekKey = (d: Date) => {
       const oneJan = new Date(d.getFullYear(), 0, 1);
       const numberOfDays = Math.floor((d.getTime() - oneJan.getTime()) / (24 * 60 * 60 * 1000));
@@ -456,12 +417,11 @@ export class RarePassService {
     };
     const weekStr = getWeekKey(now);
 
-    const completionRecords = await this.prisma.userRarePassMissionCompletion.findMany({
-      where: {
-        userId,
-        missionId: { in: missions.map((m: any) => m.id) }
-      }
-    });
+    const completionRecords = await this.rarePassRepository.findMissionCompletions(
+      this.prisma,
+      userId,
+      missions.map((m: any) => m.id)
+    );
 
     return missions.map((mission: any) => {
       let periodKey = 'ALL';
@@ -493,12 +453,10 @@ export class RarePassService {
     });
   }
 
-  async claimMission(userId: string, missionId: string) {
+  async claimMission(userId: string, missionId: string): Promise<RarePassMissionClaimResultDto> {
     return await this.prisma.$transaction(async (tx: any) => {
       const season = await this.getActiveSeason(tx);
-      const mission = await tx.rarePassMission.findUnique({
-        where: { id: missionId }
-      });
+      const mission = await this.rarePassRepository.findMissionById(tx, missionId);
       if (!mission || mission.seasonId !== season.id) {
         throw new NotFoundError(
           ErrorMessages[ErrorCode.MISSION_NOT_FOUND],
@@ -509,7 +467,7 @@ export class RarePassService {
       const now = new Date();
       let periodKey = 'ALL';
       const todayStr = now.toISOString().split('T')[0];
-      
+
       const getWeekKey = (d: Date) => {
         const oneJan = new Date(d.getFullYear(), 0, 1);
         const numberOfDays = Math.floor((d.getTime() - oneJan.getTime()) / (24 * 60 * 60 * 1000));
@@ -523,11 +481,7 @@ export class RarePassService {
         periodKey = getWeekKey(now);
       }
 
-      const completion = await tx.userRarePassMissionCompletion.findUnique({
-        where: {
-          userId_missionId_periodKey: { userId, missionId, periodKey }
-        }
-      });
+      const completion = await this.rarePassRepository.findMissionCompletion(tx, userId, missionId, periodKey);
 
       if (!completion || completion.progress < mission.targetCount) {
         throw new BadRequestError(
@@ -543,12 +497,9 @@ export class RarePassService {
         );
       }
 
-      const updated = await tx.userRarePassMissionCompletion.update({
-        where: { id: completion.id },
-        data: {
-          completed: true,
-          rpXpAwarded: mission.rpXpReward
-        }
+      await this.rarePassRepository.updateMissionCompletion(tx, completion.id, {
+        completed: true,
+        rpXpAwarded: mission.rpXpReward
       });
 
       const awarded = await this.awardRpXp(
@@ -567,7 +518,7 @@ export class RarePassService {
     }, { maxWait: 10000, timeout: 20000 });
   }
 
-  async updateMissionProgress(tx: any, userId: string, missionCode: string, increment: number) {
+  async updateMissionProgress(tx: any, userId: string, missionCode: string, increment: number): Promise<void> {
     const db = tx || this.prisma;
 
     // Check active season
@@ -578,9 +529,7 @@ export class RarePassService {
       return;
     }
 
-    const mission = await db.rarePassMission.findFirst({
-      where: { seasonId: season.id, code: missionCode }
-    });
+    const mission = await this.rarePassRepository.findMissionByCode(db, season.id, missionCode);
     if (!mission) {
       return;
     }
@@ -588,7 +537,7 @@ export class RarePassService {
     const now = new Date();
     let periodKey = 'ALL';
     const todayStr = now.toISOString().split('T')[0];
-    
+
     const getWeekKey = (d: Date) => {
       const oneJan = new Date(d.getFullYear(), 0, 1);
       const numberOfDays = Math.floor((d.getTime() - oneJan.getTime()) / (24 * 60 * 60 * 1000));
@@ -602,11 +551,7 @@ export class RarePassService {
       periodKey = getWeekKey(now);
     }
 
-    const completion = await db.userRarePassMissionCompletion.findUnique({
-      where: {
-        userId_missionId_periodKey: { userId, missionId: mission.id, periodKey }
-      }
-    });
+    const completion = await this.rarePassRepository.findMissionCompletion(db, userId, mission.id, periodKey);
 
     if (completion && completion.completed) {
       return;
@@ -614,22 +559,11 @@ export class RarePassService {
 
     if (completion) {
       const newProgress = completion.progress + increment;
-      await db.userRarePassMissionCompletion.update({
-        where: { id: completion.id },
-        data: {
-          progress: newProgress
-        }
+      await this.rarePassRepository.updateMissionCompletion(db, completion.id, {
+        progress: newProgress
       });
     } else {
-      await db.userRarePassMissionCompletion.create({
-        data: {
-          userId,
-          missionId: mission.id,
-          periodKey,
-          progress: increment,
-          completed: false
-        }
-      });
+      await this.rarePassRepository.upsertMissionCompletion(db, userId, mission.id, periodKey, increment, mission.targetCount);
     }
   }
 }

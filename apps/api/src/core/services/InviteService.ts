@@ -1,53 +1,38 @@
 import { InviteRepository } from '../../infrastructure/database/repositories/InviteRepository';
+import { UserRepository } from '../../infrastructure/database/repositories/UserRepository';
 import { LedgerService } from './LedgerService';
 import { RarePassService } from './RarePassService';
 import { LedgerSource } from '@jlt/database';
 import { BadRequestError, ConflictError } from '../errors/AppError';
 import { ErrorCode, ErrorMessages, APP_CONFIG } from '@jlt/constants';
+import type { InviteStatsDto, RedeemInviteResultDto, ClaimMilestoneResultDto } from '@jlt/types';
 
 export class InviteService {
   constructor(
     private inviteRepository: InviteRepository,
+    private userRepository: UserRepository,
     private ledgerService: LedgerService,
+    private rarePassService: RarePassService,
     private prisma: any
   ) {}
 
-  async getInviteStats(userId: string) {
-    let { invite, milestoneClaims } = await this.inviteRepository.findStats(this.prisma, userId);
+  async getInviteStats(userId: string): Promise<InviteStatsDto> {
+    const [statsResult, userRedemption] = await Promise.all([
+      this.inviteRepository.findStats(this.prisma, userId),
+      this.inviteRepository.findRedemptionByUserId(this.prisma, userId)
+    ]);
+
+    let { invite, milestoneClaims } = statsResult;
     if (!invite) {
       const code = `JLT_${userId.substring(0, 8).toUpperCase()}`;
-      invite = await this.prisma.invite.create({
-        data: {
-          inviterId: userId,
-          code
-        },
-        include: { 
-          redemptions: {
-            include: {
-              redeemedByUser: {
-                select: {
-                  level: true,
-                  displayName: true,
-                  walletAddress: true,
-                  activeAvatarVariant: {
-                    select: {
-                      imageUrl: true
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
+      invite = await this.inviteRepository.createInvite(this.prisma, {
+        inviterId: userId,
+        code
       });
       milestoneClaims = [];
     }
     const totalInvited = invite.redemptions?.length || 0;
     const gpEarnedFromInvites = invite.redemptions?.reduce((acc: number, r: any) => acc + (r.inviterGpAwarded || 0), 0) || 0;
-
-    const userRedemption = await this.prisma.inviteRedemption.findUnique({
-      where: { redeemedByUserId: userId }
-    });
 
     return {
       inviteCode: invite.code,
@@ -59,7 +44,7 @@ export class InviteService {
     };
   }
 
-  async redeem(rawInviteCode: string, newUserId: string) {
+  async redeem(rawInviteCode: string, newUserId: string): Promise<RedeemInviteResultDto> {
     return await this.prisma.$transaction(
       async (tx: any) => {
         if (!rawInviteCode || typeof rawInviteCode !== 'string' || !rawInviteCode.trim()) {
@@ -90,7 +75,7 @@ export class InviteService {
         }
 
         let invite = await this.inviteRepository.findByCode(tx, inviteCode);
-        
+
         // Lazy creation if inviter hasn't visited their dashboard yet
         if (!invite && inviteCode.startsWith('JLT_')) {
           const shortId = inviteCode.substring(4).toLowerCase();
@@ -99,20 +84,14 @@ export class InviteService {
           });
 
           if (inviterUser) {
-            const existingInvite = await tx.invite.findFirst({
-              where: { inviterId: inviterUser.id },
-              include: { redemptions: true }
-            });
+            const existingInvite = await this.inviteRepository.findByInviterId(tx, inviterUser.id);
 
             if (existingInvite) {
               invite = existingInvite;
             } else {
-              invite = await tx.invite.create({
-                data: {
-                  inviterId: inviterUser.id,
-                  code: inviteCode
-                },
-                include: { redemptions: true }
+              invite = await this.inviteRepository.createInvite(tx, {
+                inviterId: inviterUser.id,
+                code: inviteCode
               });
             }
           }
@@ -132,9 +111,7 @@ export class InviteService {
           );
         }
 
-        const existingRedemption = await tx.inviteRedemption.findUnique({
-          where: { redeemedByUserId: newUserId }
-        });
+        const existingRedemption = await this.inviteRepository.findRedemptionByUserId(tx, newUserId);
 
         if (existingRedemption) {
           throw new ConflictError(
@@ -144,14 +121,7 @@ export class InviteService {
         }
 
         // Prevent circular invites: if newUserId's invite code was already redeemed by the inviter
-        const circularRedemption = await tx.inviteRedemption.findFirst({
-          where: {
-            redeemedByUserId: invite.inviterId,
-            invite: {
-              inviterId: newUserId
-            }
-          }
-        });
+        const circularRedemption = await this.inviteRepository.findCircularRedemption(tx, invite.inviterId, newUserId);
 
         if (circularRedemption) {
           throw new ConflictError(
@@ -160,10 +130,9 @@ export class InviteService {
           );
         }
 
-
         const inviterGp = APP_CONFIG.INVITE.INVITER_GP_REWARD;
         const inviteeGp = APP_CONFIG.INVITE.INVITEE_GP_REWARD;
-        const inviterXp = 0; // XP is now awarded at Level 6 milestone
+        const inviterXp = 0; // XP is awarded at Level 6 milestone
 
         await this.inviteRepository.createRedemption(tx, {
           inviteId: invite.id,
@@ -177,8 +146,7 @@ export class InviteService {
         await this.ledgerService.awardGp(tx, newUserId, inviteeGp, LedgerSource.INVITE, invite.inviterId);
 
         // Increment Rare Pass invite friends weekly mission progress
-        const rarePassService = new RarePassService(this.prisma);
-        await rarePassService.updateMissionProgress(tx, invite.inviterId, 'mission_invite_friends_weekly', 1);
+        await this.rarePassService.updateMissionProgress(tx, invite.inviterId, 'mission_invite_friends_weekly', 1);
 
         return {
           success: true,
@@ -188,7 +156,8 @@ export class InviteService {
       { maxWait: 10000, timeout: 20000 }
     );
   }
-  async claimMilestone(inviterId: string, inviteeCount: number, levelReached: number) {
+
+  async claimMilestone(inviterId: string, inviteeCount: number, levelReached: number): Promise<ClaimMilestoneResultDto> {
     return await this.prisma.$transaction(
       async (tx: any) => {
         // Verify milestones constraints
@@ -197,21 +166,13 @@ export class InviteService {
 
         if (!validCounts.includes(inviteeCount) || !validLevels.includes(levelReached)) {
           throw new BadRequestError(
-            "Invalid milestone parameters",
+            'Invalid milestone parameters',
             ErrorCode.BAD_REQUEST
           );
         }
 
         // Check if already claimed
-        const existingClaim = await tx.inviteMilestoneClaim.findUnique({
-          where: {
-            inviterId_inviteeCount_levelReached: {
-              inviterId,
-              inviteeCount,
-              levelReached
-            }
-          }
-        });
+        const existingClaim = await this.inviteRepository.findMilestoneClaim(tx, inviterId, inviteeCount, levelReached);
 
         if (existingClaim) {
           throw new ConflictError(
@@ -224,7 +185,7 @@ export class InviteService {
         const { invite } = await this.inviteRepository.findStats(tx, inviterId);
         if (!invite) {
           throw new BadRequestError(
-            "No invites found",
+            'No invites found',
             ErrorCode.NOT_FOUND
           );
         }
@@ -244,12 +205,10 @@ export class InviteService {
         const gpAwarded = inviteeCount * levelReached * 20;
         const xpAwarded = inviteeCount * levelReached * 10;
 
-        await tx.inviteMilestoneClaim.create({
-          data: {
-            inviterId,
-            inviteeCount,
-            levelReached
-          }
+        await this.inviteRepository.createMilestoneClaim(tx, {
+          inviterId,
+          inviteeCount,
+          levelReached
         });
 
         await this.ledgerService.awardGp(tx, inviterId, gpAwarded, LedgerSource.INVITE, `milestone_${inviteeCount}_${levelReached}`);

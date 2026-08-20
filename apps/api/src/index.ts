@@ -85,8 +85,8 @@ process.on('uncaughtException', (err) => {
   console.error('[API Server] Uncaught Exception:', err);
 });
 
-app.listen(PORT, () => {
+app.listen(Number(PORT), '0.0.0.0', () => {
   if (process.env.NODE_ENV !== 'production') {
-    console.log(`Server listening on http://localhost:${PORT}`);
+    console.log(`Server listening on http://0.0.0.0:${PORT} (Network: http://192.168.1.10:${PORT})`);
   }
 });

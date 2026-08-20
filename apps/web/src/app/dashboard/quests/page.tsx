@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useAccount } from 'wagmi';
 import { useQuests, Quest } from '@/hooks/useQuests';
@@ -8,6 +8,9 @@ import { useRarePass, RarePassMission } from '@/hooks/useRarePass';
 import { QuestCard } from '@/components/quests/QuestCard';
 import { JLTLoader } from '@/components/common/JLTLoader';
 import { showError } from '@/components/common/AlertModal';
+import { gsap, prefersReducedMotion, MotionEases } from '@/lib/animations';
+
+const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 import {
   Target,
   Zap,
@@ -94,20 +97,44 @@ export default function QuestsPage() {
     fragmentsAwarded?: number;
   } | null>(null);
   const [mounted, setMounted] = useState(false);
+  const cardsGridRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useIsomorphicLayoutEffect(() => {
+    if (prefersReducedMotion() || !cardsGridRef.current) return;
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        '.quest-card-anim',
+        { opacity: 0, y: 16, scale: 0.97 },
+        {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          duration: 0.45,
+          stagger: 0.05,
+          ease: MotionEases.backOut,
+          force3D: true,
+          overwrite: 'auto',
+          clearProps: 'transform,opacity',
+        }
+      );
+    }, cardsGridRef);
+
+    return () => ctx.revert();
+  }, [activeTab, quests]);
 
   const handleClaimQuest = async (id: string) => {
     try {
       setClaimingId(id);
       const res = await claim(id);
       setRewardData({
-        gpAwarded: res.gpAwarded || 0,
-        xpAwarded: res.xpAwarded || 0,
-        rpXpAwarded: res.rpXpAwarded || 0,
-        fragmentsAwarded: res.fragmentsAwarded || 0,
+        gpAwarded: res?.gpAwarded || 0,
+        xpAwarded: res?.xpAwarded || 0,
+        rpXpAwarded: res?.rpXpAwarded || 0,
+        fragmentsAwarded: res?.fragmentsAwarded || 0,
       });
       setShowPopup(true);
     } catch (err: any) {
@@ -122,7 +149,7 @@ export default function QuestsPage() {
       setClaimingId(missionId);
       const res = await claimMission(missionId);
       setRewardData({
-        rpXpAwarded: res.rpXpAwarded || 0,
+        rpXpAwarded: res?.rpXpAwarded || 0,
       });
       setShowPopup(true);
     } catch (err: any) {
@@ -210,8 +237,6 @@ export default function QuestsPage() {
           <p className="text-purple-200 font-gilroyRegular text-sm sm:text-base leading-relaxed opacity-90">
             Complete daily check-ins, social tasks, and referrals to earn GP, XP, RP XP, and creature fragments according to JLTQuest tokenomics.
           </p>
-
-
         </div>
 
         {/* Right — quick stats or connect prompt */}
@@ -247,8 +272,6 @@ export default function QuestsPage() {
           )}
         </div>
       </div>
-
-
 
       {/* ════════════════════════════════════════════════════════
           CATEGORY TABS + QUEST / MISSION GRID
@@ -304,17 +327,16 @@ export default function QuestsPage() {
         {/* ── STANDARD QUESTS GRID ── */}
         {isConnected && !isLoadingQuests && !isLoadingMissions && (
           <div className="space-y-6">
-
-
             {groupedQuests[activeTab]?.length > 0 && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              <div ref={cardsGridRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {groupedQuests[activeTab].map((quest) => (
-                  <QuestCard
-                    key={quest.id}
-                    quest={quest}
-                    onClaim={handleClaimQuest}
-                    isClaiming={claimingId === quest.id}
-                  />
+                  <div key={quest.id} className="quest-card-anim will-change-transform">
+                    <QuestCard
+                      quest={quest}
+                      onClaim={handleClaimQuest}
+                      isClaiming={claimingId === quest.id}
+                    />
+                  </div>
                 ))}
               </div>
             )}

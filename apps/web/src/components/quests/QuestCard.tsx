@@ -91,7 +91,7 @@ function QuestCardComponent({ quest, onClaim, isClaiming }: QuestCardProps) {
             </div>
           )}
         </div>
-        {quest.completedCount > 0 && quest.frequency === 'REPEATABLE' && (
+        {(quest.completedCount ?? 0) > 0 && quest.frequency === 'REPEATABLE' && (
           <p className="text-xs text-gray-500 font-gilroyMedium mt-3">
             Completed {quest.completedCount} time{quest.completedCount !== 1 ? 's' : ''}
           </p>
@@ -147,4 +147,3 @@ function QuestCardComponent({ quest, onClaim, isClaiming }: QuestCardProps) {
 }
 
 export const QuestCard = React.memo(QuestCardComponent);
-

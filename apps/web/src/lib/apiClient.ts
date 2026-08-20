@@ -5,11 +5,21 @@
 import { sanitizeInput, getAuthToken, setAuthToken, getRefreshToken, clearUserSession } from './authCookie';
 
 export function getApiUrl(): string {
-  if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
   if (typeof window !== 'undefined') {
     const hostname = window.location.hostname;
-    return `http://${hostname}:4000/api/v1`;
+    // When accessing over LAN IP (e.g. 192.168.x.x) or domain, dynamically connect to API on same host
+    if (hostname && hostname !== 'localhost' && hostname !== '127.0.0.1') {
+      const envUrl = process.env.NEXT_PUBLIC_API_URL;
+      if (envUrl && envUrl.includes('localhost')) {
+        return envUrl.replace('localhost', hostname);
+      }
+      if (envUrl && envUrl.includes('127.0.0.1')) {
+        return envUrl.replace('127.0.0.1', hostname);
+      }
+      return `http://${hostname}:4000/api/v1`;
+    }
   }
+  if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
   return 'http://localhost:4000/api/v1';
 }
 
@@ -29,7 +39,8 @@ let globalRefreshPromise: Promise<string> | null = null;
  * Perform fetch with automatic deduplication, retry exponential backoff, and auth header injection
  */
 export async function fetchWithRetry<T = any>(url: string, options: FetchOptions = {}): Promise<T> {
-  const { retries = 2, backoffMs = 1000, dedupe = true, headers = {}, ...rest } = options;
+  const isGet = !options.method || options.method.toUpperCase() === 'GET';
+  const { retries = isGet ? 1 : 0, backoffMs = 250, dedupe = isGet, headers = {}, ...rest } = options;
 
   const requestKey = `${options.method || 'GET'}:${url}`;
 
@@ -44,6 +55,7 @@ export async function fetchWithRetry<T = any>(url: string, options: FetchOptions
 
       const reqHeaders: Record<string, string> = {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
         ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
         ...(headers as Record<string, string>),
       };

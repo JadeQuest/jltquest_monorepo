@@ -96,6 +96,72 @@ export const AuthMessages = {
   LOGOUT_SUCCESS: 'Logged out successfully',
 };
 
+export const UserMessages = {
+  PROFILE_FETCHED: 'User profile retrieved successfully',
+  GP_CONVERTED_SUCCESS: 'Gold Points converted to JLT tokens successfully',
+  MINIMUM_GP_REQUIRED: 'Minimum 100 GP required for conversion',
+  GP_MULTIPLE_100: 'GP amount must be a multiple of 100',
+};
+
+export const CheckInMessages = {
+  STATUS_FETCHED: 'Daily check-in status retrieved successfully',
+  CLAIM_SUCCESS: 'Daily check-in claimed successfully',
+  ALREADY_CHECKED_IN: 'You have already checked in today',
+};
+
+export const QuestMessages = {
+  QUESTS_FETCHED: 'Quests list retrieved successfully',
+  QUEST_CLAIMED_SUCCESS: 'Quest reward claimed successfully',
+};
+
+export const SpinMessages = {
+  STATUS_FETCHED: 'Spin status retrieved successfully',
+  SPIN_SUCCESS: 'Spin executed successfully',
+  PURCHASE_SUCCESS: 'Spin purchased successfully',
+};
+
+export const InviteMessages = {
+  STATS_FETCHED: 'Invite stats retrieved successfully',
+  REDEEM_SUCCESS: 'Invite code redeemed successfully',
+  MILESTONE_CLAIMED: 'Invite milestone claimed successfully',
+};
+
+export const SocialMessages = {
+  OAUTH_URL_GENERATED: 'OAuth URL generated successfully',
+  ACCOUNT_CONNECTED: 'Social account connected successfully',
+  ACCOUNT_DISCONNECTED: 'Social account disconnected successfully',
+  QUESTS_FETCHED: 'Social quests list retrieved successfully',
+  QUEST_CLAIMED: 'Social quest reward claimed successfully',
+};
+
+export const CollectionMessages = {
+  COLLECTION_FETCHED: 'User card collection retrieved successfully',
+  MERGE_SUCCESS: 'Fragments merged into rare card successfully',
+};
+
+export const RarePassMessages = {
+  STATUS_FETCHED: 'Rare Pass status retrieved successfully',
+  REWARDS_FETCHED: 'Rare Pass rewards retrieved successfully',
+  REWARD_CLAIMED: 'Rare Pass reward claimed successfully',
+  MISSIONS_FETCHED: 'Rare Pass missions retrieved successfully',
+  MISSION_CLAIMED: 'Rare Pass mission claimed successfully',
+  PREMIUM_PURCHASED: 'Premium Rare Pass unlocked successfully',
+};
+
+export const AvatarMessages = {
+  AVATARS_FETCHED: 'Avatars catalog retrieved successfully',
+  AVATAR_SELECTED: 'Active avatar updated successfully',
+  AVATAR_UNLOCKED: 'Avatar unlocked successfully',
+};
+
+export const LevelMessages = {
+  REQUIREMENT_FETCHED: 'Level requirement retrieved successfully',
+};
+
+export const LeaderboardMessages = {
+  LEADERBOARD_FETCHED: 'Leaderboard rankings retrieved successfully',
+};
+
 export const APP_CONFIG = {
   AUTH: {
     TOKEN_EXPIRES_IN_SECONDS: 900, // 15 minutes

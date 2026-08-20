@@ -1,25 +1,34 @@
+import { AvatarRepository } from '../../infrastructure/database/repositories/AvatarRepository';
+import { UserRepository } from '../../infrastructure/database/repositories/UserRepository';
+import { LedgerRepository } from '../../infrastructure/database/repositories/LedgerRepository';
 import { BadRequestError, NotFoundError } from '../errors/AppError';
 import { ErrorCode, ErrorMessages } from '@jlt/constants';
 import { LedgerSource, LedgerType } from '@jlt/database';
+import { cacheService } from './CacheService';
+import type { AvatarDto, AvatarSelectResultDto, AvatarUnlockResultDto } from '@jlt/types';
 
 export class AvatarService {
-  constructor(private prisma: any) {}
+  constructor(
+    private avatarRepository: AvatarRepository,
+    private userRepository: UserRepository,
+    private ledgerRepository: LedgerRepository,
+    private prisma: any
+  ) {}
 
-  async listAvatars(userId: string) {
+  async listAvatars(userId: string): Promise<AvatarDto[]> {
+    let cachedAvatars = cacheService.get<any[]>('avatar_catalog_with_variants');
+
     const [avatars, userAvatars, user] = await Promise.all([
-      this.prisma.avatar.findMany({
-        include: {
-          variants: true
-        }
-      }),
-      this.prisma.userAvatar.findMany({
-        where: { userId }
-      }),
-      this.prisma.user.findUnique({
-        where: { id: userId },
-        select: { activeAvatarVariantId: true, level: true }
-      })
+      cachedAvatars
+        ? Promise.resolve(cachedAvatars)
+        : this.avatarRepository.findAllAvatarsWithVariants(this.prisma),
+      this.avatarRepository.findUserAvatars(this.prisma, userId),
+      this.userRepository.findById(this.prisma, userId)
     ]);
+
+    if (!cachedAvatars && avatars) {
+      cacheService.set('avatar_catalog_with_variants', avatars, 180);
+    }
 
     if (!user) {
       throw new NotFoundError(
@@ -44,10 +53,7 @@ export class AvatarService {
     }
 
     if (missingUnlocks.length > 0) {
-      await this.prisma.userAvatar.createMany({
-        data: missingUnlocks,
-        skipDuplicates: true
-      });
+      await this.avatarRepository.createManyUserAvatars(this.prisma, missingUnlocks);
     }
 
     return avatars.map((avatar: any) => {
@@ -73,11 +79,8 @@ export class AvatarService {
     });
   }
 
-  async selectAvatar(userId: string, variantId: string) {
-    const variant = await this.prisma.avatarVariant.findUnique({
-      where: { id: variantId },
-      include: { avatar: true }
-    });
+  async selectAvatar(userId: string, variantId: string): Promise<AvatarSelectResultDto> {
+    const variant = await this.avatarRepository.findVariantById(this.prisma, variantId);
     if (!variant) {
       throw new NotFoundError(
         ErrorMessages[ErrorCode.AVATAR_VARIANT_NOT_FOUND],
@@ -86,11 +89,7 @@ export class AvatarService {
     }
 
     // Check if unlocked
-    const userAvatar = await this.prisma.userAvatar.findUnique({
-      where: {
-        userId_variantId: { userId, variantId }
-      }
-    });
+    const userAvatar = await this.avatarRepository.findUserAvatar(this.prisma, userId, variantId);
 
     if (!userAvatar) {
       throw new BadRequestError(
@@ -99,9 +98,8 @@ export class AvatarService {
       );
     }
 
-    await this.prisma.user.update({
-      where: { id: userId },
-      data: { activeAvatarVariantId: variantId }
+    await this.userRepository.update(this.prisma, userId, {
+      activeAvatarVariantId: variantId
     });
 
     return {
@@ -117,12 +115,9 @@ export class AvatarService {
     };
   }
 
-  async unlockAvatar(userId: string, variantId: string) {
+  async unlockAvatar(userId: string, variantId: string): Promise<AvatarUnlockResultDto> {
     return await this.prisma.$transaction(async (tx: any) => {
-      const variant = await tx.avatarVariant.findUnique({
-        where: { id: variantId },
-        include: { avatar: true }
-      });
+      const variant = await this.avatarRepository.findVariantById(tx, variantId);
 
       if (!variant) {
         throw new NotFoundError(
@@ -135,17 +130,16 @@ export class AvatarService {
         throw new BadRequestError(ErrorMessages[ErrorCode.REQUIREMENTS_NOT_MET], ErrorCode.REQUIREMENTS_NOT_MET);
       }
 
-      const existingAvatar = await tx.userAvatar.findUnique({
-        where: { userId_variantId: { userId, variantId } }
-      });
+      const existingAvatar = await this.avatarRepository.findUserAvatar(tx, userId, variantId);
 
       if (existingAvatar) {
         throw new BadRequestError(ErrorMessages[ErrorCode.ALREADY_CLAIMED], ErrorCode.ALREADY_CLAIMED);
       }
 
-      const user = await tx.user.findUnique({
-        where: { id: userId }
-      });
+      const user = await this.userRepository.findById(tx, userId);
+      if (!user) {
+        throw new NotFoundError(ErrorMessages[ErrorCode.USER_NOT_FOUND], ErrorCode.USER_NOT_FOUND);
+      }
 
       const costJltNum = variant.costJlt ? parseFloat(variant.costJlt.toString()) : 0;
 
@@ -155,36 +149,30 @@ export class AvatarService {
 
       // Deduct GP and log
       if (variant.costGp > 0) {
-        await tx.user.update({
-          where: { id: userId },
-          data: { gp: { decrement: variant.costGp } }
+        await this.userRepository.update(tx, userId, {
+          gp: { decrement: variant.costGp }
         });
 
-        await tx.gpLedgerEntry.create({
-          data: {
-            userId,
-            type: LedgerType.DEBIT,
-            amount: -variant.costGp,
-            source: LedgerSource.CONVERSION, // Using CONVERSION for store purchases for now
-            refId: variantId
-          }
+        await this.ledgerRepository.createGpLedger(tx, {
+          userId,
+          type: LedgerType.DEBIT,
+          amount: -variant.costGp,
+          source: LedgerSource.CONVERSION, // Using CONVERSION for store purchases
+          refId: variantId
         });
       }
 
       // Deduct JLT
       if (costJltNum > 0) {
-        await tx.user.update({
-          where: { id: userId },
-          data: { jlt: { decrement: costJltNum } }
+        await this.userRepository.update(tx, userId, {
+          jlt: { decrement: costJltNum }
         });
       }
 
       // Unlock avatar
-      await tx.userAvatar.create({
-        data: {
-          userId,
-          variantId
-        }
+      await this.avatarRepository.createUserAvatar(tx, {
+        userId,
+        variantId
       });
 
       return {

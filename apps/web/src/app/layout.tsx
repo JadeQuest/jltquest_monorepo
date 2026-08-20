@@ -69,12 +69,25 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                          str.indexOf('UserRejectedRequestError') !== -1 ||
                          str.indexOf('User rejected') !== -1 ||
                          str.indexOf('-32002') !== -1 ||
-                         str.indexOf('4001') !== -1;
+                         str.indexOf('4001') !== -1 ||
+                         str.indexOf('Failed to execute inlined telemetry script') !== -1 ||
+                         str.indexOf('telemetry script') !== -1 ||
+                         str.indexOf('initCCA') !== -1 ||
+                         str.indexOf('ObjectMultiplex') !== -1 ||
+                         str.indexOf('MaxListenersExceededWarning') !== -1;
                 }
+                var origConsoleError = console.error;
+                console.error = function() {
+                  var firstArg = arguments[0];
+                  var text = (typeof firstArg === 'string' ? firstArg : (firstArg && firstArg.message) || '') + '';
+                  if (shouldIgnore(text, '', firstArg)) {
+                    return;
+                  }
+                  return origConsoleError.apply(console, arguments);
+                };
                 var origOnError = window.onerror;
                 window.onerror = function(msg, url, line, col, error) {
                   if (shouldIgnore(msg, url, error)) {
-                    console.warn('[Handled Extension Error]:', msg);
                     return true;
                   }
                   if (origOnError) return origOnError.apply(this, arguments);
@@ -102,7 +115,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
         {/* Preload critical assets for instant splash rendering */}
         <link rel="preload" href="/icon/mascot.webp" as="image" type="image/webp" fetchPriority="high" />
-        <link rel="preload" href="/jlt.svg" as="image" type="image/svg+xml" />
+        <link rel="preload" href="/jltcolor.svg" as="image" type="image/svg+xml" />
       </head>
       <body
         className="bg-[#080411] text-white antialiased selection:bg-[#FFA28D]/30 selection:text-white"

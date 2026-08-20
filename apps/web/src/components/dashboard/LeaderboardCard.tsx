@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { useLeaderboard, LeaderboardEntry, LeaderboardCategory } from '@/hooks/useLeaderboard';
 import { Trophy, Star, Flame, Zap, Award, Copy } from 'lucide-react';
 import { JLTLoader } from '@/components/common/JLTLoader';
+import { gsap, prefersReducedMotion, MotionEases } from '@/lib/animations';
+
+const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 const getLevelInfo = (lvl: number) => {
   if (lvl <= 5) return { tier: 'Starter', badge: '/badge/starter-badge.webp', color: 'text-gray-400 border-gray-400/30 bg-gray-900/30' };
@@ -23,6 +26,31 @@ const LEADERBOARD_TABS: { id: LeaderboardCategory; label: string }[] = [
 export const LeaderboardCardComponent: React.FC = () => {
   const [activeType, setActiveType] = useState<LeaderboardCategory>('gp');
   const { leaderboard, isLoading } = useLeaderboard(activeType, 20);
+  const listRef = useRef<HTMLDivElement>(null);
+
+  useIsomorphicLayoutEffect(() => {
+    if (prefersReducedMotion() || !listRef.current || isLoading) return;
+
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        '.lb-row-anim',
+        { opacity: 0, x: -12, scale: 0.98 },
+        {
+          opacity: 1,
+          x: 0,
+          scale: 1,
+          duration: 0.35,
+          stagger: 0.03,
+          ease: MotionEases.powerOut,
+          force3D: true,
+          overwrite: 'auto',
+          clearProps: 'transform,opacity',
+        }
+      );
+    }, listRef);
+
+    return () => ctx.revert();
+  }, [activeType, leaderboard, isLoading]);
 
   return (
     <div className="daily-card-panel p-4 sm:p-6 flex flex-col min-h-[calc(100vh-140px)] relative overflow-hidden select-none shadow-2xl border border-white/10">
@@ -53,7 +81,7 @@ export const LeaderboardCardComponent: React.FC = () => {
       </div>
 
       {/* Leaderboard List */}
-      <div className="mt-4 flex-grow flex flex-col gap-2.5">
+      <div ref={listRef} className="mt-4 flex-grow flex flex-col gap-2.5">
         {isLoading ? (
           <div className="py-16 flex justify-center">
             <JLTLoader variant="inline" size="md" text="Loading leaderboard..." />
@@ -65,7 +93,7 @@ export const LeaderboardCardComponent: React.FC = () => {
             return (
               <div
                 key={user.id}
-                className="flex items-center justify-between p-3 rounded-xl bg-black/30 border border-white/5 hover:border-purple-500/30 transition-all hover:bg-white/5 gap-3"
+                className="lb-row-anim will-change-transform flex items-center justify-between p-3 rounded-xl bg-black/30 border border-white/5 hover:border-purple-500/30 transition-all hover:bg-white/5 gap-3"
               >
                 <div className="flex items-center gap-3 min-w-0">
                   {/* Rank Badge */}
@@ -96,11 +124,11 @@ export const LeaderboardCardComponent: React.FC = () => {
                   <div className="flex items-center gap-2 sm:gap-3 flex-wrap sm:flex-nowrap">
                     <div 
                       className="flex items-center gap-1.5 text-white hover:text-purple-300 transition-colors cursor-pointer group"
-                      onClick={() => navigator.clipboard.writeText(user.walletAddress)}
+                      onClick={() => user.walletAddress && navigator.clipboard.writeText(user.walletAddress)}
                       title="Copy Wallet Address"
                     >
                       <span className="font-gilroyBold text-xs sm:text-sm tracking-wide font-mono break-all">
-                        {user.walletAddress}
+                        {user.walletAddress || user.maskedAddress}
                       </span>
                       <Copy className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
                     </div>

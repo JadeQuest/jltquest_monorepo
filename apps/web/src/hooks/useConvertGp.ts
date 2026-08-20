@@ -1,27 +1,19 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchWithRetry, getApiUrl } from '@/lib/apiClient';
+import type { ApiResponse, ConvertGpResultDto } from '@jlt/types';
 
 export function useConvertGp() {
   const queryClient = useQueryClient();
 
   const convertMutation = useMutation({
-    mutationFn: async (gpAmount: number) => {
-      const response = await fetchWithRetry<{
-        success: boolean;
-        data: {
-          convertedGp: number;
-          jltReceived: number;
-          newGpBalance: number;
-          newJltBalance: number;
-        };
-        error?: string;
-      }>(`${getApiUrl()}/users/convert-gp`, {
+    mutationFn: async (gpAmount: number): Promise<ConvertGpResultDto> => {
+      const response = await fetchWithRetry<ApiResponse<ConvertGpResultDto>>(`${getApiUrl()}/users/convert-gp`, {
         method: 'POST',
         body: JSON.stringify({ gpAmount }),
       });
 
-      if (!response.success) {
-        throw new Error(response.error || 'Conversion failed');
+      if (!response.success || !response.data) {
+        throw new Error(response.error?.message || 'Conversion failed');
       }
       return response.data;
     },

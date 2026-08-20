@@ -2,47 +2,25 @@ import { useQuery } from '@tanstack/react-query';
 import { useAccount } from 'wagmi';
 import { fetchWithRetry, getApiUrl } from '@/lib/apiClient';
 import { getCookie } from '@/lib/authCookie';
+import type { ApiResponse, UserDashboardDto } from '@jlt/types';
 
-export interface DashboardData {
-  user: {
-    id: string;
-    walletAddress: string;
-    level: number;
-    levelTier?: string;
-    xp: number;
-    gp: number;
-    jlt: number;
-    streak: number;
-    activeAvatar?: {
-      variantId: string;
-      type: string;
-      imageUrl: string;
-      name: string;
-      characterKey: string;
-    };
-  };
-  leveling: {
-    currentXp: number;
-    nextLevelXp: number;
-    progress: number;
-  };
-  socialConnections: Record<string, { connected: boolean; handle?: string }>;
-}
+export type DashboardData = UserDashboardDto;
 
 export function useDashboard() {
   const { isConnected, address } = useAccount();
   const token = getCookie('jlt_auth_token');
-  
+
   return useQuery({
     queryKey: ['dashboard', address],
-    queryFn: async () => {
-      const response = await fetchWithRetry<{ success: boolean; data: DashboardData; error: string | null }>(`${getApiUrl()}/users/me`);
-      if (!response.success) {
-        throw new Error(response.error || 'Failed to fetch dashboard');
+    queryFn: async (): Promise<UserDashboardDto> => {
+      const response = await fetchWithRetry<ApiResponse<UserDashboardDto>>(`${getApiUrl()}/users/me`);
+      if (!response.success || !response.data) {
+        throw new Error(response.error?.message || 'Failed to fetch dashboard');
       }
       return response.data;
     },
     enabled: isConnected && !!address && !!token,
+    staleTime: 30_000,
+    retry: 1,
   });
 }
-

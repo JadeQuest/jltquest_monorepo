@@ -8,6 +8,10 @@ import { SpinRepository } from '../infrastructure/database/repositories/SpinRepo
 import { InviteRepository } from '../infrastructure/database/repositories/InviteRepository';
 import { SocialConnectionRepository } from '../infrastructure/database/repositories/SocialConnectionRepository';
 import { LedgerRepository } from '../infrastructure/database/repositories/LedgerRepository';
+import { CollectionRepository } from '../infrastructure/database/repositories/CollectionRepository';
+import { AvatarRepository } from '../infrastructure/database/repositories/AvatarRepository';
+import { RarePassRepository } from '../infrastructure/database/repositories/RarePassRepository';
+import { AuditLogRepository } from '../infrastructure/database/repositories/AuditLogRepository';
 
 // Services
 import { AuthService } from '../core/services/AuthService';
@@ -39,28 +43,32 @@ import { AvatarController } from '../api/controllers/AvatarController';
 import { LeaderboardController } from '../api/controllers/LeaderboardController';
 
 // 1. Initialize Repositories
-const userRepository = new UserRepository();
-const streakRepository = new StreakRepository();
-const questRepository = new QuestRepository();
-const spinRepository = new SpinRepository();
-const inviteRepository = new InviteRepository();
-const socialConnectionRepository = new SocialConnectionRepository();
-const ledgerRepository = new LedgerRepository();
+export const userRepository = new UserRepository();
+export const streakRepository = new StreakRepository();
+export const questRepository = new QuestRepository();
+export const spinRepository = new SpinRepository();
+export const inviteRepository = new InviteRepository();
+export const socialConnectionRepository = new SocialConnectionRepository();
+export const ledgerRepository = new LedgerRepository();
+export const collectionRepository = new CollectionRepository();
+export const avatarRepository = new AvatarRepository();
+export const rarePassRepository = new RarePassRepository();
+export const auditLogRepository = new AuditLogRepository();
 
 // 2. Initialize Services
-const authService = new AuthService(userRepository);
-const ledgerService = new LedgerService(ledgerRepository);
-const userService = new UserService(userRepository, prisma);
-const checkInService = new CheckInService(streakRepository, ledgerService, prisma);
-const questService = new QuestService(questRepository, ledgerService, prisma);
-const spinService = new SpinService(spinRepository, ledgerService, prisma);
-const inviteService = new InviteService(inviteRepository, ledgerService, prisma);
-const socialService = new SocialService(socialConnectionRepository, ledgerService, prisma);
-const collectionService = new CollectionService(prisma);
-const levelService = new LevelService();
-const rarePassService = new RarePassService(prisma);
-const avatarService = new AvatarService(prisma);
-const leaderboardService = new LeaderboardService(prisma);
+export const ledgerService = new LedgerService(ledgerRepository);
+export const rarePassService = new RarePassService(rarePassRepository, userRepository, ledgerRepository, auditLogRepository, prisma);
+export const authService = new AuthService(userRepository, auditLogRepository);
+export const userService = new UserService(userRepository, ledgerRepository, prisma);
+export const checkInService = new CheckInService(streakRepository, userRepository, ledgerService, rarePassService, auditLogRepository, prisma);
+export const questService = new QuestService(questRepository, userRepository, ledgerService, rarePassService, prisma);
+export const spinService = new SpinService(spinRepository, userRepository, ledgerRepository, ledgerService, rarePassService, auditLogRepository, prisma);
+export const inviteService = new InviteService(inviteRepository, userRepository, ledgerService, rarePassService, prisma);
+export const socialService = new SocialService(socialConnectionRepository, userRepository, ledgerRepository, ledgerService, rarePassService, auditLogRepository, prisma);
+export const collectionService = new CollectionService(collectionRepository, userRepository, rarePassService, prisma);
+export const levelService = new LevelService();
+export const avatarService = new AvatarService(avatarRepository, userRepository, ledgerRepository, prisma);
+export const leaderboardService = new LeaderboardService(userRepository, streakRepository, ledgerRepository, rarePassRepository, prisma);
 
 // 3. Initialize Controllers
 export const authController = new AuthController(authService);

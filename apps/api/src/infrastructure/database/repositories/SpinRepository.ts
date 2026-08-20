@@ -1,16 +1,26 @@
+import { prisma } from '../prisma';
+
 export class SpinRepository {
   async findStateByUserId(tx: any, userId: string) {
-    return tx.spinState.findUnique({ where: { userId } });
+    const db = tx || prisma;
+    return db.spinState.findUnique({ where: { userId } });
+  }
+
+  async createState(tx: any, data: any) {
+    const db = tx || prisma;
+    return db.spinState.create({ data });
   }
 
   async updateState(tx: any, userId: string, data: any) {
-    return tx.spinState.update({
+    const db = tx || prisma;
+    return db.spinState.update({
       where: { userId },
       data
     });
   }
 
   async createHistory(tx: any, data: any) {
-    return tx.spinResult.create({ data });
+    const db = tx || prisma;
+    return db.spinResult.create({ data });
   }
 }

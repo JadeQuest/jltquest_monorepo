@@ -2,20 +2,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAccount } from 'wagmi';
 import { fetchWithRetry, getApiUrl } from '@/lib/apiClient';
 import { getCookie } from '@/lib/authCookie';
+import type { ApiResponse, CollectionDto, CardItemDto, MergeFragmentsResultDto } from '@jlt/types';
 
-export interface Card {
-  id: string;
-  name: string;
-  imageUrl: string;
-  rarity?: string;
-  quantity: number;
-  acquiredAt: string;
-}
-
-export interface CollectionData {
-  fragments: number;
-  cards: Card[];
-}
+export type Card = CardItemDto;
+export type CollectionData = CollectionDto;
 
 export const useCollection = () => {
   const queryClient = useQueryClient();
@@ -24,25 +14,28 @@ export const useCollection = () => {
 
   const { data: queryData, isLoading, error, refetch } = useQuery({
     queryKey: ['collection', address],
-    queryFn: async () => {
-      const response = await fetchWithRetry<{ success: boolean; data: CollectionData }>(`${getApiUrl()}/collection`);
+    queryFn: async (): Promise<CollectionDto | null> => {
+      const response = await fetchWithRetry<ApiResponse<CollectionDto>>(`${getApiUrl()}/collection`);
       return response.data;
     },
     enabled: isConnected && !!address && !!token,
+    staleTime: 30_000,
+    retry: 1,
   });
 
   const mergeMutation = useMutation({
-    mutationFn: async () => {
-      const response = await fetchWithRetry<{ success: boolean; data: any; error?: any }>(`${getApiUrl()}/collection/merge`, {
+    mutationFn: async (): Promise<CardItemDto | undefined> => {
+      const response = await fetchWithRetry<ApiResponse<MergeFragmentsResultDto>>(`${getApiUrl()}/collection/merge`, {
         method: 'POST',
       });
-      if (!response.success) {
+      if (!response.success || !response.data) {
         throw new Error(response.error?.message || 'Failed to merge fragments');
       }
       return response.data.cardAwarded;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['collection'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
     },
   });
 

@@ -22,11 +22,13 @@ export function WalletExtensionErrorHandler() {
         msg.includes('rejected the request') ||
         msg.includes('-32002') ||
         msg.includes('4001') ||
+        msg.includes('Failed to execute inlined telemetry script') ||
+        msg.includes('telemetry script') ||
+        msg.includes('initCCA') ||
         stack.includes('chrome-extension://') ||
         stack.includes('moz-extension://')
       ) {
         event.preventDefault();
-        console.warn('[Web3 Wallet Extension]: Handled extension rejection gracefully:', msg);
       }
     };
 

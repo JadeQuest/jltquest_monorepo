@@ -1,26 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAccount } from 'wagmi';
 import { fetchWithRetry, getApiUrl } from '@/lib/apiClient';
+import type { ApiResponse, AvatarDto, AvatarVariantDto, AvatarSelectResultDto, AvatarUnlockResultDto } from '@jlt/types';
 
-export interface AvatarVariant {
-  id: string;
-  type: string;
-  imageUrl: string;
-  modelUrl?: string;
-  unlocked: boolean;
-  active: boolean;
-  unlockDescription?: string;
-  isPurchasable: boolean;
-  costGp: number;
-  costJlt: number;
-}
-
-export interface Avatar {
-  id: string;
-  name: string;
-  characterKey: string;
-  variants: AvatarVariant[];
-}
+export type AvatarVariant = AvatarVariantDto;
+export type Avatar = AvatarDto;
 
 export function useAvatar() {
   const { address } = useAccount();
@@ -28,21 +12,23 @@ export function useAvatar() {
 
   const avatarsQuery = useQuery({
     queryKey: ['avatars', address],
-    queryFn: async () => {
-      const response = await fetchWithRetry<{ success: boolean; data: Avatar[] }>(`${getApiUrl()}/avatars`);
-      return response.data;
+    queryFn: async (): Promise<AvatarDto[]> => {
+      const response = await fetchWithRetry<ApiResponse<AvatarDto[]>>(`${getApiUrl()}/avatars`);
+      return response.data || [];
     },
     enabled: !!address,
+    staleTime: 60_000,
+    retry: 1,
   });
 
   const selectAvatarMutation = useMutation({
-    mutationFn: async (variantId: string) => {
-      const response = await fetchWithRetry<{ success: boolean; data: any; error?: any }>(`${getApiUrl()}/avatars/select`, {
+    mutationFn: async (variantId: string): Promise<AvatarSelectResultDto | null> => {
+      const response = await fetchWithRetry<ApiResponse<AvatarSelectResultDto>>(`${getApiUrl()}/avatars/select`, {
         method: 'POST',
         body: JSON.stringify({ variantId }),
       });
       if (!response.success) {
-        throw new Error(response.error?.message || response.error || 'Selection failed');
+        throw new Error(response.error?.message || 'Selection failed');
       }
       return response.data;
     },
@@ -51,10 +37,10 @@ export function useAvatar() {
       await queryClient.cancelQueries({ queryKey: ['avatars'] });
 
       const prevDashboard = queryClient.getQueryData(['dashboard', address]);
-      const prevAvatars = queryClient.getQueryData<Avatar[]>(['avatars']);
+      const prevAvatars = queryClient.getQueryData<AvatarDto[]>(['avatars']);
 
       // Find the chosen variant from current cache
-      let targetVariant: AvatarVariant | undefined;
+      let targetVariant: AvatarVariantDto | undefined;
       let targetAvatarName: string = 'Avatar';
       if (prevAvatars) {
         for (const av of prevAvatars) {
@@ -91,7 +77,7 @@ export function useAvatar() {
       // Optimistically update avatars cache
       queryClient.setQueriesData({ queryKey: ['avatars'] }, (old: any) => {
         if (!old || !Array.isArray(old)) return old;
-        return old.map((avatar: Avatar) => ({
+        return old.map((avatar: AvatarDto) => ({
           ...avatar,
           variants: avatar.variants.map((v) => ({
             ...v,
@@ -129,13 +115,13 @@ export function useAvatar() {
   });
 
   const unlockAvatarMutation = useMutation({
-    mutationFn: async (variantId: string) => {
-      const response = await fetchWithRetry<{ success: boolean; data: any; error?: any }>(`${getApiUrl()}/avatars/unlock`, {
+    mutationFn: async (variantId: string): Promise<AvatarUnlockResultDto | null> => {
+      const response = await fetchWithRetry<ApiResponse<AvatarUnlockResultDto>>(`${getApiUrl()}/avatars/unlock`, {
         method: 'POST',
         body: JSON.stringify({ variantId }),
       });
       if (!response.success) {
-        throw new Error(response.error?.message || response.error || 'Unlock failed');
+        throw new Error(response.error?.message || 'Unlock failed');
       }
       return response.data;
     },

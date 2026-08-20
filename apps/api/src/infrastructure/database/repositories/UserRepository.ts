@@ -8,15 +8,15 @@ export class UserRepository {
 
   async findByWallet(tx: any, walletAddress: string) {
     const db = tx || prisma;
-    return db.user.findUnique({ where: { walletAddress } });
+    return db.user.findUnique({ where: { walletAddress: walletAddress.toLowerCase() } });
   }
 
   async findWithConnections(tx: any, userId: string) {
     const db = tx || prisma;
-    return db.user.findUnique({ 
+    return db.user.findUnique({
       where: { id: userId },
-      include: { 
-        socialConnections: true, 
+      include: {
+        socialConnections: true,
         streak: true,
         activeAvatarVariant: {
           include: {
@@ -69,6 +69,31 @@ export class UserRepository {
       data
     });
   }
+
+  async findAllUsersForLeaderboard(tx: any) {
+    const db = tx || prisma;
+    return db.user.findMany({
+      select: {
+        id: true,
+        walletAddress: true,
+        level: true,
+        xp: true,
+        gp: true,
+        jlt: true,
+        streak: {
+          select: {
+            currentDay: true,
+            longestStreak: true
+          }
+        },
+        activeAvatarVariant: {
+          select: {
+            id: true,
+            imageUrl: true,
+            avatar: { select: { name: true, characterKey: true } }
+          }
+        }
+      }
+    });
+  }
 }
-
-

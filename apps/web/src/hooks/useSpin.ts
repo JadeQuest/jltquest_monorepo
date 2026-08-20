@@ -2,20 +2,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAccount } from 'wagmi';
 import { getCookie } from '@/lib/authCookie';
 import { getApiUrl, fetchWithRetry } from '@/lib/apiClient';
+import type { ApiResponse, SpinStatusDto, SpinResultDto, SpinPurchaseResultDto } from '@jlt/types';
 
-export interface SpinStatus {
-  availableFreeSpins: number;
-  lastFreeSpinAt: string | null;
-  totalSpins: number;
-}
-
-export interface SpinResult {
-  outcome: string;
-  gpAwarded: number;
-  xpAwarded: number;
-  fragmentsAwarded: number;
-  freeSpinAwarded: number;
-}
+export type SpinStatus = SpinStatusDto;
+export type SpinResult = SpinResultDto;
 
 export const useSpin = () => {
   const queryClient = useQueryClient();
@@ -28,24 +18,28 @@ export const useSpin = () => {
     error: statusError,
   } = useQuery({
     queryKey: ['spinStatus', address],
-    queryFn: async (): Promise<SpinStatus> => {
+    queryFn: async (): Promise<SpinStatusDto> => {
       if (!address || !token) throw new Error('Not connected');
-      const response = await fetchWithRetry<{ success: boolean; data: SpinStatus }>(`${getApiUrl()}/spin/status`, {
+      const response = await fetchWithRetry<ApiResponse<SpinStatusDto>>(`${getApiUrl()}/spin/status`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
       });
+      if (!response.success || !response.data) {
+        throw new Error(response.error?.message || 'Failed to fetch spin status');
+      }
       return response.data;
     },
     enabled: isConnected && !!address && !!token,
+    staleTime: 30_000,
     retry: 1,
   });
 
   const spinMutation = useMutation({
-    mutationFn: async (useFreeSpin: boolean = true): Promise<SpinResult> => {
+    mutationFn: async (useFreeSpin: boolean = true): Promise<SpinResultDto> => {
       if (!address || !token) throw new Error('Not connected');
-      const response = await fetchWithRetry<{ success: boolean; data: SpinResult }>(`${getApiUrl()}/spin`, {
+      const response = await fetchWithRetry<ApiResponse<SpinResultDto>>(`${getApiUrl()}/spin`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -53,11 +47,14 @@ export const useSpin = () => {
         },
         body: JSON.stringify({ useFreeSpin }),
       });
+      if (!response.success || !response.data) {
+        throw new Error(response.error?.message || 'Spin failed');
+      }
       return response.data;
     },
     onSuccess: (data) => {
       // Optimistically update the spin status
-      queryClient.setQueryData(['spinStatus', address], (old: SpinStatus | undefined) => {
+      queryClient.setQueryData(['spinStatus', address], (old: SpinStatusDto | undefined) => {
         if (!old) return old;
         return {
           ...old,
@@ -65,23 +62,23 @@ export const useSpin = () => {
           totalSpins: old.totalSpins + 1,
         };
       });
-      
+
       // Invalidate dashboard to update GP/XP balance
       queryClient.invalidateQueries({ queryKey: ['dashboard', address] });
     },
   });
 
   const purchaseSpinMutation = useMutation({
-    mutationFn: async (): Promise<{ success: boolean; data: any; error?: any }> => {
+    mutationFn: async (): Promise<SpinPurchaseResultDto | null> => {
       if (!address || !token) throw new Error('Not connected');
-      const response = await fetchWithRetry<{ success: boolean; data: any; error?: any }>(`${getApiUrl()}/spin/purchase`, {
+      const response = await fetchWithRetry<ApiResponse<SpinPurchaseResultDto>>(`${getApiUrl()}/spin/purchase`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
       });
       if (!response.success) {
-        throw new Error(response.error?.message || response.error || 'Purchase failed');
+        throw new Error(response.error?.message || 'Purchase failed');
       }
       return response.data;
     },

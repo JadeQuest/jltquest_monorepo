@@ -1,16 +1,30 @@
 import { SocialConnectionRepository } from '../../infrastructure/database/repositories/SocialConnectionRepository';
+import { UserRepository } from '../../infrastructure/database/repositories/UserRepository';
+import { LedgerRepository } from '../../infrastructure/database/repositories/LedgerRepository';
+import { AuditLogRepository } from '../../infrastructure/database/repositories/AuditLogRepository';
 import { LedgerService } from './LedgerService';
 import { RarePassService } from './RarePassService';
-import { SocialPlatform, LedgerSource, RpXpSource } from '@jlt/database';
+import { SocialPlatform, LedgerSource, RpXpSource, LedgerType } from '@jlt/database';
 import { BadRequestError, ConflictError, NotFoundError } from '../errors/AppError';
 import { ErrorCode, ErrorMessages, APP_CONFIG } from '@jlt/constants';
-import { encrypt, decrypt } from '../utils/encryption';
+import { encrypt } from '../utils/encryption';
 import { getQuestPeriodKey } from '../utils/questPeriod';
+import type {
+  SocialOAuthUrlDto,
+  SocialCallbackResultDto,
+  SocialDisconnectResultDto,
+  SocialQuestDto,
+  SocialQuestClaimResultDto
+} from '@jlt/types';
 
 export class SocialService {
   constructor(
     private socialRepo: SocialConnectionRepository,
+    private userRepository: UserRepository,
+    private ledgerRepository: LedgerRepository,
     private ledgerService: LedgerService,
+    private rarePassService: RarePassService,
+    private auditLogRepository: AuditLogRepository,
     private prisma: any
   ) {}
 
@@ -30,63 +44,66 @@ export class SocialService {
     );
   }
 
-  async getOAuthUrl(platformString: string, userId: string) {
+  async getOAuthUrl(platformString: string, userId: string): Promise<SocialOAuthUrlDto> {
     const platform = this.parsePlatform(platformString);
 
     switch (platform) {
       case SocialPlatform.TELEGRAM:
         return {
           type: 'deeplink',
+          oauthUrl: `tg://resolve?domain=JLTQuestBot&start=${userId}`,
           url: `tg://resolve?domain=JLTQuestBot&start=${userId}`,
           webUrl: `https://t.me/JLTQuestBot?start=${userId}`
         };
       case (SocialPlatform as any).WHATSAPP || 'WHATSAPP':
         return {
           type: 'deeplink',
+          oauthUrl: `whatsapp://send?text=Verify%20JLTQuest%20User%20${userId}`,
           url: `whatsapp://send?text=Verify%20JLTQuest%20User%20${userId}`,
           webUrl: `https://wa.me/?text=Verify%20JLTQuest%20User%20${userId}`
         };
       case (SocialPlatform as any).EMAIL || 'EMAIL':
         return {
           type: 'deeplink',
+          oauthUrl: `mailto:verify@jltquest.io?subject=JLTQuest%20Verification&body=Verification%20Code:%20${userId}`,
           url: `mailto:verify@jltquest.io?subject=JLTQuest%20Verification&body=Verification%20Code:%20${userId}`,
           webUrl: `mailto:verify@jltquest.io?subject=JLTQuest%20Verification&body=Verification%20Code:%20${userId}`
         };
       case (SocialPlatform as any).LINKEDIN || 'LINKEDIN':
         return {
           type: 'oauth',
-          url: `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=jltquest&redirect_uri=https://jltquest.io/callback/linkedin&state=${userId}`
+          oauthUrl: `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=jltquest&redirect_uri=https://jltquest.io/callback/linkedin&state=${userId}`
         };
       case (SocialPlatform as any).INSTAGRAM || 'INSTAGRAM':
         return {
           type: 'oauth',
-          url: `https://www.instagram.com/oauth/authorize?client_id=jltquest&redirect_uri=https://jltquest.io/callback/instagram&response_type=code&state=${userId}`
+          oauthUrl: `https://www.instagram.com/oauth/authorize?client_id=jltquest&redirect_uri=https://jltquest.io/callback/instagram&response_type=code&state=${userId}`
         };
       case (SocialPlatform as any).FACEBOOK || 'FACEBOOK':
         return {
           type: 'oauth',
-          url: `https://www.facebook.com/v12.0/dialog/oauth?client_id=jltquest&redirect_uri=https://jltquest.io/callback/facebook&state=${userId}`
+          oauthUrl: `https://www.facebook.com/v12.0/dialog/oauth?client_id=jltquest&redirect_uri=https://jltquest.io/callback/facebook&state=${userId}`
         };
       case SocialPlatform.DISCORD:
         return {
           type: 'oauth',
-          url: `https://discord.com/api/oauth2/authorize?client_id=jltquest&redirect_uri=https://jltquest.io/callback/discord&response_type=code&scope=identify%20email&state=${userId}`
+          oauthUrl: `https://discord.com/api/oauth2/authorize?client_id=jltquest&redirect_uri=https://jltquest.io/callback/discord&response_type=code&scope=identify%20email&state=${userId}`
         };
       case SocialPlatform.X:
       default:
         return {
           type: 'oauth',
-          url: `https://twitter.com/i/oauth2/authorize?response_type=code&client_id=jltquest&redirect_uri=https://jltquest.io/callback/x&scope=users.read%20tweet.read&state=${userId}`
+          oauthUrl: `https://twitter.com/i/oauth2/authorize?response_type=code&client_id=jltquest&redirect_uri=https://jltquest.io/callback/x&scope=users.read%20tweet.read&state=${userId}`
         };
     }
   }
 
-  async handleCallback(userId: string, platformString: string, payload: any) {
+  async handleCallback(userId: string, platformString: string, payload: any): Promise<SocialCallbackResultDto> {
     const platform = this.parsePlatform(platformString);
     const code = typeof payload === 'string' ? payload : (payload?.code || payload?.handle || 'verified');
     const handle = payload?.handle || `@${platformString}_${userId.substring(0, 6)}`;
     const email = payload?.email || (platform === ((SocialPlatform as any).EMAIL || 'EMAIL') ? payload?.handle : undefined);
-    
+
     // Encrypt sensitive tokens before database write
     const rawAccessToken = payload?.accessToken || `mock_access_token_${platformString}_${Date.now()}`;
     const rawRefreshToken = payload?.refreshToken || `mock_refresh_token_${platformString}_${Date.now()}`;
@@ -148,7 +165,7 @@ export class SocialService {
           connected: true,
           connectionBonusPaid: true
         });
-        
+
         connectionBonusAwarded = true;
         gpAwarded = APP_CONFIG.SOCIAL.CONNECTION_GP_REWARD;
         xpAwarded = APP_CONFIG.SOCIAL.CONNECTION_XP_REWARD;
@@ -158,12 +175,10 @@ export class SocialService {
       }
 
       // Log audit trail
-      await tx.auditLog.create({
-        data: {
-          userId,
-          action: 'SOCIAL_ACCOUNT_CONNECTED',
-          metadata: { platform: platformString, platformUserId }
-        }
+      await this.auditLogRepository.log(tx, {
+        userId,
+        action: 'SOCIAL_ACCOUNT_CONNECTED',
+        metadata: { platform: platformString, platformUserId }
       });
 
       // Scrub credentials from JSON response to prevent client leakage
@@ -180,7 +195,7 @@ export class SocialService {
     }, { maxWait: 10000, timeout: 20000 });
   }
 
-  async disconnect(userId: string, platformString: string) {
+  async disconnect(userId: string, platformString: string): Promise<SocialDisconnectResultDto> {
     const platform = this.parsePlatform(platformString);
 
     return await this.prisma.$transaction(async (tx: any) => {
@@ -202,30 +217,31 @@ export class SocialService {
       if (connection.connectionBonusPaid && !connection.clawbackApplied) {
         clawbackApplied = true;
         gpClawedBack = APP_CONFIG.SOCIAL.CLAWBACK_GP_AMOUNT;
-        
-        await tx.user.update({
-          where: { id: userId },
-          data: { gp: { decrement: gpClawedBack } }
+
+        await this.userRepository.update(tx, userId, {
+          gp: { decrement: gpClawedBack }
         });
-        
-        await tx.gpLedgerEntry.create({
-          data: { userId, amount: -gpClawedBack, type: 'DEBIT', source: 'SOCIAL_CLAWBACK', refId: platform }
+
+        await this.ledgerRepository.createGpLedger(tx, {
+          userId,
+          amount: -gpClawedBack,
+          type: LedgerType.DEBIT,
+          source: LedgerSource.SOCIAL_CLAWBACK,
+          refId: platform
         });
       }
 
       const updatedConnection = await this.socialRepo.update(tx, connection.id, {
-        connected: false, 
+        connected: false,
         unlinkedAt: new Date(),
         clawbackApplied: clawbackApplied ? true : connection.clawbackApplied
       });
 
       // Log audit trail
-      await tx.auditLog.create({
-        data: {
-          userId,
-          action: 'SOCIAL_ACCOUNT_DISCONNECTED',
-          metadata: { platform: platformString, clawbackApplied, gpClawedBack }
-        }
+      await this.auditLogRepository.log(tx, {
+        userId,
+        action: 'SOCIAL_ACCOUNT_DISCONNECTED',
+        metadata: { platform: platformString, clawbackApplied, gpClawedBack }
       });
 
       // Scrub credentials from connection
@@ -241,30 +257,23 @@ export class SocialService {
     }, { maxWait: 10000, timeout: 20000 });
   }
 
-  async listQuests(userId: string) {
+  async listQuests(userId: string): Promise<SocialQuestDto[]> {
     // 1. Fetch all social quests
-    const socialQuests = await this.prisma.socialQuest.findMany({
-      where: { isHidden: false }
-    });
+    const socialQuests = await this.socialRepo.findAllSocialQuests(this.prisma);
 
     // 2. Fetch user's social connections
-    const userConnections = await this.prisma.socialConnection.findMany({
-      where: { userId, connected: true }
-    });
+    const userConnections = await this.socialRepo.findActiveByUserId(this.prisma, userId);
 
     // 3. Fetch user's social quest claims
     const connectionIds = userConnections.map((c: any) => c.id);
-    const claims = await this.prisma.socialQuestClaim.findMany({
-      where: { socialConnectionId: { in: connectionIds } }
-    });
+    const claims = await this.socialRepo.findSocialQuestClaims(this.prisma, connectionIds);
 
     return socialQuests.map((quest: any) => {
       const periodKey = getQuestPeriodKey(quest.frequency);
-      
       const connection = userConnections.find((c: any) => c.platform === quest.platform);
-      
-      const isCompleted = claims.some((c: any) => 
-        c.socialQuestId === quest.id && 
+
+      const isCompleted = claims.some((c: any) =>
+        c.socialQuestId === quest.id &&
         c.socialConnectionId === connection?.id &&
         (c.periodKey === periodKey || quest.frequency === 'ONE_TIME' || quest.frequency === 'ACHIEVEMENT')
       );
@@ -285,16 +294,9 @@ export class SocialService {
     });
   }
 
-  async claimQuest(userId: string, questIdOrCode: string) {
+  async claimQuest(userId: string, questIdOrCode: string): Promise<SocialQuestClaimResultDto> {
     // 1. Find social quest
-    const quest = await this.prisma.socialQuest.findFirst({
-      where: {
-        OR: [
-          { id: questIdOrCode },
-          { code: questIdOrCode }
-        ]
-      }
-    });
+    const quest = await this.socialRepo.findSocialQuestByIdOrCode(this.prisma, questIdOrCode);
 
     if (!quest) {
       throw new NotFoundError(
@@ -304,14 +306,7 @@ export class SocialService {
     }
 
     // 2. Find active social connection for the platform
-    const connection = await this.prisma.socialConnection.findUnique({
-      where: {
-        userId_platform: {
-          userId,
-          platform: quest.platform
-        }
-      }
-    });
+    const connection = await this.socialRepo.findByUserAndPlatform(this.prisma, userId, quest.platform);
 
     if (!connection || !connection.connected) {
       throw new BadRequestError(
@@ -327,15 +322,7 @@ export class SocialService {
       await tx.$executeRaw`SELECT id FROM users WHERE id = ${userId} FOR UPDATE`;
 
       // Check if already claimed for period
-      const existingClaim = await tx.socialQuestClaim.findUnique({
-        where: {
-          socialConnectionId_socialQuestId_periodKey: {
-            socialConnectionId: connection.id,
-            socialQuestId: quest.id,
-            periodKey
-          }
-        }
-      });
+      const existingClaim = await this.socialRepo.findSocialQuestClaim(tx, connection.id, quest.id, periodKey);
 
       if (existingClaim) {
         throw new ConflictError(
@@ -345,14 +332,12 @@ export class SocialService {
       }
 
       // Create quest claim
-      await tx.socialQuestClaim.create({
-        data: {
-          socialConnectionId: connection.id,
-          socialQuestId: quest.id,
-          periodKey,
-          gpAwarded: quest.gpReward,
-          xpAwarded: quest.xpReward
-        }
+      await this.socialRepo.createSocialQuestClaim(tx, {
+        socialConnectionId: connection.id,
+        socialQuestId: quest.id,
+        periodKey,
+        gpAwarded: quest.gpReward,
+        xpAwarded: quest.xpReward
       });
 
       // Award GP & XP
@@ -360,11 +345,9 @@ export class SocialService {
       await this.ledgerService.awardXp(tx, userId, quest.xpReward, LedgerSource.SOCIAL, quest.id);
 
       // Award Rare Pass XP
-      const rarePassService = new RarePassService(this.prisma);
-      
       let rpXpAwarded = 0;
       if (quest.rpXpReward > 0) {
-        rpXpAwarded = await rarePassService.awardRpXp(
+        rpXpAwarded = await this.rarePassService.awardRpXp(
           tx,
           userId,
           quest.rpXpReward,
@@ -374,15 +357,13 @@ export class SocialService {
         );
       }
 
-      await rarePassService.updateMissionProgress(tx, userId, 'mission_complete_quests_daily', 1);
+      await this.rarePassService.updateMissionProgress(tx, userId, 'mission_complete_quests_daily', 1);
 
       // Log audit trail
-      await tx.auditLog.create({
-        data: {
-          userId,
-          action: 'SOCIAL_QUEST_CLAIM',
-          metadata: { questCode: quest.code, gpAwarded: quest.gpReward, xpAwarded: quest.xpReward, rpXpAwarded }
-        }
+      await this.auditLogRepository.log(tx, {
+        userId,
+        action: 'SOCIAL_QUEST_CLAIM',
+        metadata: { questCode: quest.code, gpAwarded: quest.gpReward, xpAwarded: quest.xpReward, rpXpAwarded }
       });
 
       return {

@@ -1,16 +1,20 @@
 import { UserRepository } from '../../infrastructure/database/repositories/UserRepository';
+import { LedgerRepository } from '../../infrastructure/database/repositories/LedgerRepository';
 import { calculateXpRequiredForLevel, getLevelTier } from '../utils/leveling';
 import { NotFoundError, BadRequestError } from '../errors/AppError';
 import { ErrorCode, ErrorMessages } from '@jlt/constants';
+import { LedgerType, LedgerSource } from '@jlt/database';
+import type { UserDashboardDto, ConvertGpResultDto } from '@jlt/types';
 
 export class UserService {
   constructor(
     private userRepository: UserRepository,
+    private ledgerRepository: LedgerRepository,
     private prisma: any
   ) {}
 
-  async getDashboard(userId: string) {
-    const user = await this.userRepository.findWithConnections(null as any, userId);
+  async getDashboard(userId: string): Promise<UserDashboardDto> {
+    const user = await this.userRepository.findWithConnections(this.prisma, userId);
     if (!user) {
       throw new NotFoundError(
         ErrorMessages[ErrorCode.USER_NOT_FOUND],
@@ -56,8 +60,8 @@ export class UserService {
           type: user.activeAvatarVariant.type,
           imageUrl: user.activeAvatarVariant.imageUrl,
           modelUrl: user.activeAvatarVariant.modelUrl,
-          name: (user.activeAvatarVariant as any).avatar.name,
-          characterKey: (user.activeAvatarVariant as any).avatar.characterKey
+          name: (user.activeAvatarVariant as any).avatar?.name,
+          characterKey: (user.activeAvatarVariant as any).avatar?.characterKey
         } : null
       },
       leveling: {
@@ -69,7 +73,7 @@ export class UserService {
     };
   }
 
-  async convertGp(userId: string, gpAmount: number) {
+  async convertGp(userId: string, gpAmount: number): Promise<ConvertGpResultDto> {
     if (!gpAmount || gpAmount < 100) {
       throw new BadRequestError(ErrorMessages[ErrorCode.INVALID_INPUT], ErrorCode.INVALID_INPUT);
     }
@@ -80,7 +84,7 @@ export class UserService {
     const jltToAdd = gpAmount / 100;
 
     return await this.prisma.$transaction(async (tx: any) => {
-      const user = await tx.user.findUnique({ where: { id: userId } });
+      const user = await this.userRepository.findById(tx, userId);
       if (!user) {
         throw new NotFoundError(ErrorMessages[ErrorCode.USER_NOT_FOUND], ErrorCode.USER_NOT_FOUND);
       }
@@ -90,23 +94,18 @@ export class UserService {
       }
 
       // Deduct GP and add JLT
-      const updatedUser = await tx.user.update({
-        where: { id: userId },
-        data: {
-          gp: { decrement: gpAmount },
-          jlt: { increment: jltToAdd }
-        }
+      const updatedUser = await this.userRepository.update(tx, userId, {
+        gp: { decrement: gpAmount },
+        jlt: { increment: jltToAdd }
       });
 
-      // Record in ledger
-      await tx.gpLedgerEntry.create({
-        data: {
-          userId,
-          amount: -gpAmount,
-          type: 'DEBIT',
-          source: 'CONVERSION',
-          refId: `convert_${userId}_${Date.now()}`
-        }
+      // Record in ledger repository
+      await this.ledgerRepository.createGpLedger(tx, {
+        userId,
+        amount: -gpAmount,
+        type: LedgerType.DEBIT,
+        source: LedgerSource.CONVERSION,
+        refId: `convert_${userId}_${Date.now()}`
       });
 
       return {

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { type Connector, useAccount, useConnect, useDisconnect } from 'wagmi';
 import { Wallet, X, Check, Copy, ExternalLink, LogOut, ShieldCheck, AlertCircle } from 'lucide-react';
 import { isUserRejectedError } from '@/lib/web3Error';
@@ -98,8 +99,10 @@ export const ConnectWalletModal: React.FC<ConnectWalletModalProps> = ({ isOpen, 
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/40 backdrop-blur-md p-4 animate-fade-in font-gilroyRegular select-none">
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-fade-in font-gilroyRegular select-none">
       {/* Centered Glassmorphic Card */}
       <div className="relative w-full max-w-md glass-panel bg-[#0E061F]/95 rounded-3xl p-6 sm:p-7 shadow-[0_20px_60px_rgba(0,0,0,0.9)] border border-white/15 flex flex-col gap-5 text-white backdrop-blur-2xl overflow-hidden">
         
@@ -253,7 +256,8 @@ export const ConnectWalletModal: React.FC<ConnectWalletModalProps> = ({ isOpen, 
           <span>EVM Compatible</span>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

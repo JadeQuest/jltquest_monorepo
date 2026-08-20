@@ -1,9 +1,12 @@
 import jwt from 'jsonwebtoken';
 import { verifyMessage } from 'viem';
 import { UserRepository } from '../../infrastructure/database/repositories/UserRepository';
+import { AuditLogRepository } from '../../infrastructure/database/repositories/AuditLogRepository';
 import { prisma } from '../../infrastructure/database/prisma';
 import { BadRequestError, UnauthorizedError } from '../errors/AppError';
 import { ErrorCode, ErrorMessages, AuthMessages, APP_CONFIG } from '@jlt/constants';
+import type { LoginResponseData, RefreshTokenResponseData } from '@jlt/types';
+import crypto from 'crypto';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'mock_secret';
 
@@ -11,12 +14,15 @@ const JWT_SECRET = process.env.JWT_SECRET || 'mock_secret';
  * Service handling authentication, Web3 signature validation, and JWT token rotation.
  */
 export class AuthService {
-  constructor(private userRepository: UserRepository = new UserRepository()) {}
+  constructor(
+    private userRepository: UserRepository = new UserRepository(),
+    private auditLogRepository: AuditLogRepository = new AuditLogRepository()
+  ) {}
 
   // ───────────────────────────────────────────────────────────────────────────
   // 1. LOGIN & SIGNATURE VERIFICATION
   // ───────────────────────────────────────────────────────────────────────────
-  async login(walletAddress?: string, signature?: string, message?: string) {
+  async login(walletAddress?: string, signature?: string, message?: string): Promise<LoginResponseData> {
     if (!walletAddress || !signature || !message) {
       throw new BadRequestError(
         AuthMessages.MISSING_LOGIN_PARAMS,
@@ -72,12 +78,10 @@ export class AuthService {
     const { token, refreshToken } = await this.generateTokenPair(user.id, user.walletAddress || '', user.role);
 
     // Audit log login success
-    await prisma.auditLog.create({
-      data: {
-        userId: user.id,
-        action: 'AUTH_LOGIN_SUCCESS',
-        metadata: { walletAddress: user.walletAddress }
-      }
+    await this.auditLogRepository.log(prisma, {
+      userId: user.id,
+      action: 'AUTH_LOGIN_SUCCESS',
+      metadata: { walletAddress: user.walletAddress }
     });
 
     return {
@@ -100,16 +104,13 @@ export class AuthService {
   // ───────────────────────────────────────────────────────────────────────────
   // 2. TOKEN REFRESH & ROTATION
   // ───────────────────────────────────────────────────────────────────────────
-  async refresh(refreshToken: string) {
+  async refresh(refreshToken?: string): Promise<RefreshTokenResponseData & { refreshToken: string }> {
     if (!refreshToken) {
       throw new BadRequestError(AuthMessages.REFRESH_TOKEN_REQUIRED, ErrorCode.INVALID_INPUT);
     }
 
-    // Look up refresh token in database
-    const storedToken = await prisma.refreshToken.findUnique({
-      where: { token: refreshToken },
-      include: { user: true }
-    });
+    // Look up refresh token in database repository
+    const storedToken = await this.auditLogRepository.findRefreshToken(prisma, refreshToken);
 
     if (!storedToken) {
       throw new UnauthorizedError(ErrorMessages[ErrorCode.INVALID_REFRESH_TOKEN], ErrorCode.INVALID_REFRESH_TOKEN);
@@ -119,10 +120,7 @@ export class AuthService {
     if (storedToken.isRevoked) {
       const GRACE_PERIOD_MS = 10000;
       if (storedToken.createdAt && (Date.now() - new Date(storedToken.createdAt).getTime() < GRACE_PERIOD_MS)) {
-        const latestToken = await prisma.refreshToken.findFirst({
-          where: { userId: storedToken.userId, isRevoked: false },
-          orderBy: { createdAt: 'desc' }
-        });
+        const latestToken = await this.auditLogRepository.findLatestActiveRefreshToken(prisma, storedToken.userId);
         if (latestToken) {
           const newAccessToken = jwt.sign(
             { userId: storedToken.userId, walletAddress: storedToken.user.walletAddress, role: storedToken.user.role },
@@ -141,34 +139,23 @@ export class AuthService {
         }
       }
 
-      await prisma.refreshToken.updateMany({
-        where: { userId: storedToken.userId },
-        data: { isRevoked: true }
-      });
-      await prisma.auditLog.create({
-        data: {
-          userId: storedToken.userId,
-          action: 'AUTH_REFRESH_TOKEN_REUSE_DETECTED',
-          metadata: { token: refreshToken }
-        }
+      await this.auditLogRepository.revokeAllUserRefreshTokens(prisma, storedToken.userId);
+      await this.auditLogRepository.log(prisma, {
+        userId: storedToken.userId,
+        action: 'AUTH_REFRESH_TOKEN_REUSE_DETECTED',
+        metadata: { token: refreshToken }
       });
       throw new UnauthorizedError(AuthMessages.TOKEN_REUSE_REVOKED, ErrorCode.REFRESH_TOKEN_REVOKED);
     }
 
     // 2.2 Check token expiration
     if (storedToken.expiresAt < new Date()) {
-      await prisma.refreshToken.update({
-        where: { id: storedToken.id },
-        data: { isRevoked: true }
-      });
+      await this.auditLogRepository.revokeRefreshToken(prisma, { id: storedToken.id });
       throw new UnauthorizedError(ErrorMessages[ErrorCode.REFRESH_TOKEN_EXPIRED], ErrorCode.REFRESH_TOKEN_EXPIRED);
     }
 
     // 2.3 Revoke current refresh token (one-time use rotation)
-    await prisma.refreshToken.update({
-      where: { id: storedToken.id },
-      data: { isRevoked: true }
-    });
+    await this.auditLogRepository.revokeRefreshToken(prisma, { id: storedToken.id });
 
     // Generate new token pair
     const tokenPair = await this.generateTokenPair(storedToken.userId, storedToken.user.walletAddress || '', storedToken.user.role);
@@ -183,22 +170,19 @@ export class AuthService {
   // ───────────────────────────────────────────────────────────────────────────
   // 3. USER LOGOUT
   // ───────────────────────────────────────────────────────────────────────────
-  async logout(refreshToken: string) {
+  async logout(refreshToken?: string): Promise<void> {
     if (!refreshToken) return;
-    
+
     try {
-      const storedToken = await prisma.refreshToken.update({
-        where: { token: refreshToken },
-        data: { isRevoked: true }
-      });
-      
-      await prisma.auditLog.create({
-        data: {
+      const storedToken = await this.auditLogRepository.findRefreshToken(prisma, refreshToken);
+      if (storedToken) {
+        await this.auditLogRepository.revokeRefreshToken(prisma, { id: storedToken.id });
+        await this.auditLogRepository.log(prisma, {
           userId: storedToken.userId,
           action: 'AUTH_LOGOUT',
           metadata: { token: refreshToken }
-        }
-      });
+        });
+      }
     } catch (e) {
       // Fail silently if token doesn't exist
     }
@@ -208,7 +192,7 @@ export class AuthService {
     const token = jwt.sign(
       { userId, walletAddress, role },
       JWT_SECRET,
-      { 
+      {
         expiresIn: APP_CONFIG.AUTH.TOKEN_EXPIRES_IN_STR as any,
         issuer: 'JLTQuest-Issuer',
         audience: 'JLTQuest-Audience'
@@ -219,13 +203,11 @@ export class AuthService {
     const expiresAt = new Date();
     expiresAt.setSeconds(expiresAt.getSeconds() + APP_CONFIG.AUTH.REFRESH_TOKEN_EXPIRES_IN_SECONDS);
 
-    // Save refresh token in database
-    await prisma.refreshToken.create({
-      data: {
-        token: refreshJwt,
-        userId,
-        expiresAt
-      }
+    // Save refresh token in database repository
+    await this.auditLogRepository.createRefreshToken(prisma, {
+      token: refreshJwt,
+      userId,
+      expiresAt
     });
 
     return { token, refreshToken: refreshJwt };

@@ -1,25 +1,32 @@
 import { StreakRepository } from '../../infrastructure/database/repositories/StreakRepository';
+import { UserRepository } from '../../infrastructure/database/repositories/UserRepository';
+import { AuditLogRepository } from '../../infrastructure/database/repositories/AuditLogRepository';
 import { LedgerService } from './LedgerService';
 import { RarePassService } from './RarePassService';
 import { LedgerSource, RpXpSource } from '@jlt/database';
 import { ConflictError, NotFoundError } from '../errors/AppError';
 import { ErrorCode, ErrorMessages, APP_CONFIG } from '@jlt/constants';
+import type { CheckInStatusDto, CheckInClaimResultDto } from '@jlt/types';
 
 export class CheckInService {
   constructor(
     private streakRepository: StreakRepository,
+    private userRepository: UserRepository,
     private ledgerService: LedgerService,
+    private rarePassService: RarePassService,
+    private auditLogRepository: AuditLogRepository,
     private prisma: any
   ) {}
 
-  async getStatus(userId: string) {
-    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+  async getStatus(userId: string): Promise<CheckInStatusDto> {
+    const [user, streak] = await Promise.all([
+      this.userRepository.findById(this.prisma, userId),
+      this.streakRepository.findByUserId(this.prisma, userId)
+    ]);
     if (!user) {
       throw new NotFoundError(ErrorMessages[ErrorCode.USER_NOT_FOUND], ErrorCode.USER_NOT_FOUND);
     }
 
-    const streak = await this.streakRepository.findByUserId(this.prisma, userId);
-    
     const nextRewardGp = APP_CONFIG.CHECKIN.DAILY_REWARD_GP;
     const nextRewardXp = APP_CONFIG.CHECKIN.DAILY_REWARD_XP;
 
@@ -32,7 +39,7 @@ export class CheckInService {
     const lastClaim = new Date(lastDate.getFullYear(), lastDate.getMonth(), lastDate.getDate());
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const diffDays = Math.floor((today.getTime() - lastClaim.getTime()) / (1000 * 60 * 60 * 24));
-    
+
     const canClaim = diffDays >= 1;
     let currentStreak = streak.currentDay;
     if (diffDays > 1) {
@@ -47,20 +54,20 @@ export class CheckInService {
     };
   }
 
-  async claim(userId: string) {
+  async claim(userId: string): Promise<CheckInClaimResultDto> {
     return await this.prisma.$transaction(
       async (tx: any) => {
         // 1. Lock the user row to prevent concurrent race conditions
         await tx.$executeRaw`SELECT id FROM users WHERE id = ${userId} FOR UPDATE`;
 
-        const user = await tx.user.findUnique({ where: { id: userId } });
+        const user = await this.userRepository.findById(tx, userId);
         if (!user) {
           throw new NotFoundError(ErrorMessages[ErrorCode.USER_NOT_FOUND], ErrorCode.USER_NOT_FOUND);
         }
 
         const streak = await this.streakRepository.findByUserId(tx, userId);
         const now = new Date();
-        
+
         let canClaim = true;
         let newStreakValue = 1;
 
@@ -69,7 +76,7 @@ export class CheckInService {
           const lastClaim = new Date(lastDate.getFullYear(), lastDate.getMonth(), lastDate.getDate());
           const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
           const diffDays = Math.floor((today.getTime() - lastClaim.getTime()) / (1000 * 60 * 60 * 24));
-          
+
           canClaim = diffDays >= 1;
           if (!canClaim) {
             throw new ConflictError(
@@ -89,8 +96,12 @@ export class CheckInService {
             lastCheckInAt: now,
           });
         } else {
-          await tx.streak.create({
-            data: { userId, currentDay: 1, longestStreak: 1, lastCheckInDate: now, lastCheckInAt: now },
+          await this.streakRepository.create(tx, {
+            userId,
+            currentDay: 1,
+            longestStreak: 1,
+            lastCheckInDate: now,
+            lastCheckInAt: now,
           });
         }
 
@@ -101,11 +112,10 @@ export class CheckInService {
         await this.ledgerService.awardXp(tx, userId, xpAwarded, LedgerSource.CHECKIN);
 
         // Award RP XP & update missions
-        const rarePassService = new RarePassService(this.prisma);
         const rpXpAmount = newStreakValue === 7 ? 50 : 10;
         const todayStr = now.toISOString().split('T')[0];
 
-        const rpXpAwarded = await rarePassService.awardRpXp(
+        const rpXpAwarded = await this.rarePassService.awardRpXp(
           tx,
           userId,
           rpXpAmount,
@@ -114,15 +124,13 @@ export class CheckInService {
           `checkin_rpxp:${userId}:${newStreakValue}:${todayStr}`
         );
 
-        await rarePassService.updateMissionProgress(tx, userId, 'mission_checkin_daily', 1);
+        await this.rarePassService.updateMissionProgress(tx, userId, 'mission_checkin_daily', 1);
 
         // Create Audit Log
-        await tx.auditLog.create({
-          data: {
-            userId,
-            action: 'CHECKIN_CLAIM',
-            metadata: { streak: newStreakValue, gpAwarded, xpAwarded }
-          }
+        await this.auditLogRepository.log(tx, {
+          userId,
+          action: 'CHECKIN_CLAIM',
+          metadata: { streak: newStreakValue, gpAwarded, xpAwarded }
         });
 
         return {

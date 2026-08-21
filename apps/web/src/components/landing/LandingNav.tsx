@@ -1,14 +1,16 @@
 'use client';
 
-import React, { useRef, useEffect, useLayoutEffect } from 'react';
+import React, { useRef, useState, useEffect, useLayoutEffect } from 'react';
 import Link from 'next/link';
 import { Sparkles } from 'lucide-react';
 import { gsap, ScrollTrigger, prefersReducedMotion, MotionEases } from '@/lib/animations';
 import { useMagneticButton } from './useMagneticButton';
+import { getStoredReferralCode } from '@/lib/authCookie';
 
 const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 export const LandingNav: React.FC = () => {
+  const [referralCode, setReferralCode] = useState<string | null>(null);
   const navRef = useRef<HTMLElement>(null);
   const logoRef = useRef<HTMLDivElement>(null);
   const logoScrollWrapperRef = useRef<HTMLDivElement>(null);
@@ -16,21 +18,26 @@ export const LandingNav: React.FC = () => {
   const btnEnterRef = useRef<HTMLDivElement>(null);
   const enterAppBtnRef = useMagneticButton<HTMLAnchorElement>({ maxDistance: 12, strength: 0.25 });
 
+  useEffect(() => {
+    const code = getStoredReferralCode();
+    if (code) setReferralCode(code);
+  }, []);
+
+
   useIsomorphicLayoutEffect(() => {
     if (prefersReducedMotion() || !navRef.current) return;
 
     const ctx = gsap.context(() => {
-      // 1. Initial Load: Logo scales from 0.7 -> 1 with blur reduction, Nav slides down from y: -30
+      // 1. Initial Load: Logo scales from 0.8 -> 1, Nav slides down from y: -20
       gsap.fromTo(
         logoRef.current,
-        { scale: 0.7, opacity: 0, filter: 'blur(12px)' },
+        { scale: 0.8, opacity: 0 },
         {
           scale: 1,
           opacity: 1,
-          filter: 'blur(0px)',
-          duration: 0.85,
+          duration: 0.65,
           ease: MotionEases.backOut,
-          delay: 0.15,
+          delay: 0.1,
           force3D: true,
           overwrite: 'auto',
         }
@@ -136,7 +143,7 @@ export const LandingNav: React.FC = () => {
           <div ref={btnEnterRef}>
             <Link
               ref={enterAppBtnRef}
-              href="/dashboard"
+              href={referralCode ? `/dashboard?ref=${encodeURIComponent(referralCode)}` : '/dashboard'}
               id="nav-enter-app-btn"
               data-cursor="cta"
               data-cursor-text="ENTER"

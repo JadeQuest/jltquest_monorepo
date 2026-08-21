@@ -1001,29 +1001,29 @@ export const CosmicOriginsSection: React.FC = () => {
         {/* ══════════════════════════════════════════════════════════
             3. 4 CORE PILLARS GRID (COSMIC ARCHITECTURE)
             ══════════════════════════════════════════════════════════ */}
-        <div ref={pillarGridRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div ref={pillarGridRef} className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
           {PILLARS.map((pillar, index) => {
             const Icon = pillar.icon;
             return (
               <div
                 key={index}
-                className={`cosmic-pillar-card glass-panel p-5 sm:p-6 rounded-2xl flex flex-col justify-between gap-4 border ${pillar.borderColor} hover:scale-[1.02] transition-all duration-300 relative overflow-hidden group shadow-lg`}
+                className={`cosmic-pillar-card glass-panel p-3.5 sm:p-5 md:p-6 rounded-xl sm:rounded-2xl flex flex-col justify-between gap-3 sm:gap-4 border ${pillar.borderColor} hover:scale-[1.02] transition-all duration-300 relative overflow-hidden group shadow-lg`}
               >
                 <div className={`absolute inset-0 bg-gradient-to-b ${pillar.bgGlow} opacity-50 group-hover:opacity-100 transition-opacity pointer-events-none`} />
 
-                <div className="flex flex-col gap-3 relative z-10">
-                  <div className="flex justify-between items-center">
+                <div className="flex flex-col gap-2 sm:gap-3 relative z-10">
+                  <div className="flex justify-between items-center gap-1.5">
                     <div
-                      className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center border shadow-md"
+                      className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-lg sm:rounded-xl flex items-center justify-center border shadow-md shrink-0"
                       style={{
                         backgroundColor: `${pillar.color}15`,
                         borderColor: `${pillar.color}40`,
                       }}
                     >
-                      <Icon className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: pillar.color }} />
+                      <Icon className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" style={{ color: pillar.color }} />
                     </div>
                     <span
-                      className="text-[9px] sm:text-[10px] font-gilroyBold uppercase tracking-wider px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md border"
+                      className="text-[8px] sm:text-[9px] md:text-[10px] font-gilroyBold uppercase tracking-wider px-1.5 sm:px-2 md:px-2.5 py-0.5 sm:py-1 rounded-md border truncate max-w-[110px] sm:max-w-none text-right"
                       style={{
                         color: pillar.color,
                         borderColor: `${pillar.color}30`,
@@ -1034,13 +1034,17 @@ export const CosmicOriginsSection: React.FC = () => {
                     </span>
                   </div>
 
-                  <h4 className="text-white font-gilroyBold text-base sm:text-lg mt-1">{pillar.title}</h4>
-                  <p className="text-purple-200/80 font-gilroyRegular text-xs leading-relaxed">{pillar.desc}</p>
+                  <h4 className="text-white font-gilroyBold text-xs sm:text-base md:text-lg mt-0.5 sm:mt-1 leading-snug">
+                    {pillar.title}
+                  </h4>
+                  <p className="text-purple-200/80 font-gilroyRegular text-[10px] sm:text-xs leading-relaxed line-clamp-3 sm:line-clamp-none">
+                    {pillar.desc}
+                  </p>
                 </div>
 
-                <div className="pt-2 border-t border-white/5 flex items-center justify-between text-xs font-gilroyMedium text-purple-300 group-hover:text-white transition-colors relative z-10">
+                <div className="pt-2 border-t border-white/5 flex items-center justify-between text-[10px] sm:text-xs font-gilroyMedium text-purple-300 group-hover:text-white transition-colors relative z-10">
                   <span>Learn in App</span>
-                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 group-hover:translate-x-1 transition-transform" />
                 </div>
               </div>
             );

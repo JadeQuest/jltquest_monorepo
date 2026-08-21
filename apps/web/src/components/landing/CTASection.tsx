@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useEffect, useLayoutEffect } from 'react';
+import React, { useRef, useState, useEffect, useLayoutEffect } from 'react';
 import Link from 'next/link';
 import {
   gsap,
@@ -12,16 +12,24 @@ import {
 } from '@/lib/animations';
 import { useMagneticButton } from './useMagneticButton';
 import { SplitText } from './SplitText';
+import { getStoredReferralCode } from '@/lib/authCookie';
 
 const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 export const CTASection: React.FC = () => {
+  const [referralCode, setReferralCode] = useState<string | null>(null);
   const sectionRef = useRef<HTMLElement>(null);
   const mascotRef = useRef<HTMLDivElement>(null);
   const mascotImgRef = useRef<HTMLImageElement>(null);
   const glowRingRef = useRef<HTMLDivElement>(null);
 
   const ctaBtnRef = useMagneticButton<HTMLAnchorElement>({ maxDistance: 15, strength: 0.28 });
+
+  useEffect(() => {
+    const code = getStoredReferralCode();
+    if (code) setReferralCode(code);
+  }, []);
+
 
   useIsomorphicLayoutEffect(() => {
     if (prefersReducedMotion() || !sectionRef.current) return;
@@ -214,7 +222,7 @@ export const CTASection: React.FC = () => {
         </div>
 
         <p className="cta-desc font-gilroyRegular text-gray-400 text-base sm:text-lg md:text-xl max-w-[520px] leading-relaxed px-2">
-          Join thousands of players already earning JLT coins inside the JaxMart ecosystem. Your quests await.
+          Join thousands of players already earning GP bonuses, passes, and squad rewards inside the JaxMart ecosystem.
         </p>
 
         {/* Coin counter decoration */}
@@ -226,9 +234,9 @@ export const CTASection: React.FC = () => {
               data-cursor-text="BONUS"
               className="cta-badge glass-pill px-3.5 sm:px-5 py-1.5 sm:py-2.5 flex items-center gap-2 sm:gap-2.5 shadow-lg"
             >
-              <img src="/icon/coin.webp" alt="JLT Coin" width={24} height={24} loading="lazy" decoding="async" className="w-5 h-5 sm:w-6 sm:h-6 object-contain animate-sparkle" style={{ animationDelay: `${i * 0.3}s` }} />
+              <img src="/icon/coin.webp" alt="GP" width={24} height={24} loading="lazy" decoding="async" className="w-5 h-5 sm:w-6 sm:h-6 object-contain animate-sparkle" style={{ animationDelay: `${i * 0.3}s` }} />
               <span className="font-gilroyBold text-white text-xs sm:text-sm">
-                {i === 1 ? '+250 Coins' : i === 2 ? 'Rare Drop' : '2× Bonus'}
+                {i === 1 ? '+150 GP Welcome' : i === 2 ? '+100 GP Squad Invite' : '2× Daily Boost'}
               </span>
             </div>
           ))}
@@ -237,7 +245,7 @@ export const CTASection: React.FC = () => {
         {/* CTA Button with Magnetic interaction */}
         <Link
           ref={ctaBtnRef}
-          href="/dashboard"
+          href={referralCode ? `/dashboard?ref=${encodeURIComponent(referralCode)}` : '/dashboard'}
           id="cta-enter-app-btn"
           data-cursor="cta"
           data-cursor-text="ENTER →"

@@ -32,7 +32,7 @@ export const SplitText: React.FC<SplitTextProps> = ({
   trigger,
   start = 'top 88%',
   scrollTrigger = true,
-  blur = true,
+  blur = false,
 }) => {
   const containerRef = useRef<HTMLSpanElement>(null);
 

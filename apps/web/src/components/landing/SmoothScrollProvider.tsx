@@ -17,7 +17,9 @@ export const SmoothScrollProvider: React.FC<{ children: React.ReactNode }> = ({ 
     const isTouch = isTouchDevice();
     const reduceMotion = prefersReducedMotion();
 
-    if (reduceMotion) return;
+    // On touch devices, native momentum scrolling is already smooth and
+    // battery-efficient. Lenis adds overhead and fights the OS gesture system.
+    if (reduceMotion || isTouch) return;
 
     const lenis = new Lenis({
       duration: 1.2,
@@ -50,16 +52,13 @@ export const SmoothScrollProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
     const debouncedRefresh = createDebouncedCallback(refresh, 140);
 
-    // Initial settle refreshes
-    const initialRefreshTimer = setTimeout(() => {
-      refresh();
-    }, 150);
+    // Initial settle once document fonts / layout are ready
+    if (typeof document !== 'undefined' && 'fonts' in document) {
+      document.fonts.ready.then(() => {
+        debouncedRefresh();
+      });
+    }
 
-    const secondaryRefreshTimer = setTimeout(() => {
-      refresh();
-    }, 600);
-
-    // Handle external refresh events
     const handleRefresh = () => {
       debouncedRefresh();
     };
@@ -85,15 +84,15 @@ export const SmoothScrollProvider: React.FC<{ children: React.ReactNode }> = ({ 
     };
 
     window.addEventListener('resize', handleRefresh, { passive: true });
+    window.addEventListener('load', handleRefresh);
     window.addEventListener('refresh-scroll-trigger', handleRefresh);
     window.addEventListener('scroll-to-target', handleScrollTo);
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
-      clearTimeout(initialRefreshTimer);
-      clearTimeout(secondaryRefreshTimer);
       debouncedRefresh.cancel();
       window.removeEventListener('resize', handleRefresh);
+      window.removeEventListener('load', handleRefresh);
       window.removeEventListener('refresh-scroll-trigger', handleRefresh);
       window.removeEventListener('scroll-to-target', handleScrollTo);
       document.removeEventListener('visibilitychange', handleVisibilityChange);

@@ -47,7 +47,7 @@ const FEATURE_PROJECTS: FeatureProject[] = [
     category: 'Daily Quests & Missions',
     title: 'Discover Quests',
     subtitle: 'Daily Missions · Bounty Tasks · XP Progression',
-    description: 'Explore daily and weekly missions tailored to your rank. Complete interactive challenges across the JaxMart ecosystem to earn coins, level multipliers, and rare mystery crates.',
+    description: 'Explore daily and weekly missions tailored to your rank. Complete interactive challenges across the JaxMart ecosystem to earn GP, level multipliers, and rare mystery crates.',
     bannerMotto: 'Discover & Conquer',
     ctaText: 'EXPLORE QUESTS',
     href: '/dashboard/quests',
@@ -57,7 +57,7 @@ const FEATURE_PROJECTS: FeatureProject[] = [
     icon: '/Discover.svg',
     image: '/showcase/quests.jpg',
     badgeImg: '/jltcolor.svg',
-    extraChip: '+500 JLT Coins',
+    extraChip: '+500 GP Quests',
     statsValue: '2.4M+',
     statsLabel: 'Quests Cleared',
   },
@@ -66,8 +66,8 @@ const FEATURE_PROJECTS: FeatureProject[] = [
     tag: '02 / FORTUNE WHEEL',
     category: 'Daily Spin & Win',
     title: 'Spin to Win',
-    subtitle: '10× Multipliers · Pass Drops · Instant Coins',
-    description: 'Try your luck every 24 hours on the high-roller fortune wheel. Land on exclusive Push Pass drops, huge coin multipliers, and rare mystery crates with zero gas required.',
+    subtitle: '10× Multipliers · Pass Drops · Instant GP',
+    description: 'Try your luck every 24 hours on the high-roller fortune wheel. Land on exclusive Push Pass drops, huge GP multipliers, and rare mystery crates with zero gas required.',
     bannerMotto: 'Spin to Multiply',
     ctaText: 'TRY DAILY SPIN',
     href: '/dashboard',
@@ -104,12 +104,12 @@ const FEATURE_PROJECTS: FeatureProject[] = [
   {
     id: 'squad',
     tag: '04 / SOCIAL EARNING',
-    category: 'Squads & Guilds',
+    category: 'Squads & Invites',
     title: 'Invite Squad',
-    subtitle: 'Referral Rewards · Guild Multipliers · Crew XP',
-    description: 'Build your squad inside JLTQuest. Earn passive coin commissions on every quest your friends complete, and unlock collaborative guild multipliers to dominate seasonal leaderboards.',
+    subtitle: '+100 GP Referral · +150 GP Welcome · Squad Milestones',
+    description: 'Assemble your crew inside JLTQuest. Earn +100 GP for every friend who joins with your referral link, give them +150 GP instant welcome bonus, and unlock up to +1,000 GP at milestone squad levels.',
     bannerMotto: 'Assemble Your Crew',
-    ctaText: 'INVITE FRIENDS',
+    ctaText: 'INVITE SQUAD',
     href: '/dashboard/invites',
     accentColor: '#FF6B6B',
     gradientBg: 'from-[#3A0A28] via-[#360C9F]/40 to-[#080411]',
@@ -117,9 +117,9 @@ const FEATURE_PROJECTS: FeatureProject[] = [
     icon: '/InviteSqaud.svg',
     image: '/showcase/squad.jpg',
     badgeImg: '/jltcolor.svg',
-    extraChip: '+15% Team Cut',
-    statsValue: '12,500+',
-    statsLabel: 'Active Squads',
+    extraChip: '+100 GP / Invite',
+    statsValue: '+150 GP',
+    statsLabel: 'Welcome Bonus',
   },
   {
     id: 'leaderboard',
@@ -147,7 +147,7 @@ const FEATURE_PROJECTS: FeatureProject[] = [
     category: 'Daily Streak Multiplier',
     title: 'Daily Streaks',
     subtitle: 'Daily Login · Streak Fire · 2.5× Boost',
-    description: 'Keep your streak flame burning by logging in each day. The longer your streak, the higher your global coin multiplier climbs across all JaxMart quest activities.',
+    description: 'Keep your streak flame burning by logging in each day. The longer your streak, the higher your global GP multiplier climbs across all JaxMart quest activities.',
     bannerMotto: 'Ignite Your Streak',
     ctaText: 'KEEP THE FLAME',
     href: '/dashboard',
@@ -186,7 +186,7 @@ export const FeaturesSection: React.FC = () => {
     if (st) {
       const scrollDistance = st.end - st.start;
       const ratio = clampedIndex / (total - 1);
-      const targetScroll = st.start + ratio * scrollDistance * 0.95 + (clampedIndex === 0 ? 5 : 0);
+      const targetScroll = st.start + ratio * scrollDistance;
 
       if (typeof window !== 'undefined' && window.__lenis) {
         window.__lenis.scrollTo(targetScroll, {
@@ -216,9 +216,13 @@ export const FeaturesSection: React.FC = () => {
     };
   }, []);
 
-  // ── GSAP PINNED HORIZONTAL SCROLL CHOREOGRAPHY ──
+  // ── GSAP TRIONN 3D CURVED CYLINDRICAL CAROUSEL (DESKTOP & MOBILE) ──
   useIsomorphicLayoutEffect(() => {
     if (prefersReducedMotion() || !sectionRef.current || !trackRef.current) return;
+
+    const section = sectionRef.current;
+    const container = containerRef.current;
+    const totalCards = FEATURE_PROJECTS.length;
 
     const ctx = gsap.context(() => {
       // Reversible Divider Line Expansion
@@ -245,116 +249,136 @@ export const FeaturesSection: React.FC = () => {
         toggleActions: ReversibleToggleActions,
       });
 
-      const track = trackRef.current!;
-      const totalCards = FEATURE_PROJECTS.length;
-      const scaleSetters = cardRefs.current.map((card) =>
-        card ? (gsap.quickSetter(card, 'scale') as (value: number) => void) : null
-      );
-      const opacitySetters = cardRefs.current.map((card) =>
-        card ? (gsap.quickSetter(card, 'opacity') as (value: number) => void) : null
-      );
-      const rotationSetters = cardRefs.current.map((card) =>
-        card ? (gsap.quickSetter(card, 'rotationY') as (value: number) => void) : null
-      );
-      let cardCenters: number[] = [];
-      let cachedScrollAmount = 0;
-      let windowCenterX = window.innerWidth / 2;
-      let maxDistance = window.innerWidth * 0.7;
+      const cardElements = cardRefs.current.filter(Boolean) as HTMLDivElement[];
 
-      // Calculate total horizontal scroll translation
-      const getScrollAmount = () => {
-        const trackWidth = track.scrollWidth;
-        const windowWidth = window.innerWidth;
-        return -(trackWidth - windowWidth + 60);
-      };
+      // ── TRIONN 3D CYLINDRICAL CURVED RIBBON CALCULATOR ──
+      const updateCylinderPositions = (progress: number) => {
+        const isMobile = window.innerWidth < 768;
+        const isTablet = window.innerWidth >= 768 && window.innerWidth < 1024;
 
-      const refreshCardMetrics = () => {
-        cachedScrollAmount = getScrollAmount();
-        windowCenterX = window.innerWidth / 2;
-        maxDistance = window.innerWidth * 0.7;
-        cardCenters = cardRefs.current.map((card) =>
-          card ? card.offsetLeft + card.offsetWidth / 2 : 0
-        );
-      };
+        const currentExactIndex = progress * (totalCards - 1);
+        const cardSpacing = isMobile
+          ? Math.min(window.innerWidth * 0.76, 320)
+          : isTablet
+          ? 520
+          : 660;
+        const depthMultiplier = isMobile ? 170 : 280;
+        const angleMultiplier = isMobile ? 34 : 28;
+        const inclineSlope = isMobile ? 8 : 16;
 
-      const updateCardFocus = (progress: number) => {
-        const trackX = cachedScrollAmount * progress;
+        cardElements.forEach((card, index) => {
+          const offset = index - currentExactIndex;
+          const absOffset = Math.abs(offset);
 
-        cardCenters.forEach((cardCenterOffset, index) => {
-          const scaleSetter = scaleSetters[index];
-          const opacitySetter = opacitySetters[index];
-          const rotationSetter = rotationSetters[index];
-          if (!scaleSetter || !opacitySetter || !rotationSetter) return;
+          // Signature TRIONN 3D Curved Cylinder trajectory formulas:
+          const x = offset * cardSpacing;
+          const z = -Math.min(750, Math.pow(absOffset, 1.4) * depthMultiplier);
+          const rotY = Math.max(-60, Math.min(60, -offset * angleMultiplier));
+          const rotZ = Math.max(-7, Math.min(7, -offset * 2.2));
+          const y = -offset * inclineSlope + Math.pow(absOffset, 1.5) * (isMobile ? 5 : 9);
+          const scale = Math.max(0.72, 1 - absOffset * 0.08);
+          const opacity = Math.max(0.2, 1 - absOffset * 0.3);
 
-          const cardCenterX = cardCenterOffset + trackX;
-          const distanceFromCenter = Math.abs(windowCenterX - cardCenterX);
-          const normalizedDist = Math.min(1, distanceFromCenter / maxDistance);
-
-          scaleSetter(1 - normalizedDist * 0.14);
-          opacitySetter(1 - normalizedDist * 0.65);
-          rotationSetter(((cardCenterX - windowCenterX) / window.innerWidth) * -12);
+          gsap.set(card, {
+            xPercent: -50,
+            yPercent: -50,
+            x,
+            y,
+            z,
+            rotationY: rotY,
+            rotationZ: rotZ,
+            scale,
+            opacity,
+            zIndex: Math.round(100 - absOffset * 10),
+            transformPerspective: isMobile ? 850 : 1200,
+            transformOrigin: 'center center',
+            force3D: true,
+          });
         });
+
+        const activeIdx = Math.min(
+          totalCards - 1,
+          Math.max(0, Math.round(currentExactIndex))
+        );
+        if (activeIdx !== activeIndexRef.current) {
+          activeIndexRef.current = activeIdx;
+          setActiveIndex(activeIdx);
+        }
       };
 
-      refreshCardMetrics();
-      gsap.set(cardRefs.current.filter(Boolean), {
-        transformPerspective: 1000,
-        transformOrigin: 'center center',
-        force3D: true,
-      });
+      // Set initial 3D Perspective Stage
+      if (container) {
+        gsap.set(container, { perspective: 1200 });
+      }
+      updateCylinderPositions(0);
 
-      // Master Pinned ScrollTrigger Timeline with comfortable, responsive pin distance
+      // Pinned GSAP ScrollTrigger Master Timeline
       const pinTimeline = gsap.timeline({
         scrollTrigger: {
           trigger: sectionRef.current,
           start: 'top top',
-          end: () => `+=${Math.min(window.innerHeight * 1.6, 1600)}`,
+          end: () => `+=${Math.min(window.innerHeight * (window.innerWidth < 768 ? 2.0 : 1.8), 2000)}`,
           pin: true,
           scrub: 0.65,
           anticipatePin: 1,
           invalidateOnRefresh: true,
-          onRefresh: refreshCardMetrics,
+          onRefresh: () => updateCylinderPositions(scrollTriggerInstanceRef.current?.progress || 0),
           onUpdate: (self) => {
-            const progress = self.progress;
-
-            // Compute active index based on scroll progress
-            const step = 1 / totalCards;
-            const currentIdx = Math.min(
-              totalCards - 1,
-              Math.max(0, Math.floor((progress + step * 0.35) / step))
-            );
-
-            if (currentIdx !== activeIndexRef.current) {
-              activeIndexRef.current = currentIdx;
-                setActiveIndex(currentIdx);
-            }
-
-            // Real-time center-focus scaling using cached layout metrics.
-            updateCardFocus(progress);
+            updateCylinderPositions(self.progress);
           },
         },
       });
 
       scrollTriggerInstanceRef.current = pinTimeline.scrollTrigger || null;
 
-      // Translate the entire track horizontally on scroll
-      pinTimeline.to(track, {
-        x: getScrollAmount,
-        ease: 'none',
-        force3D: true,
-      });
+      // Mobile Touch Drag Swipe support to rotate the cylinder
+      let startTouchX = 0;
+      let startScrollProgress = 0;
+      let isDragging = false;
 
-      scrollTriggerInstanceRef.current = pinTimeline.scrollTrigger || null;
+      const onTouchStart = (e: TouchEvent) => {
+        if (e.touches.length !== 1) return;
+        startTouchX = e.touches[0].clientX;
+        if (scrollTriggerInstanceRef.current) {
+          startScrollProgress = scrollTriggerInstanceRef.current.progress;
+          isDragging = true;
+        }
+      };
 
-      // Translate the entire track horizontally on scroll
-      pinTimeline.to(track, {
-        x: getScrollAmount,
-        ease: 'none',
-        force3D: true,
-      });
-    }, sectionRef);
+      const onTouchMove = (e: TouchEvent) => {
+        if (!isDragging || !scrollTriggerInstanceRef.current) return;
+        const deltaX = e.touches[0].clientX - startTouchX;
+        const scrollDistance = scrollTriggerInstanceRef.current.end - scrollTriggerInstanceRef.current.start;
+        const progressDelta = -(deltaX / (window.innerWidth * 1.0));
+        const newProgress = Math.max(0, Math.min(1, startScrollProgress + progressDelta));
+        const targetScroll = scrollTriggerInstanceRef.current.start + newProgress * scrollDistance;
+        window.scrollTo({ top: targetScroll });
+      };
 
-    return () => ctx.revert();
+      const onTouchEnd = () => {
+        isDragging = false;
+      };
+
+      if (container) {
+        container.addEventListener('touchstart', onTouchStart, { passive: true });
+        container.addEventListener('touchmove', onTouchMove, { passive: true });
+        container.addEventListener('touchend', onTouchEnd, { passive: true });
+      }
+
+      return () => {
+        if (container) {
+          container.removeEventListener('touchstart', onTouchStart);
+          container.removeEventListener('touchmove', onTouchMove);
+          container.removeEventListener('touchend', onTouchEnd);
+        }
+        scrollTriggerInstanceRef.current = null;
+        gsap.set(cardElements, { clearProps: 'all' });
+      };
+    }, section);
+
+    return () => {
+      ctx.revert();
+    };
   }, []);
 
   const activeProject = FEATURE_PROJECTS[activeIndex];
@@ -363,7 +387,7 @@ export const FeaturesSection: React.FC = () => {
     <section
       id="features"
       ref={sectionRef}
-      className="relative w-full min-h-screen bg-transparent overflow-hidden select-none flex flex-col justify-between py-10 sm:py-16"
+      className="relative w-full min-h-screen bg-transparent overflow-hidden select-none flex flex-col justify-between py-6 sm:py-10 md:py-16"
       aria-label="Features Showcase - Built for Quest Champions"
     >
       {/* Top Animated Glowing Border */}
@@ -378,8 +402,15 @@ export const FeaturesSection: React.FC = () => {
       />
       <div className="absolute bottom-10 right-[-10%] w-[600px] h-[600px] rounded-full bg-radial from-[#7B2CBF]/20 via-transparent to-transparent blur-[130px] pointer-events-none" />
 
+      {/* Atmospheric 3D Background Typography (TRIONN Aesthetic) */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full text-center pointer-events-none select-none z-0 opacity-10 overflow-hidden">
+        <div className="font-blockDisplay text-[14vw] sm:text-[12vw] tracking-tighter uppercase whitespace-nowrap bg-gradient-to-b from-white via-white/50 to-transparent bg-clip-text text-transparent transform -rotate-2">
+          QUESTS IN MOTION
+        </div>
+      </div>
+
       {/* ── 1. SECTION HEADER ── */}
-      <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 flex flex-col items-center gap-2.5 sm:gap-3 text-center relative z-20 shrink-0">
+      <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 flex flex-col items-center gap-1.5 sm:gap-2.5 text-center relative z-20 shrink-0">
         <div className="features-badge glass-pill px-3.5 sm:px-4 py-1 sm:py-1.5 inline-flex items-center gap-2">
           <img src="/jlt.svg" alt="JLT" width={18} height={18} loading="lazy" decoding="async" className="w-3.5 h-3.5 sm:w-4 sm:h-4 object-contain" />
           <span className="font-gilroyMedium text-[11px] sm:text-xs text-white/90 tracking-wider uppercase">
@@ -396,14 +427,16 @@ export const FeaturesSection: React.FC = () => {
         </p>
       </div>
 
-      {/* ── 2. PINNED HORIZONTAL CARDS TRACK (SCROLL & MOVE) ── */}
+      {/* ── 2. PINNED 3D CURVED CYLINDER STAGE ── */}
       <div
         ref={containerRef}
-        className="relative w-full my-auto flex items-center overflow-hidden z-10 py-3 sm:py-4"
+        className="relative w-full my-auto flex items-center justify-center overflow-visible z-10 py-2 sm:py-6 min-h-[360px] sm:min-h-[440px] md:min-h-[520px]"
+        style={{ perspective: 1200, transformStyle: 'preserve-3d' }}
       >
         <div
           ref={trackRef}
-          className="flex items-center gap-4 sm:gap-8 md:gap-12 pl-[5vw] sm:pl-[12vw] md:pl-[20vw] pr-[20vw] sm:pr-[50vw] will-change-transform"
+          className="relative w-full h-[350px] sm:h-[420px] md:h-[480px] flex items-center justify-center"
+          style={{ transformStyle: 'preserve-3d' }}
         >
           {FEATURE_PROJECTS.map((project, idx) => {
             const isCenter = idx === activeIndex;
@@ -416,8 +449,8 @@ export const FeaturesSection: React.FC = () => {
                 }}
                 onClick={() => scrollToCard(idx)}
                 data-cursor="card"
-                data-cursor-text={isCenter ? 'OPEN' : 'SCROLL'}
-                className={`w-[88vw] sm:w-[580px] md:w-[680px] lg:w-[760px] shrink-0 rounded-[22px] sm:rounded-[32px] md:rounded-[36px] p-4 sm:p-6 md:p-8 bg-gradient-to-b ${project.gradientBg} border transition-all duration-300 cursor-pointer will-change-transform ${
+                data-cursor-text={isCenter ? 'OPEN' : 'SELECT'}
+                className={`absolute top-1/2 left-1/2 w-[86vw] max-w-[340px] sm:max-w-[440px] md:w-[680px] md:max-w-none lg:w-[740px] shrink-0 rounded-2xl md:rounded-[28px] p-3.5 sm:p-6 md:p-8 bg-gradient-to-b ${project.gradientBg} border transition-[border-color,box-shadow] duration-300 cursor-pointer will-change-transform ${
                   isCenter
                     ? 'border-white/30 shadow-[0_30px_80px_rgba(0,0,0,0.85)] ring-1 ring-white/20'
                     : 'border-white/10 shadow-[0_15px_35px_rgba(0,0,0,0.5)]'
@@ -427,7 +460,7 @@ export const FeaturesSection: React.FC = () => {
                 }}
               >
                 {/* ── CARD VISUAL ARTWORK FRAME (16:10 Cinematic Frame) ── */}
-                <div className="relative w-full h-[200px] sm:h-[260px] md:h-[320px] rounded-[16px] sm:rounded-[22px] md:rounded-[26px] overflow-hidden border border-white/15 bg-black/60 shadow-inner group flex flex-col justify-between p-3.5 sm:p-6">
+                <div className="relative w-full h-[165px] sm:h-[240px] md:h-[320px] rounded-xl sm:rounded-2xl md:rounded-[24px] overflow-hidden border border-white/15 bg-black/60 shadow-inner group flex flex-col justify-between p-2.5 sm:p-5 md:p-6">
                   
                   {/* Full-bleed Generated Cinematic Artwork */}
                   <img
@@ -452,19 +485,34 @@ export const FeaturesSection: React.FC = () => {
                     style={{ background: project.accentColor }}
                   />
 
+                  {/* ── Round Rotating Orbit Animation (Spin Wheel & Featured Showcase) ── */}
+                  {project.id === 'spin' && (
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10 overflow-hidden">
+                      {/* Outer Rotating Dashed Ring */}
+                      <div className="w-[140px] sm:w-[220px] md:w-[280px] h-[140px] sm:h-[220px] md:h-[280px] rounded-full border border-dashed border-[#00F0FF]/40 animate-spin-slow opacity-60" />
+                      {/* Inner Counter-Rotating Ring */}
+                      <div className="absolute w-[110px] sm:w-[170px] md:w-[210px] h-[110px] sm:h-[170px] md:h-[210px] rounded-full border border-[#FFA28D]/50 opacity-40 animate-spin-reverse" />
+                      {/* Radial energy halo */}
+                      <div
+                        className="absolute w-[180px] h-[180px] rounded-full blur-2xl opacity-25"
+                        style={{ background: 'radial-gradient(circle, rgba(0,240,255,0.6) 0%, transparent 70%)' }}
+                      />
+                    </div>
+                  )}
+
                   {/* Top Row: Tag Badge & Extra Status Chip */}
-                  <div className="relative z-10 flex items-center justify-between gap-2 sm:gap-3">
-                    <div className="glass-pill px-2.5 sm:px-3 py-1 sm:py-1.5 inline-flex items-center gap-1.5 sm:gap-2 border border-white/20 bg-black/60 backdrop-blur-md">
+                  <div className="relative z-10 flex flex-wrap items-start justify-between gap-1.5 sm:gap-3">
+                    <div className="glass-pill px-2 sm:px-3 py-0.5 sm:py-1.5 inline-flex items-center gap-1.5 sm:gap-2 border border-white/20 bg-black/60 backdrop-blur-md">
                       <span className="w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full" style={{ background: project.accentColor }} />
-                      <span className="font-gilroyBold text-[9px] sm:text-[11px] text-white tracking-widest uppercase">
+                      <span className="font-gilroyBold text-[8px] sm:text-[11px] text-white tracking-widest uppercase">
                         {project.tag}
                       </span>
                     </div>
 
                     {project.extraChip && (
-                      <div className="glass-pill px-2.5 sm:px-3 py-1 sm:py-1.5 inline-flex items-center gap-1 sm:gap-1.5 border border-white/20 bg-black/60 backdrop-blur-md shadow-sm">
-                        <Sparkles className="w-3 sm:w-3.5 h-3 sm:h-3.5" style={{ color: project.accentColor }} />
-                        <span className="font-gilroyBold text-[10px] sm:text-xs text-white">
+                      <div className="glass-pill px-2 sm:px-3 py-0.5 sm:py-1.5 inline-flex items-center gap-1 sm:gap-1.5 border border-white/20 bg-black/60 backdrop-blur-md shadow-sm">
+                        <Sparkles className="w-2.5 sm:w-3.5 h-2.5 sm:h-3.5" style={{ color: project.accentColor }} />
+                        <span className="font-gilroyBold text-[9px] sm:text-xs text-white">
                           {project.extraChip}
                         </span>
                       </div>
@@ -473,7 +521,7 @@ export const FeaturesSection: React.FC = () => {
 
                   {/* Central Micro-Emblem */}
                   <div className="relative z-10 my-auto flex items-center justify-center pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div className="glass-pill px-3.5 sm:px-4 py-1.5 sm:py-2 bg-black/70 border border-white/30 backdrop-blur-md flex items-center gap-2 shadow-2xl scale-95 group-hover:scale-100 transition-transform duration-300">
+                    <div className="glass-pill px-3 sm:px-4 py-1 sm:py-2 bg-black/70 border border-white/30 backdrop-blur-md flex items-center gap-2 shadow-2xl scale-95 group-hover:scale-100 transition-transform duration-300">
                       <img src={project.icon} alt="" className="w-4 sm:w-5 h-4 sm:h-5 object-contain" />
                       <span className="font-gilroyBold text-xs text-white uppercase tracking-wider">{project.title}</span>
                     </div>
@@ -482,7 +530,7 @@ export const FeaturesSection: React.FC = () => {
                   {/* Bottom Floating Motto / Headline Inside Artwork */}
                   <div className="relative z-10 flex items-end justify-between gap-2">
                     <div className="flex flex-col">
-                      <span className="font-gilroyBold text-lg sm:text-2xl md:text-4xl text-white tracking-tight leading-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.9)]">
+                      <span className="font-gilroyBold text-base sm:text-2xl md:text-4xl text-white tracking-tight leading-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.9)]">
                         {project.bannerMotto}
                       </span>
                     </div>
@@ -501,17 +549,17 @@ export const FeaturesSection: React.FC = () => {
                 </div>
 
                 {/* ── CARD TYPOGRAPHY & INTERACTIVE ACTION (Below Frame) ── */}
-                <div className="mt-3 sm:mt-5 flex flex-col sm:flex-row sm:items-end justify-between gap-2.5 sm:gap-3">
+                <div className="mt-2.5 sm:mt-5 flex flex-col sm:flex-row sm:items-end justify-between gap-2 sm:gap-3">
                   <div className="flex flex-col gap-0.5 sm:gap-1 max-w-lg">
-                    <div className="flex items-center gap-2">
-                      <span className="font-gilroyBold text-base sm:text-xl text-white tracking-wide group-hover:text-[#FFA28D] transition-colors duration-200">
+                    <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                      <span className="font-gilroyBold text-sm sm:text-xl text-white tracking-wide group-hover:text-[#FFA28D] transition-colors duration-200">
                         {project.title}
                       </span>
-                      <span className="text-[9px] sm:text-xs px-2 py-0.5 rounded-md bg-white/10 text-gray-300 font-gilroyMedium">
+                      <span className="max-w-full text-[8px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded-md bg-white/10 text-gray-300 font-gilroyMedium">
                         {project.category}
                       </span>
                     </div>
-                    <p className="font-gilroyRegular text-gray-300 text-xs sm:text-sm leading-relaxed line-clamp-2">
+                    <p className="font-gilroyRegular text-gray-300 text-[11px] sm:text-sm leading-snug sm:leading-relaxed line-clamp-2">
                       {project.description}
                     </p>
                   </div>
@@ -521,13 +569,13 @@ export const FeaturesSection: React.FC = () => {
                     href={project.href}
                     data-cursor="cta"
                     data-cursor-text="OPEN →"
-                    className="inline-flex items-center gap-1.5 sm:gap-2 font-gilroyBold text-xs sm:text-sm tracking-wider uppercase group/link self-start sm:self-end text-white hover:text-[#FFA28D] transition-colors py-1 shrink-0"
+                    className="inline-flex items-center gap-1 sm:gap-2 font-gilroyBold text-[11px] sm:text-sm tracking-wider uppercase group/link self-start sm:self-end text-white hover:text-[#FFA28D] transition-colors py-0.5 shrink-0"
                   >
                     <span className="relative">
                       {project.ctaText}
                       <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#FFA28D] group-hover/link:w-full transition-all duration-300" />
                     </span>
-                    <ArrowRight className="w-3.5 sm:w-4 h-3.5 sm:h-4 text-[#FFA28D] group-hover/link:translate-x-1.5 transition-transform duration-200" />
+                    <ArrowRight className="w-3 sm:w-4 h-3 sm:h-4 text-[#FFA28D] group-hover/link:translate-x-1.5 transition-transform duration-200" />
                   </Link>
                 </div>
 

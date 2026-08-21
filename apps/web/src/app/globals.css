@@ -347,6 +347,32 @@ body {
   }
 }
 
+/* ═══════════════════════════════════════════════════════════
+   MOBILE / TOUCH PERFORMANCE OPTIMIZATIONS
+   On coarse-pointer (touch) devices, pause continuously-running
+   gradient border animations and reduce backdrop-filter blur to
+   cut GPU compositing overhead during scroll.
+   ═══════════════════════════════════════════════════════════ */
+@media (pointer: coarse) {
+  .glass-panel::before,
+  .glass-pill::before,
+  .glass-btn::before,
+  .daily-card-panel::before {
+    animation-play-state: paused;
+  }
+
+  .glass-panel,
+  .daily-card-panel {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  .glass-pill {
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+}
+
 /* Fix RainbowKit portal positioning & avoid dashboard background shifts */
 div[data-rk] {
   position: relative;

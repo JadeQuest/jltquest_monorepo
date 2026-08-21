@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
+import React, { Suspense, useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useInvites } from '@/hooks/useInvites';
 import { Users, Copy, Check, Gift, ShieldCheck, Sparkles, UserPlus, CheckCircle2, Ticket, Star } from 'lucide-react';
@@ -10,7 +10,7 @@ import { gsap, prefersReducedMotion, MotionEases } from '@/lib/animations';
 
 const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
-export default function InvitesPage() {
+function InvitesPageContent() {
   const searchParams = useSearchParams();
   const { invites, isLoading, redeemInvite, isRedeeming, claimMilestone, isClaimingMilestone } = useInvites();
   const [redeemInput, setRedeemInput] = useState('');
@@ -516,5 +516,13 @@ export default function InvitesPage() {
         document.body
       )}
     </div>
+  );
+}
+
+export default function InvitesPage() {
+  return (
+    <Suspense fallback={<JLTLoader variant="page" size="lg" text="Loading invites..." />}>
+      <InvitesPageContent />
+    </Suspense>
   );
 }

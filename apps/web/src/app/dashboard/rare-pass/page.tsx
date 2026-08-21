@@ -471,39 +471,38 @@ export default function RarePassPage() {
                 </div>
 
                 {/* Pinned Left Track Headers */}
-                <div className="hidden sm:flex flex-col justify-between w-[150px] shrink-0 select-none py-1">
+                <div className="hidden sm:flex flex-col gap-3 w-[150px] shrink-0 select-none py-1">
                   {/* Top: Premium Header */}
                   <div className={`h-[145px] p-3 rounded-2xl flex flex-col justify-between items-center text-center transition-all relative overflow-hidden ${isPremium
                     ? 'glass-panel bg-amber-500/15 border border-amber-400/40 shadow-[0_0_20px_rgba(245,158,11,0.25)]'
                     : 'glass-panel opacity-90'
                     }`}>
-                    <div className="w-10 h-10 rounded-full bg-amber-500/20 border border-amber-400/40 flex items-center justify-center shadow-[0_0_15px_rgba(245,158,11,0.3)]">
-                      <Crown className="w-5 h-5 text-amber-300 animate-bounce" />
+                    <div className="w-12 h-12 rounded-full bg-amber-500/20 flex items-center justify-center border border-amber-500/30 shadow-[0_0_15px_rgba(245,158,11,0.2)]">
+                      <Crown className="w-6 h-6 text-amber-400 drop-shadow-[0_0_8px_rgba(245,158,11,0.8)]" />
                     </div>
-
-                    <div className="flex flex-col items-center">
-                      <span className="text-amber-300 font-gilroyBold text-sm uppercase tracking-wider drop-shadow-sm">
-                        Premium Pass
+                    <div className="flex flex-col items-center gap-1 z-10">
+                      <span className="text-sm font-gilroyBold text-white tracking-widest drop-shadow-md">
+                        PREMIUM PASS
                       </span>
+                      {isPremium ? (
+                        <div className="px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/50 text-emerald-400 text-[10px] font-gilroyBold uppercase tracking-wider shadow-[0_0_10px_rgba(16,185,129,0.2)]">
+                          Active
+                        </div>
+                      ) : (
+                        <button
+                          onClick={handleBuyPremium}
+                          disabled={isBuyingPremium}
+                          className="w-full py-1.5 text-xs font-gilroyBold glass-btn text-white rounded-xl hover:shadow-[0_0_15px_#FFA28D] transition-all cursor-pointer"
+                        >
+                          {isBuyingPremium ? 'Upgrading...' : 'Unlock'}
+                        </button>
+                      )}
                     </div>
-
-                    {isPremium ? (
-                      <span className="text-[11px] font-gilroyBold text-emerald-300 bg-emerald-500/20 px-3 py-0.5 rounded-full border border-emerald-400/40">
-                        Active
-                      </span>
-                    ) : (
-                      <button
-                        onClick={handleBuyPremium}
-                        disabled={isBuyingPremium}
-                        className="w-full py-1.5 text-xs font-gilroyBold glass-btn text-white rounded-xl hover:shadow-[0_0_15px_#FFA28D] transition-all cursor-pointer"
-                      >
-                        {isBuyingPremium ? 'Upgrading...' : 'Unlock'}
-                      </button>
-                    )}
+                    <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl" />
                   </div>
 
                   {/* Center: Milestone Track Label */}
-                  <div className="h-[52px] flex items-center justify-center text-center px-1 my-1">
+                  <div className="h-[52px] flex items-center justify-center text-center px-1">
                     <div className="w-full py-1.5 px-2 rounded-xl glass-pill flex items-center justify-center">
                       <span className="text-[11px] font-gilroyBold uppercase tracking-wider text-cyan-300">
                         Level Track
@@ -535,20 +534,21 @@ export default function RarePassPage() {
                   className="overflow-y-auto sm:overflow-y-visible overflow-x-hidden sm:overflow-x-auto max-h-[60vh] sm:max-h-none pb-1 pt-1 px-1 scroll-smooth flex-grow [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
                 >
                   <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-max min-w-full">
-                    {rewards.map((levelConfig: RarePassLevelConfig) => {
+                    {rewards.map((levelConfig: RarePassLevelConfig, index: number) => {
                       const isLevelUnlocked = currentLevel >= levelConfig.level;
                       const isCurrentLevel = currentLevel === levelConfig.level;
+                      const isLastLevel = index === rewards.length - 1;
                       const freeReward = levelConfig.rewards.find((r) => r.track === 'FREE');
                       const premiumReward = levelConfig.rewards.find((r) => r.track === 'PREMIUM');
 
                       return (
                         <div
                           key={levelConfig.level}
-                          className="w-full sm:w-[164px] shrink-0 flex flex-row sm:flex-col justify-between items-stretch sm:items-center select-none"
+                          className="w-full sm:w-[164px] shrink-0 flex flex-row sm:flex-col justify-between sm:justify-start sm:gap-3 items-stretch sm:items-center select-none"
                         >
                           {/* ══ TOP ROW (Mobile Right): PREMIUM REWARD CARD ══ */}
                           <div
-                            className={`h-[145px] flex-1 sm:w-full p-2.5 rounded-2xl flex flex-col justify-between items-center text-center relative transition-all duration-300 order-3 sm:order-1 ${isPremium && isLevelUnlocked
+                            className={`h-[145px] flex-1 sm:flex-none sm:w-full p-2.5 rounded-2xl flex flex-col justify-between items-center text-center relative transition-all duration-300 order-3 sm:order-1 ${isPremium && isLevelUnlocked
                               ? 'glass-panel bg-amber-500/10 border-amber-400/30 shadow-[0_0_15px_rgba(245,158,11,0.15)]'
                               : 'glass-panel opacity-70'
                               }`}
@@ -609,16 +609,38 @@ export default function RarePassPage() {
                           </div>
 
                           {/* ══ CENTER ROW: PROGRESS LINE & MILESTONE NODE ══ */}
-                          <div className="w-[52px] sm:w-full h-auto sm:h-[52px] flex items-center justify-center relative mx-1 sm:mx-0 sm:my-1 order-2 sm:order-2 shrink-0">
-                            {/* Horizontal/Vertical Progress Track Line */}
-                            <div className="absolute left-1/2 -translate-x-1/2 top-0 bottom-0 w-1.5 sm:w-auto sm:top-1/2 sm:-translate-y-1/2 sm:left-0 sm:right-0 sm:h-1.5 bg-black/80 border-x sm:border-x-0 sm:border-y border-white/10 z-0" />
+                          <div className="w-[52px] sm:w-full h-auto sm:h-[52px] flex items-center justify-center relative mx-1 sm:mx-0 order-2 sm:order-2 shrink-0">
+                            
+                            {/* Mobile Background Line */}
+                            <div 
+                              className="sm:hidden absolute left-1/2 -translate-x-1/2 top-0 w-1.5 bg-black/80 border-x border-white/10 z-0" 
+                              style={{ height: isLastLevel ? '100%' : 'calc(100% + 12px)' }}
+                            />
+                            {/* Desktop Background Line */}
+                            <div 
+                              className="hidden sm:block absolute top-1/2 -translate-y-1/2 left-0 h-1.5 bg-black/80 border-y border-white/10 z-0" 
+                              style={{ width: isLastLevel ? '100%' : 'calc(100% + 12px)' }}
+                            />
+                            
                             {isLevelUnlocked && (
-                              <div
-                                className={`absolute left-1/2 -translate-x-1/2 top-0 w-1.5 sm:w-auto sm:top-1/2 sm:-translate-y-1/2 sm:left-0 sm:h-1.5 z-0 ${isCurrentLevel
-                                  ? 'bottom-1/2 sm:bottom-auto sm:right-1/2 bg-gradient-to-b sm:bg-gradient-to-r from-[#00F0FF] via-[#7B2CBF] to-[#FFA28D] shadow-[0_0_8px_#00F0FF]'
-                                  : 'bottom-0 sm:bottom-auto sm:right-0 bg-gradient-to-b sm:bg-gradient-to-r from-[#00F0FF] via-[#7B2CBF] to-[#FFA28D]'
-                                  }`}
-                              />
+                              <>
+                                {/* Mobile Active Line */}
+                                <div
+                                  className="sm:hidden absolute left-1/2 -translate-x-1/2 top-0 w-1.5 z-0 bg-gradient-to-b from-[#00F0FF] via-[#7B2CBF] to-[#FFA28D]"
+                                  style={{
+                                    height: isCurrentLevel ? '50%' : isLastLevel ? '100%' : 'calc(100% + 12px)',
+                                    boxShadow: isCurrentLevel ? '0 0 8px #00F0FF' : 'none'
+                                  }}
+                                />
+                                {/* Desktop Active Line */}
+                                <div
+                                  className="hidden sm:block absolute top-1/2 -translate-y-1/2 left-0 h-1.5 z-0 bg-gradient-to-r from-[#00F0FF] via-[#7B2CBF] to-[#FFA28D]"
+                                  style={{
+                                    width: isCurrentLevel ? '50%' : isLastLevel ? '100%' : 'calc(100% + 12px)',
+                                    boxShadow: isCurrentLevel ? '0 0 8px #00F0FF' : 'none'
+                                  }}
+                                />
+                              </>
                             )}
 
                             {/* Milestone Circle Node - Displaying Level Only */}
@@ -636,8 +658,8 @@ export default function RarePassPage() {
 
                           {/* ══ BOTTOM ROW (Mobile Left): FREE REWARD CARD ══ */}
                           <div
-                            className={`h-[145px] flex-1 sm:w-full p-2.5 rounded-2xl flex flex-col justify-between items-center text-center relative transition-all duration-300 order-1 sm:order-3 ${isLevelUnlocked
-                              ? 'glass-panel shadow-[0_0_15px_rgba(0,240,255,0.1)]'
+                            className={`h-[145px] flex-1 sm:flex-none sm:w-full p-2.5 rounded-2xl flex flex-col justify-between items-center text-center relative transition-all duration-300 order-1 sm:order-3 ${isLevelUnlocked
+                              ? 'glass-panel bg-cyan-500/10 border-cyan-400/30 shadow-[0_0_15px_rgba(0,240,255,0.15)]'
                               : 'glass-panel opacity-70'
                               }`}
                           >

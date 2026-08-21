@@ -2,14 +2,16 @@
 
 import React, { useState, useCallback, useEffect } from 'react';
 import dynamic from 'next/dynamic';
-import Splash from '@/app/Splash';
+// import Splash from '@/app/Splash';
 
 const LandingPage = dynamic(() => import('@/components/landing/LandingPage'), { ssr: false });
 
 type ViewState = 'splash' | 'transitioning' | 'landing';
 
 export default function HomePage() {
-  const [viewState, setViewState] = useState<ViewState>('splash');
+  // Splash screen commented out - default to 'landing' so LandingPage opens directly
+  // const [viewState, setViewState] = useState<ViewState>('splash');
+  const [viewState, setViewState] = useState<ViewState>('landing');
   const shouldRenderLanding = viewState !== 'splash';
 
   // Control Lenis scrolling during splash overlay
@@ -61,14 +63,14 @@ export default function HomePage() {
       )}
 
       {/* Splash overlay active strictly during splash and transitioning states */}
-      {viewState !== 'landing' && (
+      {/* {viewState !== 'landing' && (
         <div className="fixed inset-0 z-50 overflow-hidden pointer-events-auto">
           <Splash
             onStartTransition={handleStartTransition}
             onComplete={handleTransitionComplete}
           />
         </div>
-      )}
+      )} */}
     </main>
   );
 }

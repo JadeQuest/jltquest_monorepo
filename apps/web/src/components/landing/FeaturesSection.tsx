@@ -343,6 +343,15 @@ export const FeaturesSection: React.FC = () => {
         ease: 'none',
         force3D: true,
       });
+
+      scrollTriggerInstanceRef.current = pinTimeline.scrollTrigger || null;
+
+      // Translate the entire track horizontally on scroll
+      pinTimeline.to(track, {
+        x: getScrollAmount,
+        ease: 'none',
+        force3D: true,
+      });
     }, sectionRef);
 
     return () => ctx.revert();
@@ -354,7 +363,7 @@ export const FeaturesSection: React.FC = () => {
     <section
       id="features"
       ref={sectionRef}
-      className="relative w-full min-h-screen bg-transparent overflow-hidden select-none flex flex-col justify-between py-12 sm:py-16"
+      className="relative w-full min-h-screen bg-transparent overflow-hidden select-none flex flex-col justify-between py-10 sm:py-16"
       aria-label="Features Showcase - Built for Quest Champions"
     >
       {/* Top Animated Glowing Border */}
@@ -370,15 +379,15 @@ export const FeaturesSection: React.FC = () => {
       <div className="absolute bottom-10 right-[-10%] w-[600px] h-[600px] rounded-full bg-radial from-[#7B2CBF]/20 via-transparent to-transparent blur-[130px] pointer-events-none" />
 
       {/* ── 1. SECTION HEADER ── */}
-      <div className="max-w-7xl mx-auto w-full px-6 flex flex-col items-center gap-3 text-center relative z-20 shrink-0">
-        <div className="features-badge glass-pill px-4 py-1.5 inline-flex items-center gap-2">
-          <img src="/jlt.svg" alt="JLT" width={18} height={18} loading="lazy" decoding="async" className="w-4 h-4 object-contain" />
-          <span className="font-gilroyMedium text-xs text-white/90 tracking-wider uppercase">
+      <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 flex flex-col items-center gap-2.5 sm:gap-3 text-center relative z-20 shrink-0">
+        <div className="features-badge glass-pill px-3.5 sm:px-4 py-1 sm:py-1.5 inline-flex items-center gap-2">
+          <img src="/jlt.svg" alt="JLT" width={18} height={18} loading="lazy" decoding="async" className="w-3.5 h-3.5 sm:w-4 sm:h-4 object-contain" />
+          <span className="font-gilroyMedium text-[11px] sm:text-xs text-white/90 tracking-wider uppercase">
             Featured Mechanics
           </span>
         </div>
 
-        <h2 className="features-title font-gilroyBold text-3xl sm:text-4xl md:text-5xl text-white tracking-tight leading-tight">
+        <h2 className="features-title font-gilroyBold text-2xl sm:text-4xl md:text-5xl text-white tracking-tight leading-tight">
           <SplitText scrollTrigger={false}>Built for Quest Champions</SplitText>
         </h2>
 
@@ -390,11 +399,11 @@ export const FeaturesSection: React.FC = () => {
       {/* ── 2. PINNED HORIZONTAL CARDS TRACK (SCROLL & MOVE) ── */}
       <div
         ref={containerRef}
-        className="relative w-full my-auto flex items-center overflow-hidden z-10 py-4"
+        className="relative w-full my-auto flex items-center overflow-hidden z-10 py-3 sm:py-4"
       >
         <div
           ref={trackRef}
-          className="flex items-center gap-8 sm:gap-12 pl-[8vw] sm:pl-[14vw] md:pl-[20vw] pr-[50vw] will-change-transform"
+          className="flex items-center gap-4 sm:gap-8 md:gap-12 pl-[5vw] sm:pl-[12vw] md:pl-[20vw] pr-[20vw] sm:pr-[50vw] will-change-transform"
         >
           {FEATURE_PROJECTS.map((project, idx) => {
             const isCenter = idx === activeIndex;
@@ -408,7 +417,7 @@ export const FeaturesSection: React.FC = () => {
                 onClick={() => scrollToCard(idx)}
                 data-cursor="card"
                 data-cursor-text={isCenter ? 'OPEN' : 'SCROLL'}
-                className={`w-[85vw] sm:w-[620px] md:w-[700px] lg:w-[760px] shrink-0 rounded-[28px] sm:rounded-[36px] p-6 sm:p-8 bg-gradient-to-b ${project.gradientBg} border transition-all duration-300 cursor-pointer will-change-transform ${
+                className={`w-[88vw] sm:w-[580px] md:w-[680px] lg:w-[760px] shrink-0 rounded-[22px] sm:rounded-[32px] md:rounded-[36px] p-4 sm:p-6 md:p-8 bg-gradient-to-b ${project.gradientBg} border transition-all duration-300 cursor-pointer will-change-transform ${
                   isCenter
                     ? 'border-white/30 shadow-[0_30px_80px_rgba(0,0,0,0.85)] ring-1 ring-white/20'
                     : 'border-white/10 shadow-[0_15px_35px_rgba(0,0,0,0.5)]'
@@ -418,7 +427,7 @@ export const FeaturesSection: React.FC = () => {
                 }}
               >
                 {/* ── CARD VISUAL ARTWORK FRAME (16:10 Cinematic Frame) ── */}
-                <div className="relative w-full h-[240px] sm:h-[280px] md:h-[320px] rounded-[20px] sm:rounded-[26px] overflow-hidden border border-white/15 bg-black/60 shadow-inner group flex flex-col justify-between p-4 sm:p-6">
+                <div className="relative w-full h-[200px] sm:h-[260px] md:h-[320px] rounded-[16px] sm:rounded-[22px] md:rounded-[26px] overflow-hidden border border-white/15 bg-black/60 shadow-inner group flex flex-col justify-between p-3.5 sm:p-6">
                   
                   {/* Full-bleed Generated Cinematic Artwork */}
                   <img
@@ -444,18 +453,18 @@ export const FeaturesSection: React.FC = () => {
                   />
 
                   {/* Top Row: Tag Badge & Extra Status Chip */}
-                  <div className="relative z-10 flex items-center justify-between gap-3">
-                    <div className="glass-pill px-3 py-1.5 inline-flex items-center gap-2 border border-white/20 bg-black/60 backdrop-blur-md">
-                      <span className="w-2 h-2 rounded-full" style={{ background: project.accentColor }} />
-                      <span className="font-gilroyBold text-[10px] sm:text-[11px] text-white tracking-widest uppercase">
+                  <div className="relative z-10 flex items-center justify-between gap-2 sm:gap-3">
+                    <div className="glass-pill px-2.5 sm:px-3 py-1 sm:py-1.5 inline-flex items-center gap-1.5 sm:gap-2 border border-white/20 bg-black/60 backdrop-blur-md">
+                      <span className="w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full" style={{ background: project.accentColor }} />
+                      <span className="font-gilroyBold text-[9px] sm:text-[11px] text-white tracking-widest uppercase">
                         {project.tag}
                       </span>
                     </div>
 
                     {project.extraChip && (
-                      <div className="glass-pill px-3 py-1.5 inline-flex items-center gap-1.5 border border-white/20 bg-black/60 backdrop-blur-md shadow-sm">
-                        <Sparkles className="w-3.5 h-3.5" style={{ color: project.accentColor }} />
-                        <span className="font-gilroyBold text-[11px] sm:text-xs text-white">
+                      <div className="glass-pill px-2.5 sm:px-3 py-1 sm:py-1.5 inline-flex items-center gap-1 sm:gap-1.5 border border-white/20 bg-black/60 backdrop-blur-md shadow-sm">
+                        <Sparkles className="w-3 sm:w-3.5 h-3 sm:h-3.5" style={{ color: project.accentColor }} />
+                        <span className="font-gilroyBold text-[10px] sm:text-xs text-white">
                           {project.extraChip}
                         </span>
                       </div>
@@ -464,26 +473,26 @@ export const FeaturesSection: React.FC = () => {
 
                   {/* Central Micro-Emblem */}
                   <div className="relative z-10 my-auto flex items-center justify-center pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div className="glass-pill px-4 py-2 bg-black/70 border border-white/30 backdrop-blur-md flex items-center gap-2 shadow-2xl scale-95 group-hover:scale-100 transition-transform duration-300">
-                      <img src={project.icon} alt="" className="w-5 h-5 object-contain" />
+                    <div className="glass-pill px-3.5 sm:px-4 py-1.5 sm:py-2 bg-black/70 border border-white/30 backdrop-blur-md flex items-center gap-2 shadow-2xl scale-95 group-hover:scale-100 transition-transform duration-300">
+                      <img src={project.icon} alt="" className="w-4 sm:w-5 h-4 sm:h-5 object-contain" />
                       <span className="font-gilroyBold text-xs text-white uppercase tracking-wider">{project.title}</span>
                     </div>
                   </div>
 
-                  {/* Bottom Floating Motto / Headline Inside Artwork (TRIONN Philosophy) */}
-                  <div className="relative z-10 flex items-end justify-between">
+                  {/* Bottom Floating Motto / Headline Inside Artwork */}
+                  <div className="relative z-10 flex items-end justify-between gap-2">
                     <div className="flex flex-col">
-                      <span className="font-gilroyBold text-xl sm:text-3xl md:text-4xl text-white tracking-tight leading-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.9)]">
+                      <span className="font-gilroyBold text-lg sm:text-2xl md:text-4xl text-white tracking-tight leading-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.9)]">
                         {project.bannerMotto}
                       </span>
                     </div>
 
                     {project.statsValue && (
-                      <div className="hidden sm:flex flex-col items-end px-3 py-1.5 rounded-xl bg-black/50 border border-white/10 backdrop-blur-md">
-                        <span className="font-gilroyBold text-base text-white" style={{ color: project.accentColor }}>
+                      <div className="hidden sm:flex flex-col items-end px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl bg-black/50 border border-white/10 backdrop-blur-md shrink-0">
+                        <span className="font-gilroyBold text-sm sm:text-base text-white" style={{ color: project.accentColor }}>
                           {project.statsValue}
                         </span>
-                        <span className="font-gilroyRegular text-[10px] text-gray-300 uppercase tracking-wider">
+                        <span className="font-gilroyRegular text-[9px] sm:text-[10px] text-gray-300 uppercase tracking-wider">
                           {project.statsLabel}
                         </span>
                       </div>
@@ -492,13 +501,13 @@ export const FeaturesSection: React.FC = () => {
                 </div>
 
                 {/* ── CARD TYPOGRAPHY & INTERACTIVE ACTION (Below Frame) ── */}
-                <div className="mt-4 sm:mt-5 flex flex-col sm:flex-row sm:items-end justify-between gap-3">
-                  <div className="flex flex-col gap-1 max-w-lg">
+                <div className="mt-3 sm:mt-5 flex flex-col sm:flex-row sm:items-end justify-between gap-2.5 sm:gap-3">
+                  <div className="flex flex-col gap-0.5 sm:gap-1 max-w-lg">
                     <div className="flex items-center gap-2">
-                      <span className="font-gilroyBold text-lg sm:text-xl text-white tracking-wide group-hover:text-[#FFA28D] transition-colors duration-200">
+                      <span className="font-gilroyBold text-base sm:text-xl text-white tracking-wide group-hover:text-[#FFA28D] transition-colors duration-200">
                         {project.title}
                       </span>
-                      <span className="text-[10px] sm:text-xs px-2 py-0.5 rounded-md bg-white/10 text-gray-300 font-gilroyMedium">
+                      <span className="text-[9px] sm:text-xs px-2 py-0.5 rounded-md bg-white/10 text-gray-300 font-gilroyMedium">
                         {project.category}
                       </span>
                     </div>
@@ -512,13 +521,13 @@ export const FeaturesSection: React.FC = () => {
                     href={project.href}
                     data-cursor="cta"
                     data-cursor-text="OPEN →"
-                    className="inline-flex items-center gap-2 font-gilroyBold text-xs sm:text-sm tracking-wider uppercase group/link self-start sm:self-end text-white hover:text-[#FFA28D] transition-colors py-1 shrink-0"
+                    className="inline-flex items-center gap-1.5 sm:gap-2 font-gilroyBold text-xs sm:text-sm tracking-wider uppercase group/link self-start sm:self-end text-white hover:text-[#FFA28D] transition-colors py-1 shrink-0"
                   >
                     <span className="relative">
                       {project.ctaText}
                       <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#FFA28D] group-hover/link:w-full transition-all duration-300" />
                     </span>
-                    <ArrowRight className="w-4 h-4 text-[#FFA28D] group-hover/link:translate-x-1.5 transition-transform duration-200" />
+                    <ArrowRight className="w-3.5 sm:w-4 h-3.5 sm:h-4 text-[#FFA28D] group-hover/link:translate-x-1.5 transition-transform duration-200" />
                   </Link>
                 </div>
 
@@ -534,9 +543,9 @@ export const FeaturesSection: React.FC = () => {
       </div>
 
       {/* ── 3. BOTTOM SCRUBBED STEP INDICATORS (CENTERED) ── */}
-      <div className="max-w-7xl mx-auto w-full px-6 flex items-center justify-center relative z-20 shrink-0 mt-2">
+      <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 flex items-center justify-center relative z-20 shrink-0 mt-2">
         {/* Step Indicators: 01, 02, 03, 04, 05, 06 */}
-        <div className="flex items-center justify-center gap-2 sm:gap-3 flex-wrap">
+        <div className="flex items-center justify-center gap-1.5 sm:gap-3 flex-wrap">
           {FEATURE_PROJECTS.map((proj, idx) => {
             const isCurrent = idx === activeIndex;
             return (
@@ -548,11 +557,11 @@ export const FeaturesSection: React.FC = () => {
                 aria-label={`Scroll to feature ${idx + 1}: ${proj.title}`}
                 className={`group/dot relative flex items-center justify-center transition-all duration-300 cursor-pointer ${
                   isCurrent
-                    ? 'px-4 py-1.5 rounded-full bg-white/15 border border-white/30 text-white shadow-[0_0_15px_rgba(255,162,141,0.4)] scale-105'
-                    : 'w-8 h-8 rounded-full bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10'
+                    ? 'px-3 sm:px-4 py-1 sm:py-1.5 rounded-full bg-white/15 border border-white/30 text-white shadow-[0_0_15px_rgba(255,162,141,0.4)] scale-105'
+                    : 'w-7 sm:w-8 h-7 sm:h-8 rounded-full bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10'
                 }`}
               >
-                <span className="font-gilroyBold text-xs">
+                <span className="font-gilroyBold text-[11px] sm:text-xs">
                   {isCurrent ? `0${idx + 1} · ${proj.title.split(' ')[0]}` : `0${idx + 1}`}
                 </span>
               </button>

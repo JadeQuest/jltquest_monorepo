@@ -113,19 +113,19 @@ export const LandingNav: React.FC = () => {
   }, []);
 
   return (
-    <header ref={navRef} className="fixed top-0 left-0 right-0 z-50 py-5 bg-transparent select-none">
-      <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
+    <header ref={navRef} className="fixed top-0 left-0 right-0 z-50 py-3.5 sm:py-5 bg-transparent select-none">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between">
         
         {/* Brand Logo with Scroll Hide Animation */}
         <div ref={logoScrollWrapperRef} className="flex items-center origin-top-left will-change-transform">
-          <Link href="/" className="nav-brand flex items-center gap-3 group">
+          <Link href="/" className="nav-brand flex items-center gap-2.5 sm:gap-3 group">
             <div ref={logoRef} className="relative">
               <img
                 src="/jltcolor.svg"
                 alt="JLT Logo"
                 width={56}
                 height={56}
-                className="w-12 h-12 sm:w-14 sm:h-14 object-contain drop-shadow-[0_0_15px_rgba(255,162,141,0.6)] group-hover:drop-shadow-[0_0_25px_rgba(255,162,141,0.9)] group-hover:scale-105 transition-all duration-300"
+                className="w-10 h-10 sm:w-14 sm:h-14 object-contain drop-shadow-[0_0_15px_rgba(255,162,141,0.6)] group-hover:drop-shadow-[0_0_25px_rgba(255,162,141,0.9)] group-hover:scale-105 transition-all duration-300"
               />
             </div>
           </Link>
@@ -140,10 +140,10 @@ export const LandingNav: React.FC = () => {
               id="nav-enter-app-btn"
               data-cursor="cta"
               data-cursor-text="ENTER"
-              className="glass-btn gsap-magnetic-btn px-5 py-2.5 sm:px-6 sm:py-2.5 rounded-xl font-gilroyBold text-white text-sm sm:text-base tracking-wide shadow-[0_0_20px_rgba(54,12,159,0.4)] flex items-center gap-2 group hover:shadow-[0_0_30px_rgba(255,162,141,0.5)] hover:scale-[1.025] active:scale-[0.98] transition-all duration-200"
+              className="glass-btn gsap-magnetic-btn px-4 py-2 sm:px-6 sm:py-2.5 rounded-xl font-gilroyBold text-white text-xs sm:text-base tracking-wide shadow-[0_0_20px_rgba(54,12,159,0.4)] flex items-center gap-1.5 sm:gap-2 group hover:shadow-[0_0_30px_rgba(255,162,141,0.5)] hover:scale-[1.025] active:scale-[0.98] transition-all duration-200"
             >
               <span>Enter App</span>
-              <Sparkles className="w-4 h-4 text-[#FFA28D] group-hover:rotate-12 transition-transform duration-300 magnetic-icon" />
+              <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#FFA28D] group-hover:rotate-12 transition-transform duration-300 magnetic-icon" />
             </Link>
           </div>
         </div>

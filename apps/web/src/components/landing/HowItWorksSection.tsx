@@ -45,7 +45,7 @@ const Step: React.FC<StepProps> = React.memo(
         data-cursor="reward"
         data-cursor-text={`STEP ${step}`}
         onMouseEnter={handleMouseEnter}
-        className={`hiw-step flex flex-col items-center gap-5 text-center group relative z-10 transition-all duration-500 cursor-pointer ${
+        className={`hiw-step flex flex-col items-center gap-3.5 sm:gap-5 text-center group relative z-10 transition-all duration-500 cursor-pointer ${
           isCurrent ? 'scale-105' : 'scale-100'
         }`}
       >
@@ -59,7 +59,7 @@ const Step: React.FC<StepProps> = React.memo(
           />
 
           <div
-            className={`w-24 h-24 rounded-full bg-[#0E061F] border-2 flex items-center justify-center relative z-10 transition-all duration-500 ${
+            className={`w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-[#0E061F] border-2 flex items-center justify-center relative z-10 transition-all duration-500 ${
               isActivated
                 ? 'border-[#FFA28D] shadow-[0_0_35px_rgba(255,162,141,0.65),inset_0_0_15px_rgba(255,162,141,0.3)] scale-105'
                 : 'border-white/15 shadow-[0_0_20px_rgba(54,12,159,0.35)] group-hover:border-white/30'
@@ -72,7 +72,7 @@ const Step: React.FC<StepProps> = React.memo(
               height={48}
               loading="lazy"
               decoding="async"
-              className={`w-12 h-12 object-contain transition-transform duration-300 ${
+              className={`w-10 h-10 sm:w-12 sm:h-12 object-contain transition-transform duration-300 ${
                 isCurrent ? 'scale-115 rotate-3' : 'group-hover:scale-110'
               }`}
             />
@@ -80,26 +80,26 @@ const Step: React.FC<StepProps> = React.memo(
 
           {/* Step number badge */}
           <div
-            className={`absolute -top-2 -right-2 w-8 h-8 rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(255,162,141,0.6)] z-20 transition-all duration-500 ${
+            className={`absolute -top-1.5 -right-1.5 sm:-top-2 sm:-right-2 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(255,162,141,0.6)] z-20 transition-all duration-500 ${
               isActivated
                 ? 'bg-gradient-to-br from-[#FFA28D] to-[#FF007F] scale-110 text-white font-gilroyBold'
                 : 'bg-gradient-to-br from-[#1E085A] to-[#360C9F] border border-white/20 text-gray-300 font-gilroyMedium'
             }`}
           >
-            <span className="text-xs">{step}</span>
+            <span className="text-[11px] sm:text-xs">{step}</span>
           </div>
         </div>
 
         {/* Text */}
-        <div className="flex flex-col gap-2 max-w-[220px]">
+        <div className="flex flex-col gap-1.5 sm:gap-2 max-w-[200px] sm:max-w-[220px]">
           <h4
-            className={`font-gilroyBold text-lg tracking-wide transition-colors duration-200 ${
+            className={`font-gilroyBold text-base sm:text-lg tracking-wide transition-colors duration-200 ${
               isActivated ? 'text-[#FFA28D]' : 'text-white group-hover:text-[#FFA28D]'
             }`}
           >
             {title}
           </h4>
-          <p className="font-gilroyRegular text-gray-400 text-sm leading-relaxed">{description}</p>
+          <p className="font-gilroyRegular text-gray-400 text-xs sm:text-sm leading-relaxed">{description}</p>
         </div>
       </div>
     );
@@ -252,7 +252,7 @@ export const HowItWorksSection: React.FC = () => {
   }, []);
 
   return (
-    <section id="how-it-works" ref={sectionRef} className="relative w-full py-24 sm:py-32 px-6 overflow-hidden select-none bg-transparent">
+    <section id="how-it-works" ref={sectionRef} className="relative w-full py-16 sm:py-24 md:py-32 px-4 sm:px-6 overflow-hidden select-none bg-transparent">
       {/* Section Separator Line */}
       <div className="hiw-divider-line absolute top-0 left-1/2 -translate-x-1/2 w-[75%] max-w-5xl h-[1.5px] bg-gradient-to-r from-transparent via-[#FFA28D] via-[#00F0FF] to-transparent pointer-events-none" />
 
@@ -260,30 +260,30 @@ export const HowItWorksSection: React.FC = () => {
       <div className="absolute top-1/3 left-1/4 -translate-x-1/2 w-[550px] h-[350px] rounded-full bg-radial from-[#360C9F]/20 via-transparent to-transparent blur-[130px] pointer-events-none" />
       <div className="absolute bottom-0 right-0 w-[600px] h-[500px] rounded-full bg-radial from-[#FFA28D]/15 via-transparent to-transparent blur-[120px] pointer-events-none" />
 
-      <div className="max-w-7xl mx-auto flex flex-col gap-16 sm:gap-20 relative z-10">
+      <div className="max-w-7xl mx-auto flex flex-col gap-12 sm:gap-16 md:gap-20 relative z-10">
         
         {/* Section Header */}
-        <div className="flex flex-col items-center gap-4 text-center">
-          <div className="hiw-badge glass-pill px-5 py-2 inline-flex items-center gap-2">
-            <img src="/icon/coin.webp" alt="JLT Coin" width={20} height={20} loading="lazy" decoding="async" className="w-5 h-5 object-contain animate-sparkle" />
-            <span className="font-gilroyMedium text-sm text-white/90 tracking-wider uppercase">
+        <div className="flex flex-col items-center gap-3 sm:gap-4 text-center">
+          <div className="hiw-badge glass-pill px-4 sm:px-5 py-1.5 sm:py-2 inline-flex items-center gap-2">
+            <img src="/icon/coin.webp" alt="JLT Coin" width={20} height={20} loading="lazy" decoding="async" className="w-4 h-4 sm:w-5 sm:h-5 object-contain animate-sparkle" />
+            <span className="font-gilroyMedium text-xs sm:text-sm text-white/90 tracking-wider uppercase">
               Simple Steps
             </span>
           </div>
 
-          <h2 className="hiw-title font-gilroyBold text-4xl sm:text-5xl text-white tracking-tight leading-tight">
+          <h2 className="hiw-title font-gilroyBold text-3xl sm:text-4xl md:text-5xl text-white tracking-tight leading-tight">
             <SplitText scrollTrigger={false}>How It Works</SplitText>
           </h2>
 
-          <div className="w-20 h-[2px] bg-gradient-to-r from-transparent via-[#00F0FF] to-transparent rounded-full" />
+          <div className="w-16 sm:w-20 h-[2px] bg-gradient-to-r from-transparent via-[#00F0FF] to-transparent rounded-full" />
 
-          <p className="hiw-desc font-gilroyRegular text-gray-400 text-base sm:text-lg max-w-[480px] leading-relaxed">
+          <p className="hiw-desc font-gilroyRegular text-gray-400 text-sm sm:text-base md:text-lg max-w-[480px] leading-relaxed px-2">
             Get started in minutes. JLTQuest is designed to be fun and intuitive from day one.
           </p>
         </div>
 
         {/* Steps with animated connector track */}
-        <div ref={containerRef} className="hiw-steps-container relative grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-6">
+        <div ref={containerRef} className="hiw-steps-container relative grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10 sm:gap-8 md:gap-6">
           
           {/* ── DESKTOP CONNECTOR TRACK (Spanning from Node 1 Center to Node 4 Center) ── */}
           <div className="hidden md:block absolute top-[48px] -translate-y-1/2 left-[12.5%] right-[12.5%] h-[3px] z-0 pointer-events-none">
@@ -305,7 +305,7 @@ export const HowItWorksSection: React.FC = () => {
           </div>
 
           {/* ── MOBILE CONNECTOR TRACK (Vertical) ── */}
-          <div className="md:hidden absolute top-[48px] bottom-[48px] left-1/2 -translate-x-1/2 w-[3px] z-0 pointer-events-none">
+          <div className="sm:hidden absolute top-[40px] bottom-[40px] left-1/2 -translate-x-1/2 w-[3px] z-0 pointer-events-none">
             <div className="absolute inset-0 bg-white/10 rounded-full" />
             <div className="hiw-connector-line-vertical absolute inset-0 bg-gradient-to-b from-[#FFA28D] via-[#7B2CBF] to-[#00F0FF] shadow-[0_0_15px_#FFA28D] origin-top rounded-full will-change-transform" />
           </div>

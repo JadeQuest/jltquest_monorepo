@@ -166,7 +166,7 @@ export const CTASection: React.FC = () => {
   }, []);
 
   return (
-    <section id="rewards" ref={sectionRef} className="relative w-full py-24 px-6 overflow-hidden bg-transparent select-none">
+    <section id="rewards" ref={sectionRef} className="relative w-full py-16 sm:py-24 px-4 sm:px-6 overflow-hidden bg-transparent select-none">
       {/* Section Separator Line */}
       <div className="cta-divider-line absolute top-0 left-1/2 -translate-x-1/2 w-[75%] max-w-5xl h-[1.5px] bg-gradient-to-r from-transparent via-[#FF007F] via-[#00F0FF] to-transparent pointer-events-none" />
 
@@ -176,18 +176,18 @@ export const CTASection: React.FC = () => {
       </div>
       <div className="absolute bottom-0 left-0 w-[500px] h-[400px] rounded-full bg-radial from-[#FFA28D]/10 via-transparent to-transparent blur-[100px] pointer-events-none" />
 
-      <div className="max-w-4xl mx-auto flex flex-col items-center gap-10 text-center relative z-10">
+      <div className="max-w-4xl mx-auto flex flex-col items-center gap-8 sm:gap-10 text-center relative z-10">
         {/* 13. Mascot decorative with breathing glow & orbiting XP particles */}
-        <div ref={mascotRef} className="cta-mascot-container relative w-44 h-44 flex items-center justify-center">
+        <div ref={mascotRef} className="cta-mascot-container relative w-32 h-32 sm:w-40 sm:h-40 md:w-44 md:h-44 flex items-center justify-center">
           <div
             ref={glowRingRef}
             className="absolute inset-0 rounded-full bg-radial from-[#360C9F]/65 via-[#7B2CBF]/35 to-transparent blur-2xl scale-125"
           />
 
           {/* Orbiting XP sparkles */}
-          <div className="absolute -top-3 left-4 w-3 h-3 rounded-full bg-amber-300 shadow-[0_0_10px_#FCD34D] animate-sparkle" />
-          <div className="absolute bottom-2 right-4 w-2.5 h-2.5 rounded-full bg-[#00F0FF] shadow-[0_0_10px_#00F0FF] animate-sparkle" style={{ animationDelay: '1.2s' }} />
-          <div className="absolute top-10 -right-2 w-2 h-2 rounded-full bg-[#FFA28D] shadow-[0_0_8px_#FFA28D] animate-sparkle" style={{ animationDelay: '0.6s' }} />
+          <div className="absolute -top-2 left-3 w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-amber-300 shadow-[0_0_10px_#FCD34D] animate-sparkle" />
+          <div className="absolute bottom-1.5 right-3 w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-[#00F0FF] shadow-[0_0_10px_#00F0FF] animate-sparkle" style={{ animationDelay: '1.2s' }} />
+          <div className="absolute top-8 -right-1.5 w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-[#FFA28D] shadow-[0_0_8px_#FFA28D] animate-sparkle" style={{ animationDelay: '0.6s' }} />
 
           <img
             ref={mascotImgRef}
@@ -197,37 +197,37 @@ export const CTASection: React.FC = () => {
             height={160}
             loading="lazy"
             decoding="async"
-            className="relative w-40 h-40 object-contain drop-shadow-[0_15px_35px_rgba(0,0,0,0.6)]"
+            className="relative w-28 h-28 sm:w-36 sm:h-36 md:w-40 md:h-40 object-contain drop-shadow-[0_15px_35px_rgba(0,0,0,0.6)]"
           />
         </div>
 
         {/* Heading with SplitText */}
-        <div className="cta-heading-block flex flex-col gap-3">
-          <h2 className="font-gilroyBold text-4xl sm:text-6xl text-white tracking-tight leading-tight">
+        <div className="cta-heading-block flex flex-col gap-2 sm:gap-3">
+          <h2 className="font-gilroyBold text-3xl sm:text-5xl md:text-6xl text-white tracking-tight leading-tight">
             <SplitText scrollTrigger={false}>Ready to Start Your</SplitText>
           </h2>
-          <h2 className="font-gilroyBold text-4xl sm:text-6xl tracking-tight leading-tight">
+          <h2 className="font-gilroyBold text-3xl sm:text-5xl md:text-6xl tracking-tight leading-tight">
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FFA28D] via-[#CC66FF] to-[#360C9F] animate-text-shimmer">
               Quest Journey?
             </span>
           </h2>
         </div>
 
-        <p className="cta-desc font-gilroyRegular text-gray-400 text-lg sm:text-xl max-w-[520px] leading-relaxed">
+        <p className="cta-desc font-gilroyRegular text-gray-400 text-base sm:text-lg md:text-xl max-w-[520px] leading-relaxed px-2">
           Join thousands of players already earning JLT coins inside the JaxMart ecosystem. Your quests await.
         </p>
 
         {/* Coin counter decoration */}
-        <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
+        <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-4 md:gap-6">
           {[1, 2, 3].map((i) => (
             <div
               key={i}
               data-cursor="reward"
               data-cursor-text="BONUS"
-              className="cta-badge glass-pill px-5 py-2.5 flex items-center gap-2.5 shadow-lg"
+              className="cta-badge glass-pill px-3.5 sm:px-5 py-1.5 sm:py-2.5 flex items-center gap-2 sm:gap-2.5 shadow-lg"
             >
-              <img src="/icon/coin.webp" alt="JLT Coin" width={24} height={24} loading="lazy" decoding="async" className="w-6 h-6 object-contain animate-sparkle" style={{ animationDelay: `${i * 0.3}s` }} />
-              <span className="font-gilroyBold text-white text-sm">
+              <img src="/icon/coin.webp" alt="JLT Coin" width={24} height={24} loading="lazy" decoding="async" className="w-5 h-5 sm:w-6 sm:h-6 object-contain animate-sparkle" style={{ animationDelay: `${i * 0.3}s` }} />
+              <span className="font-gilroyBold text-white text-xs sm:text-sm">
                 {i === 1 ? '+250 Coins' : i === 2 ? 'Rare Drop' : '2× Bonus'}
               </span>
             </div>
@@ -241,11 +241,11 @@ export const CTASection: React.FC = () => {
           id="cta-enter-app-btn"
           data-cursor="cta"
           data-cursor-text="ENTER →"
-          className="glass-btn gsap-magnetic-btn px-10 py-4 sm:px-12 sm:py-5 rounded-2xl font-gilroyBold text-white text-lg sm:text-xl tracking-wide shadow-[0_0_40px_rgba(54,12,159,0.6)] flex items-center gap-3 group hover:shadow-[0_0_60px_rgba(255,162,141,0.4)] hover:scale-[1.025] active:scale-[0.98] transition-all duration-200"
+          className="w-full sm:w-auto glass-btn gsap-magnetic-btn px-8 py-3.5 sm:px-12 sm:py-5 rounded-xl sm:rounded-2xl font-gilroyBold text-white text-base sm:text-xl tracking-wide shadow-[0_0_40px_rgba(54,12,159,0.6)] flex items-center justify-center gap-3 group hover:shadow-[0_0_60px_rgba(255,162,141,0.4)] hover:scale-[1.025] active:scale-[0.98] transition-all duration-200"
         >
           <span>Enter JLTQuest</span>
           <svg
-            className="w-6 h-6 group-hover:translate-x-1.5 transition-transform duration-200 magnetic-icon"
+            className="w-5 h-5 sm:w-6 sm:h-6 group-hover:translate-x-1.5 transition-transform duration-200 magnetic-icon"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -255,7 +255,7 @@ export const CTASection: React.FC = () => {
           </svg>
         </Link>
 
-        <p className="cta-subtext font-gilroyRegular text-gray-600 text-sm">
+        <p className="cta-subtext font-gilroyRegular text-gray-500 text-xs sm:text-sm">
           Free to play · No downloads required · Powered by JaxMart
         </p>
       </div>

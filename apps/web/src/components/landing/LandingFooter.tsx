@@ -81,7 +81,7 @@ export const LandingFooter: React.FC = () => {
   }, []);
 
   return (
-    <footer ref={footerRef} className="relative w-full pt-16 pb-12 px-6 bg-[#06030D] overflow-hidden border-t border-white/5 select-none">
+    <footer ref={footerRef} className="relative w-full pt-12 sm:pt-16 pb-8 sm:pb-12 px-4 sm:px-6 bg-[#06030D] overflow-hidden border-t border-white/5 select-none">
       {/* Top Animated Glowing Border */}
       <div className="footer-divider-line absolute top-0 left-1/2 -translate-x-1/2 w-[90%] max-w-7xl h-[2px] bg-gradient-to-r from-transparent via-[#360C9F] via-[#FFA28D] via-[#00F0FF] to-transparent shadow-[0_0_20px_rgba(255,162,141,0.6)] pointer-events-none" />
 
@@ -89,17 +89,17 @@ export const LandingFooter: React.FC = () => {
       <div className="absolute top-1/4 left-1/4 -translate-x-1/2 w-[600px] h-[300px] rounded-full bg-radial from-[#360C9F]/20 via-transparent to-transparent blur-[120px] pointer-events-none" />
       <div className="absolute bottom-0 right-1/4 w-[500px] h-[250px] rounded-full bg-radial from-[#FFA28D]/15 via-transparent to-transparent blur-[100px] pointer-events-none" />
 
-      <div className="max-w-7xl mx-auto flex flex-col gap-12 relative z-10">
+      <div className="max-w-7xl mx-auto flex flex-col gap-10 sm:gap-12 relative z-10">
         
         {/* ── TOP SECTION: Multi-column Grid ── */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-10 lg:gap-8 pb-10 border-b border-white/10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-8 md:gap-10 lg:gap-8 pb-8 sm:pb-10 border-b border-white/10">
           
           {/* Column 1: Brand Info & Mission (Col 1-5) */}
-          <div className="footer-col md:col-span-5 flex flex-col items-start gap-4">
+          <div className="footer-col sm:col-span-2 md:col-span-5 flex flex-col items-start gap-3.5 sm:gap-4">
             <Link
               href="/"
               onMouseEnter={handleLogoHover}
-              className="flex items-center gap-3 group"
+              className="flex items-center gap-2.5 sm:gap-3 group"
             >
               <div ref={logoWrapperRef} className="relative">
                 <img
@@ -107,25 +107,25 @@ export const LandingFooter: React.FC = () => {
                   alt="JLT Logo"
                   width={56}
                   height={56}
-                  className="w-14 h-14 object-contain drop-shadow-[0_0_20px_rgba(255,162,141,0.7)] group-hover:scale-110 group-hover:rotate-6 group-hover:drop-shadow-[0_0_35px_rgba(255,162,141,0.95)] transition-all duration-300"
+                  className="w-10 h-10 sm:w-14 sm:h-14 object-contain drop-shadow-[0_0_20px_rgba(255,162,141,0.7)] group-hover:scale-110 group-hover:rotate-6 group-hover:drop-shadow-[0_0_35px_rgba(255,162,141,0.95)] transition-all duration-300"
                 />
               </div>
               <div className="flex flex-col">
-                <span className="font-gilroyBold text-2xl text-white tracking-wide group-hover:text-[#FFA28D] transition-colors">
+                <span className="font-gilroyBold text-xl sm:text-2xl text-white tracking-wide group-hover:text-[#FFA28D] transition-colors">
                   JLTQuest
                 </span>
-                <span className="font-gilroyRegular text-xs text-transparent bg-clip-text bg-gradient-to-r from-[#FFA28D] to-purple-300">
+                <span className="font-gilroyRegular text-[11px] sm:text-xs text-transparent bg-clip-text bg-gradient-to-r from-[#FFA28D] to-purple-300">
                   Play Daily · Earn Real Perks
                 </span>
               </div>
             </Link>
 
-            <p className="font-gilroyRegular text-gray-300 text-sm leading-relaxed max-w-sm">
+            <p className="font-gilroyRegular text-gray-300 text-xs sm:text-sm leading-relaxed max-w-sm">
               The premier Web3 gaming and rewards ecosystem powered by JaxMart. Complete daily quests, spin for rare passes, and build your multiplier streak with friends.
             </p>
 
             {/* Official Partner Badge */}
-            <div className="glass-pill px-3.5 py-1.5 inline-flex items-center gap-2 text-xs border border-purple-500/30 bg-purple-950/40 shadow-inner">
+            <div className="glass-pill px-3 sm:px-3.5 py-1 sm:py-1.5 inline-flex items-center gap-2 text-[11px] sm:text-xs border border-purple-500/30 bg-purple-950/40 shadow-inner">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
@@ -136,12 +136,12 @@ export const LandingFooter: React.FC = () => {
           </div>
 
           {/* Column 2: Game Features (Col 6-8) */}
-          <div className="footer-col md:col-span-3 flex flex-col gap-3">
-            <span className="font-gilroyBold text-sm text-white uppercase tracking-wider text-purple-200 flex items-center gap-2">
-              <Zap className="w-4 h-4 text-[#FFA28D]" />
+          <div className="footer-col sm:col-span-1 md:col-span-3 flex flex-col gap-3">
+            <span className="font-gilroyBold text-xs sm:text-sm text-white uppercase tracking-wider text-purple-200 flex items-center gap-2">
+              <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#FFA28D]" />
               <span>Features</span>
             </span>
-            <ul className="flex flex-col gap-2.5 text-sm font-gilroyRegular">
+            <ul className="flex flex-col gap-2 sm:gap-2.5 text-xs sm:text-sm font-gilroyRegular">
               {[
                 { label: 'Daily Quests', href: '/dashboard' },
                 { label: 'Spin to Win Wheel', href: '/dashboard' },
@@ -167,9 +167,9 @@ export const LandingFooter: React.FC = () => {
           </div>
 
           {/* Column 3: Ecosystem & Legal (Col 9-12) */}
-          <div className="footer-col md:col-span-4 flex flex-col gap-3">
-            <span className="font-gilroyBold text-sm text-white uppercase tracking-wider text-purple-200 flex items-center gap-2">
-              <Trophy className="w-4 h-4 text-[#FFA28D]" />
+          <div className="footer-col sm:col-span-1 md:col-span-4 flex flex-col gap-3">
+            <span className="font-gilroyBold text-xs sm:text-sm text-white uppercase tracking-wider text-purple-200 flex items-center gap-2">
+              <Trophy className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#FFA28D]" />
               <span>Ecosystem</span>
             </span>
             <div className="flex flex-col gap-3">
@@ -183,7 +183,7 @@ export const LandingFooter: React.FC = () => {
                   href="/dashboard"
                   data-cursor="cta"
                   data-cursor-text="LAUNCH"
-                  className="glass-btn px-4 py-2 rounded-xl text-xs font-gilroyBold text-white flex items-center gap-2 shadow-[0_0_15px_rgba(54,12,159,0.4)] hover:shadow-[0_0_25px_rgba(255,162,141,0.5)] hover:scale-[1.02] transition-all"
+                  className="glass-btn px-3.5 sm:px-4 py-2 rounded-xl text-xs font-gilroyBold text-white flex items-center gap-2 shadow-[0_0_15px_rgba(54,12,159,0.4)] hover:shadow-[0_0_25px_rgba(255,162,141,0.5)] hover:scale-[1.02] transition-all"
                 >
                   <Play className="w-3.5 h-3.5 fill-white" />
                   <span>Launch App</span>
@@ -206,7 +206,7 @@ export const LandingFooter: React.FC = () => {
         </div>
 
         {/* ── BOTTOM SECTION: Copyright & Policy Links ── */}
-        <div className="footer-col flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-gilroyRegular text-gray-400">
+        <div className="footer-col flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 text-[11px] sm:text-xs font-gilroyRegular text-gray-400">
           
           {/* Left: Copyright */}
           <div className="flex items-center gap-2 text-center sm:text-left">
@@ -214,7 +214,7 @@ export const LandingFooter: React.FC = () => {
           </div>
 
           {/* Right: Interactive Privacy & Cookie Modal Triggers */}
-          <div className="flex flex-wrap items-center justify-center gap-5 sm:gap-6">
+          <div className="flex flex-wrap items-center justify-center gap-3.5 sm:gap-6">
             <button
               onClick={() => window.dispatchEvent(new CustomEvent('open-cookie-modal'))}
               type="button"

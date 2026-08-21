@@ -540,7 +540,7 @@ export const CosmicOriginsSection: React.FC = () => {
     <section
       ref={sectionRef}
       id="season-cosmic-origins"
-      className="relative w-full py-24 sm:py-32 bg-transparent text-white overflow-hidden select-none"
+      className="relative w-full py-16 sm:py-24 md:py-32 bg-transparent text-white overflow-hidden select-none"
     >
       {/* ── Top Animated Section Divider Line (Matching other sections) ── */}
       <div className="cosmic-divider-line absolute top-0 left-1/2 -translate-x-1/2 w-[85%] max-w-6xl h-[1.5px] bg-gradient-to-r from-transparent via-[#360C9F] via-[#FFA28D] via-[#00F0FF] to-transparent pointer-events-none z-20" />
@@ -581,42 +581,42 @@ export const CosmicOriginsSection: React.FC = () => {
         <div className="absolute inset-0 bg-gradient-to-b from-[#080411] via-transparent to-[#080411]" />
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-16 sm:gap-20">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-12 sm:gap-16 lg:gap-20">
         {/* ══════════════════════════════════════════════════════════
             1. SECTION HEADER
             ══════════════════════════════════════════════════════════ */}
-        <div className="flex flex-col items-center text-center gap-4 max-w-3xl mx-auto">
+        <div className="flex flex-col items-center text-center gap-3.5 sm:gap-4 max-w-3xl mx-auto">
           {/* Eyebrow Pill */}
-          <div className="cosmic-badge inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-pill border border-[#FFA28D]/30 shadow-[0_0_20px_rgba(255,162,141,0.25)]">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#00F0FF] animate-ping" />
-            <span className="text-xs sm:text-sm font-gilroyBold uppercase tracking-widest text-[#FFA28D]">
+          <div className="cosmic-badge inline-flex items-center gap-2 px-3.5 sm:px-4 py-1 sm:py-1.5 rounded-full glass-pill border border-[#FFA28D]/30 shadow-[0_0_20px_rgba(255,162,141,0.25)]">
+            <span className="w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full bg-[#00F0FF] animate-ping" />
+            <span className="text-[10px] sm:text-xs md:text-sm font-gilroyBold uppercase tracking-widest text-[#FFA28D]">
               SEASON 01 • ACTIVE CAMPAIGN
             </span>
             <span className="text-yellow-300 text-xs">✦</span>
           </div>
 
           {/* Title */}
-          <h2 className="cosmic-title text-4xl sm:text-5xl lg:text-6xl font-gilroyBold tracking-tight text-white leading-tight">
-            <SplitText scrollTrigger={false} className="inline-block mr-3">Season 01:</SplitText>
+          <h2 className="cosmic-title text-3xl sm:text-5xl lg:text-6xl font-gilroyBold tracking-tight text-white leading-tight">
+            <SplitText scrollTrigger={false} className="inline-block mr-2 sm:mr-3">Season 01:</SplitText>
             <span className="bg-gradient-to-r from-[#FFA28D] via-[#E280FF] to-[#00F0FF] bg-clip-text text-transparent drop-shadow-[0_0_35px_rgba(226,128,255,0.4)]">
               Cosmic Origins
             </span>
           </h2>
 
           {/* Subtitle & Date Badge */}
-          <div className="flex items-center gap-3 text-xs sm:text-sm font-gilroyMedium text-purple-200/90">
-            <div className="flex items-center gap-1.5 bg-black/40 px-3 py-1 rounded-lg border border-purple-500/20">
+          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 text-xs sm:text-sm font-gilroyMedium text-purple-200/90">
+            <div className="flex items-center gap-1.5 bg-black/40 px-2.5 sm:px-3 py-1 rounded-lg border border-purple-500/20">
               <Clock className="w-3.5 h-3.5 text-[#00F0FF]" />
               <span>Aug 1 – Sep 30, 2026</span>
             </div>
-            <span className="text-purple-400">•</span>
-            <span className="text-amber-300 font-gilroyBold">50 Unlockable Tiers</span>
-            <span className="text-purple-400">•</span>
-            <span className="text-emerald-300 font-gilroyBold">Zero Gas Required</span>
+            <span className="text-purple-400 hidden sm:inline">•</span>
+            <span className="text-amber-300 font-gilroyBold bg-amber-500/10 px-2.5 py-0.5 rounded-lg border border-amber-500/20 sm:border-transparent sm:bg-transparent sm:p-0">50 Unlockable Tiers</span>
+            <span className="text-purple-400 hidden sm:inline">•</span>
+            <span className="text-emerald-300 font-gilroyBold bg-emerald-500/10 px-2.5 py-0.5 rounded-lg border border-emerald-500/20 sm:border-transparent sm:bg-transparent sm:p-0">Zero Gas Required</span>
           </div>
 
           {/* Description */}
-          <p className="cosmic-desc text-purple-200 font-gilroyRegular text-base sm:text-lg leading-relaxed max-w-2xl opacity-90">
+          <p className="cosmic-desc text-purple-200 font-gilroyRegular text-sm sm:text-base md:text-lg leading-relaxed max-w-2xl opacity-90 px-2">
             Embark on a galactic odyssey. Complete quests, spin the high-roller fortune wheel, and level up your Rare Pass across 50 tiers to unlock exclusive 3D holographic avatars, collectible NFT cards, and massive GP token payouts.
           </p>
         </div>
@@ -626,58 +626,58 @@ export const CosmicOriginsSection: React.FC = () => {
             ══════════════════════════════════════════════════════════ */}
         <div
           ref={arenaContainerRef}
-          className="cosmic-arena-panel daily-card-panel p-6 sm:p-10 lg:p-12 relative overflow-hidden shadow-[0_0_50px_rgba(54,12,159,0.35)] border border-purple-500/30 rounded-3xl"
+          className="cosmic-arena-panel daily-card-panel p-4 sm:p-8 lg:p-12 relative overflow-hidden shadow-[0_0_50px_rgba(54,12,159,0.35)] border border-purple-500/30 rounded-2xl sm:rounded-3xl"
         >
           {/* Inner Ambient Glow */}
           <div className="absolute -top-32 -right-32 w-96 h-96 bg-[#00F0FF]/15 rounded-full blur-3xl pointer-events-none" />
           <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-[#FFA28D]/15 rounded-full blur-3xl pointer-events-none" />
 
           {/* Top Bar: Live Track Switcher & Level Status */}
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-6 border-b border-white/10 relative z-20">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-5 sm:pb-6 border-b border-white/10 relative z-20">
             {/* Left: Season Badge */}
-            <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-2xl bg-purple-500/20 border border-purple-400/40 flex items-center justify-center shadow-[0_0_15px_rgba(123,44,191,0.4)]">
-                <Compass className="w-6 h-6 text-[#FFA28D] animate-spin-ccw" />
+            <div className="flex items-center gap-2.5 sm:gap-3">
+              <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-purple-500/20 border border-purple-400/40 flex items-center justify-center shadow-[0_0_15px_rgba(123,44,191,0.4)] shrink-0">
+                <Compass className="w-5 h-5 sm:w-6 sm:h-6 text-[#FFA28D] animate-spin-ccw" />
               </div>
               <div>
-                <h3 className="text-white font-gilroyBold text-lg sm:text-xl">Rare Pass Level Matrix</h3>
-                <p className="text-xs text-purple-300 font-gilroyMedium">Interactive Season 01 Progression Simulation</p>
+                <h3 className="text-white font-gilroyBold text-base sm:text-lg md:text-xl">Rare Pass Level Matrix</h3>
+                <p className="text-[11px] sm:text-xs text-purple-300 font-gilroyMedium">Interactive Season 01 Progression Simulation</p>
               </div>
             </div>
 
             {/* Right: Free vs Premium Track Toggles */}
-            <div className="flex items-center gap-2 bg-black/60 p-1.5 rounded-2xl border border-white/10 backdrop-blur-md self-stretch md:self-auto justify-center">
+            <div className="flex items-center gap-1.5 sm:gap-2 bg-black/60 p-1 sm:p-1.5 rounded-xl sm:rounded-2xl border border-white/10 backdrop-blur-md w-full sm:w-auto justify-center">
               <button
                 onClick={() => handleToggleTrack('FREE')}
-                className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-gilroyBold transition-all flex items-center gap-2 cursor-pointer ${
+                className={`flex-1 sm:flex-initial px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-gilroyBold transition-all flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer ${
                   !isPremium
                     ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 shadow-[0_0_15px_rgba(0,240,255,0.3)]'
                     : 'text-gray-400 hover:text-white'
                 }`}
               >
-                <Sparkles className="w-4 h-4 text-cyan-300" />
+                <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-cyan-300" />
                 <span>Free Track</span>
               </button>
 
               <button
                 onClick={() => handleToggleTrack('PREMIUM')}
-                className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-gilroyBold transition-all flex items-center gap-2 cursor-pointer ${
+                className={`flex-1 sm:flex-initial px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-gilroyBold transition-all flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer ${
                   isPremium
                     ? 'bg-gradient-to-r from-amber-500/30 to-purple-600/30 text-amber-300 border border-amber-400/40 shadow-[0_0_20px_rgba(245,158,11,0.35)]'
                     : 'text-gray-400 hover:text-white'
                 }`}
               >
-                <Crown className="w-4 h-4 text-amber-300 animate-bounce" />
+                <Crown className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-300 animate-bounce" />
                 <span>Premium Pass (50 JLT)</span>
               </button>
             </div>
           </div>
 
           {/* Main Grid: Left 3D Showcase Card vs Right Interactive Milestone Scrubbers */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 mt-8 relative z-10 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 mt-6 sm:mt-8 relative z-10 items-center">
             {/* ── Left Column: Cosmic Portal + 3D Holographic Showcase Card (5 cols) ── */}
             <div
-              className="lg:col-span-5 flex justify-center items-center relative"
+              className="lg:col-span-5 flex justify-center items-center relative w-full"
               style={{ perspective: '1200px' }}
             >
               {/* ══════════════════════════════════════════════════════════
@@ -685,7 +685,7 @@ export const CosmicOriginsSection: React.FC = () => {
                   ══════════════════════════════════════════════════════════ */}
               <div
                 ref={portalContainerRef}
-                className="absolute inset-0 m-auto w-[340px] h-[340px] sm:w-[420px] sm:h-[420px] pointer-events-none z-0 flex items-center justify-center will-change-transform"
+                className="absolute inset-0 m-auto w-[260px] h-[260px] sm:w-[360px] sm:h-[360px] lg:w-[420px] lg:h-[420px] pointer-events-none z-0 flex items-center justify-center will-change-transform"
               >
                 {/* Radial Nebula Core */}
                 <div className="absolute inset-0 rounded-full bg-radial from-[#7B2CBF]/45 via-[#360C9F]/30 to-transparent blur-2xl" />
@@ -699,11 +699,11 @@ export const CosmicOriginsSection: React.FC = () => {
                 {/* Portal Inner Glowing Ring with Celestial Markers */}
                 <div
                   ref={portalRing2Ref}
-                  className="absolute inset-14 rounded-full border border-[#FFA28D]/40 shadow-[0_0_30px_rgba(255,162,141,0.35)] will-change-transform"
+                  className="absolute inset-10 sm:inset-14 rounded-full border border-[#FFA28D]/40 shadow-[0_0_30px_rgba(255,162,141,0.35)] will-change-transform"
                 />
 
                 {/* Central High-Energy Event Horizon */}
-                <div className="w-32 h-32 rounded-full bg-gradient-to-tr from-[#00F0FF]/25 via-[#7B2CBF]/35 to-[#FFA28D]/25 blur-xl animate-pulse" />
+                <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-gradient-to-tr from-[#00F0FF]/25 via-[#7B2CBF]/35 to-[#FFA28D]/25 blur-xl animate-pulse" />
               </div>
 
               {/* ══════════════════════════════════════════════════════════
@@ -711,13 +711,13 @@ export const CosmicOriginsSection: React.FC = () => {
                   ══════════════════════════════════════════════════════════ */}
               <div
                 ref={shockwaveRef}
-                className="absolute inset-0 m-auto w-[340px] h-[340px] sm:w-[420px] sm:h-[420px] rounded-full border-[3px] border-[#FFD700] shadow-[0_0_60px_#FFD700,0_0_120px_#FFA500,inset_0_0_30px_#FFD700] opacity-0 pointer-events-none z-20 will-change-transform"
+                className="absolute inset-0 m-auto w-[260px] h-[260px] sm:w-[360px] sm:h-[360px] lg:w-[420px] lg:h-[420px] rounded-full border-[3px] border-[#FFD700] shadow-[0_0_60px_#FFD700,0_0_120px_#FFA500,inset_0_0_30px_#FFD700] opacity-0 pointer-events-none z-20 will-change-transform"
                 style={{ transformOrigin: 'center center' }}
               />
 
               <div
                 ref={shockwave2Ref}
-                className="absolute inset-0 m-auto w-[340px] h-[340px] sm:w-[420px] sm:h-[420px] rounded-full border-2 border-[#FFA28D] shadow-[0_0_50px_#FFA28D,0_0_100px_#FFD700] opacity-0 pointer-events-none z-20 will-change-transform"
+                className="absolute inset-0 m-auto w-[260px] h-[260px] sm:w-[360px] sm:h-[360px] lg:w-[420px] lg:h-[420px] rounded-full border-2 border-[#FFA28D] shadow-[0_0_50px_#FFA28D,0_0_100px_#FFD700] opacity-0 pointer-events-none z-20 will-change-transform"
                 style={{ transformOrigin: 'center center' }}
               />
 
@@ -726,7 +726,7 @@ export const CosmicOriginsSection: React.FC = () => {
                   ══════════════════════════════════════════════════════════ */}
               <div
                 ref={cardScrollWrapperRef}
-                className="relative z-10 w-full max-w-[380px] will-change-transform"
+                className="relative z-10 w-full max-w-[320px] sm:max-w-[360px] lg:max-w-[380px] will-change-transform"
                 style={{ transformStyle: 'preserve-3d' }}
               >
                 {/* ══════════════════════════════════════════════════════════
@@ -750,12 +750,12 @@ export const CosmicOriginsSection: React.FC = () => {
                     <div
                       data-cursor="card"
                       data-cursor-text="PREVIEW"
-                      className={`cosmic-space-card glass-panel w-full p-6 sm:p-7 flex flex-col justify-between items-center text-center relative overflow-hidden transition-all duration-500 border ${
+                      className={`cosmic-space-card glass-panel w-full p-5 sm:p-7 flex flex-col justify-between items-center text-center relative overflow-hidden transition-all duration-500 border ${
                         isPremium
                           ? 'border-amber-400/40 shadow-[0_0_35px_rgba(245,158,11,0.25)]'
                           : 'border-cyan-400/40 shadow-[0_0_35px_rgba(0,240,255,0.2)]'
                       }`}
-                      style={{ minHeight: '440px' }}
+                      style={{ minHeight: '380px' }}
                     >
                       {/* Holographic Light Sweep Sheen */}
                       <div
@@ -776,13 +776,13 @@ export const CosmicOriginsSection: React.FC = () => {
 
                       {/* Top Badge: Level & Track */}
                       <div className="w-full flex justify-between items-center relative z-10">
-                        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/60 border border-white/10 text-xs font-gilroyBold">
+                        <div className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full bg-black/60 border border-white/10 text-xs font-gilroyBold">
                           <span className="text-[#00F0FF]">LVL {currentMilestone.level}</span>
                           <span className="text-gray-400">/ 50</span>
                         </div>
 
                         <span
-                          className={`px-3 py-1 rounded-full text-xs font-gilroyBold flex items-center gap-1 border ${
+                          className={`px-2.5 sm:px-3 py-1 rounded-full text-[11px] sm:text-xs font-gilroyBold flex items-center gap-1 border ${
                             isPremium
                               ? 'bg-amber-500/20 text-amber-300 border-amber-400/40 shadow-[0_0_10px_rgba(245,158,11,0.3)]'
                               : 'bg-cyan-500/20 text-cyan-300 border-cyan-400/40'
@@ -801,7 +801,7 @@ export const CosmicOriginsSection: React.FC = () => {
                       </div>
 
                       {/* Center: Dynamic Reward Asset Display */}
-                      <div className="relative my-auto py-4 flex items-center justify-center z-10 w-full">
+                      <div className="relative my-auto py-3 sm:py-4 flex items-center justify-center z-10 w-full">
                         {/* Glowing Backlight Halo */}
                         <div
                           className={`absolute inset-0 rounded-full blur-2xl transition-all duration-700 pointer-events-none ${
@@ -818,8 +818,8 @@ export const CosmicOriginsSection: React.FC = () => {
                             alt={activeRewardName}
                             className={`object-contain transition-transform duration-500 drop-shadow-[0_15px_30px_rgba(0,0,0,0.8)] ${
                               currentMilestone.featuredAsset.isCard
-                                ? 'w-48 sm:w-56 h-auto max-h-[260px] rounded-xl border border-white/20'
-                                : 'w-36 sm:w-44 h-36 sm:h-44'
+                                ? 'w-40 sm:w-52 lg:w-56 h-auto max-h-[220px] sm:max-h-[260px] rounded-xl border border-white/20'
+                                : 'w-28 sm:w-36 lg:w-44 h-28 sm:h-36 lg:h-44'
                             } ${isAssetHovered ? 'scale-110 rotate-1' : 'scale-100'}`}
                             loading="lazy"
                           />
@@ -832,10 +832,10 @@ export const CosmicOriginsSection: React.FC = () => {
 
                       {/* Bottom: Reward Meta */}
                       <div className="w-full flex flex-col gap-1 relative z-10">
-                        <span className="text-[11px] font-gilroyBold uppercase tracking-widest text-[#FFA28D]">
+                        <span className="text-[10px] sm:text-[11px] font-gilroyBold uppercase tracking-widest text-[#FFA28D]">
                           {currentMilestone.tag}
                         </span>
-                        <h4 className="text-white font-gilroyBold text-xl drop-shadow-md truncate">
+                        <h4 className="text-white font-gilroyBold text-lg sm:text-xl drop-shadow-md truncate">
                           {activeRewardName}
                         </h4>
                         <p className="text-purple-200/80 font-gilroyMedium text-xs leading-relaxed line-clamp-2">
@@ -849,34 +849,34 @@ export const CosmicOriginsSection: React.FC = () => {
             </div>
 
             {/* ── Right Column: Interactive Milestone Selection & Progress Simulation (7 cols) ── */}
-            <div className="lg:col-span-7 flex flex-col gap-6 relative z-20">
+            <div className="lg:col-span-7 flex flex-col gap-5 sm:gap-6 relative z-20">
               {/* Active Milestone Lore Card */}
-              <div className="glass-panel p-5 sm:p-6 rounded-2xl flex flex-col gap-3 border border-white/10">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <span className="text-xs font-gilroyBold text-[#00F0FF] uppercase tracking-wider">
+              <div className="glass-panel p-4 sm:p-6 rounded-xl sm:rounded-2xl flex flex-col gap-3 border border-white/10">
+                <div className="flex justify-between items-start gap-2">
+                  <div className="min-w-0">
+                    <span className="text-[11px] sm:text-xs font-gilroyBold text-[#00F0FF] uppercase tracking-wider">
                       Selected Milestone • Level {currentMilestone.level}
                     </span>
-                    <h3 className="text-2xl sm:text-3xl font-gilroyBold text-white mt-0.5">
+                    <h3 className="text-xl sm:text-2xl md:text-3xl font-gilroyBold text-white mt-0.5 truncate">
                       {currentMilestone.title}
                     </h3>
                   </div>
-                  <div className="text-right">
-                    <span className="text-xs text-purple-300 font-gilroyMedium">Requirement</span>
-                    <p className="text-sm font-gilroyBold text-[#FFA28D]">{currentMilestone.rpXpRequired} RP XP</p>
+                  <div className="text-right shrink-0">
+                    <span className="text-[10px] sm:text-xs text-purple-300 font-gilroyMedium">Requirement</span>
+                    <p className="text-xs sm:text-sm font-gilroyBold text-[#FFA28D]">{currentMilestone.rpXpRequired} RP XP</p>
                   </div>
                 </div>
 
-                <p className="text-purple-200 font-gilroyRegular text-sm sm:text-base leading-relaxed">
+                <p className="text-purple-200 font-gilroyRegular text-xs sm:text-sm md:text-base leading-relaxed">
                   {currentMilestone.description}
                 </p>
 
                 {/* Reward Snapshot comparison */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 pt-2">
                   {/* Free Reward Box */}
                   <div
                     onClick={() => handleToggleTrack('FREE')}
-                    className={`p-3 rounded-xl flex items-center gap-3 transition-all cursor-pointer border ${
+                    className={`p-2.5 sm:p-3 rounded-xl flex items-center gap-2.5 sm:gap-3 transition-all cursor-pointer border ${
                       !isPremium
                         ? 'bg-cyan-500/15 border-cyan-400/40 shadow-[0_0_12px_rgba(0,240,255,0.2)]'
                         : 'bg-black/30 border-white/10 hover:border-white/20'
@@ -885,10 +885,10 @@ export const CosmicOriginsSection: React.FC = () => {
                     <img
                       src={currentMilestone.freeRewardImage}
                       alt="Free Reward"
-                      className="w-10 h-10 object-contain shrink-0 drop-shadow-md"
+                      className="w-8 h-8 sm:w-10 sm:h-10 object-contain shrink-0 drop-shadow-md"
                     />
                     <div className="flex flex-col min-w-0">
-                      <span className="text-[10px] uppercase font-gilroyBold text-cyan-300">Free Reward</span>
+                      <span className="text-[9px] sm:text-[10px] uppercase font-gilroyBold text-cyan-300">Free Reward</span>
                       <span className="text-xs font-gilroyBold text-white truncate" title={currentMilestone.freeRewardName}>
                         {currentMilestone.freeRewardName}
                       </span>
@@ -898,7 +898,7 @@ export const CosmicOriginsSection: React.FC = () => {
                   {/* Premium Reward Box */}
                   <div
                     onClick={() => handleToggleTrack('PREMIUM')}
-                    className={`p-3 rounded-xl flex items-center gap-3 transition-all cursor-pointer border ${
+                    className={`p-2.5 sm:p-3 rounded-xl flex items-center gap-2.5 sm:gap-3 transition-all cursor-pointer border ${
                       isPremium
                         ? 'bg-amber-500/15 border-amber-400/40 shadow-[0_0_15px_rgba(245,158,11,0.25)]'
                         : 'bg-black/30 border-white/10 hover:border-white/20'
@@ -907,10 +907,10 @@ export const CosmicOriginsSection: React.FC = () => {
                     <img
                       src={currentMilestone.premiumRewardImage}
                       alt="Premium Reward"
-                      className="w-10 h-10 object-contain shrink-0 drop-shadow-md"
+                      className="w-8 h-8 sm:w-10 sm:h-10 object-contain shrink-0 drop-shadow-md"
                     />
                     <div className="flex flex-col min-w-0">
-                      <span className="text-[10px] uppercase font-gilroyBold text-amber-300 flex items-center gap-1">
+                      <span className="text-[9px] sm:text-[10px] uppercase font-gilroyBold text-amber-300 flex items-center gap-1">
                         <Crown className="w-2.5 h-2.5 text-amber-300" /> Premium Exclusive
                       </span>
                       <span className="text-xs font-gilroyBold text-white truncate" title={currentMilestone.premiumRewardName}>
@@ -922,20 +922,20 @@ export const CosmicOriginsSection: React.FC = () => {
               </div>
 
               {/* Interactive Milestone Scrubbing Nodes */}
-              <div className="flex flex-col gap-3">
-                <div className="flex justify-between items-center text-xs font-gilroyMedium text-purple-200">
+              <div className="flex flex-col gap-2 sm:gap-3">
+                <div className="flex justify-between items-center text-[11px] sm:text-xs font-gilroyMedium text-purple-200">
                   <span className="uppercase tracking-wider">Select Milestone Tier:</span>
-                  <span className="text-cyan-300 font-gilroyBold">Click tier node to trigger holographic projection</span>
+                  <span className="text-cyan-300 font-gilroyBold hidden sm:inline">Click tier node to preview</span>
                 </div>
 
-                <div className="grid grid-cols-4 gap-2 sm:gap-3">
+                <div className="grid grid-cols-4 gap-1.5 sm:gap-3">
                   {MILESTONES.map((m, idx) => {
                     const isSelected = selectedMilestoneIndex === idx;
                     return (
                       <button
                         key={m.level}
                         onClick={() => handleSelectMilestone(idx)}
-                        className={`py-3 px-2 sm:px-4 rounded-xl flex flex-col items-center justify-center gap-1 transition-all duration-300 cursor-pointer border relative overflow-hidden ${
+                        className={`py-2 sm:py-3 px-1 sm:px-3 rounded-xl flex flex-col items-center justify-center gap-0.5 sm:gap-1 transition-all duration-300 cursor-pointer border relative overflow-hidden ${
                           isSelected
                             ? 'bg-gradient-to-b from-[#360C9F] to-[#180C30] border-[#00F0FF] shadow-[0_0_20px_rgba(0,240,255,0.4)] scale-105'
                             : 'bg-black/40 border-white/10 hover:border-white/30 hover:bg-black/60'
@@ -944,10 +944,10 @@ export const CosmicOriginsSection: React.FC = () => {
                         {isSelected && (
                           <div className="absolute inset-0 bg-radial from-[#00F0FF]/20 via-transparent to-transparent pointer-events-none" />
                         )}
-                        <span className={`text-base sm:text-lg font-gilroyBold ${isSelected ? 'text-[#00F0FF]' : 'text-white'}`}>
+                        <span className={`text-xs sm:text-base md:text-lg font-gilroyBold ${isSelected ? 'text-[#00F0FF]' : 'text-white'}`}>
                           LVL {m.level}
                         </span>
-                        <span className="text-[10px] font-gilroyMedium text-purple-300 truncate max-w-full">
+                        <span className="text-[8px] sm:text-[10px] font-gilroyMedium text-purple-300 truncate max-w-full text-center">
                           {m.level === 50 ? 'Apex Card' : m.level === 10 ? '3D Avatar' : m.level === 25 ? 'Spins & Frags' : 'Starter GP'}
                         </span>
                       </button>
@@ -957,14 +957,14 @@ export const CosmicOriginsSection: React.FC = () => {
               </div>
 
               {/* Progress Simulation Bar */}
-              <div className="flex flex-col gap-1.5 bg-black/40 p-4 rounded-2xl border border-white/10">
-                <div className="flex justify-between items-center text-xs text-purple-200 font-gilroyMedium">
+              <div className="flex flex-col gap-1.5 bg-black/40 p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border border-white/10">
+                <div className="flex justify-between items-center text-[11px] sm:text-xs text-purple-200 font-gilroyMedium">
                   <span>Season 01 Campaign Progress:</span>
                   <span className="text-[#00F0FF] font-gilroyBold">
                     {currentMilestone.rpXpRequired} / 4,900 RP XP (Tier {currentMilestone.level}/50)
                   </span>
                 </div>
-                <div className="w-full h-3 bg-black/80 rounded-full p-0.5 border border-purple-500/30 overflow-hidden">
+                <div className="w-full h-2.5 sm:h-3 bg-black/80 rounded-full p-0.5 border border-purple-500/30 overflow-hidden">
                   <div
                     className="h-full rounded-full bg-gradient-to-r from-[#00F0FF] via-[#7B2CBF] to-[#FFA28D] transition-all duration-700 shadow-[0_0_12px_#00F0FF]"
                     style={{ width: `${Math.max(6, Math.min(100, (currentMilestone.level / 50) * 100))}%` }}
@@ -973,13 +973,13 @@ export const CosmicOriginsSection: React.FC = () => {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
+              <div className="flex flex-col sm:flex-row items-center gap-2.5 sm:gap-3 pt-2">
                 <Link
                   ref={explorePassBtnRef}
                   href="/dashboard/rare-pass"
                   data-cursor="cta"
                   data-cursor-text="PLAY PASS"
-                  className="w-full sm:w-auto flex-1 glass-btn gsap-magnetic-btn py-3.5 px-6 rounded-xl font-gilroyBold text-white text-center text-sm sm:text-base tracking-wide shadow-[0_0_25px_rgba(54,12,159,0.5)] flex items-center justify-center gap-2 group hover:shadow-[0_0_30px_#FFA28D] hover:scale-[1.02] transition-all"
+                  className="w-full sm:w-auto flex-1 glass-btn gsap-magnetic-btn py-3 sm:py-3.5 px-4 sm:px-6 rounded-xl font-gilroyBold text-white text-center text-xs sm:text-base tracking-wide shadow-[0_0_25px_rgba(54,12,159,0.5)] flex items-center justify-center gap-2 group hover:shadow-[0_0_30px_#FFA28D] hover:scale-[1.02] transition-all"
                 >
                   <Crown className="w-4 h-4 text-yellow-300 group-hover:rotate-12 transition-transform duration-300 magnetic-icon" />
                   <span>Enter Season 01 Pass</span>
@@ -989,7 +989,7 @@ export const CosmicOriginsSection: React.FC = () => {
                 <Link
                   ref={viewRewardsBtnRef}
                   href="/dashboard/rare-pass"
-                  className="w-full sm:w-auto py-3.5 px-5 rounded-xl font-gilroyBold text-purple-200 hover:text-white text-center text-sm border border-purple-500/30 hover:border-purple-400 bg-purple-900/20 hover:bg-purple-900/40 transition-all flex items-center justify-center gap-2"
+                  className="w-full sm:w-auto py-3 sm:py-3.5 px-4 sm:px-5 rounded-xl font-gilroyBold text-purple-200 hover:text-white text-center text-xs sm:text-sm border border-purple-500/30 hover:border-purple-400 bg-purple-900/20 hover:bg-purple-900/40 transition-all flex items-center justify-center gap-2"
                 >
                   <span>View All 50 Rewards</span>
                 </Link>
@@ -1001,29 +1001,29 @@ export const CosmicOriginsSection: React.FC = () => {
         {/* ══════════════════════════════════════════════════════════
             3. 4 CORE PILLARS GRID (COSMIC ARCHITECTURE)
             ══════════════════════════════════════════════════════════ */}
-        <div ref={pillarGridRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div ref={pillarGridRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {PILLARS.map((pillar, index) => {
             const Icon = pillar.icon;
             return (
               <div
                 key={index}
-                className={`cosmic-pillar-card glass-panel p-6 rounded-2xl flex flex-col justify-between gap-4 border ${pillar.borderColor} hover:scale-[1.02] transition-all duration-300 relative overflow-hidden group shadow-lg`}
+                className={`cosmic-pillar-card glass-panel p-5 sm:p-6 rounded-2xl flex flex-col justify-between gap-4 border ${pillar.borderColor} hover:scale-[1.02] transition-all duration-300 relative overflow-hidden group shadow-lg`}
               >
                 <div className={`absolute inset-0 bg-gradient-to-b ${pillar.bgGlow} opacity-50 group-hover:opacity-100 transition-opacity pointer-events-none`} />
 
                 <div className="flex flex-col gap-3 relative z-10">
                   <div className="flex justify-between items-center">
                     <div
-                      className="w-12 h-12 rounded-xl flex items-center justify-center border shadow-md"
+                      className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center border shadow-md"
                       style={{
                         backgroundColor: `${pillar.color}15`,
                         borderColor: `${pillar.color}40`,
                       }}
                     >
-                      <Icon className="w-6 h-6" style={{ color: pillar.color }} />
+                      <Icon className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: pillar.color }} />
                     </div>
                     <span
-                      className="text-[10px] font-gilroyBold uppercase tracking-wider px-2.5 py-1 rounded-md border"
+                      className="text-[9px] sm:text-[10px] font-gilroyBold uppercase tracking-wider px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md border"
                       style={{
                         color: pillar.color,
                         borderColor: `${pillar.color}30`,
@@ -1034,7 +1034,7 @@ export const CosmicOriginsSection: React.FC = () => {
                     </span>
                   </div>
 
-                  <h4 className="text-white font-gilroyBold text-lg mt-1">{pillar.title}</h4>
+                  <h4 className="text-white font-gilroyBold text-base sm:text-lg mt-1">{pillar.title}</h4>
                   <p className="text-purple-200/80 font-gilroyRegular text-xs leading-relaxed">{pillar.desc}</p>
                 </div>
 

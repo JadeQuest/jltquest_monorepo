@@ -972,7 +972,7 @@ export const HeroSection: React.FC = () => {
     <section
       id="hero"
       ref={sectionRef}
-      className="relative w-full pt-36 pb-10 px-6 bg-transparent overflow-hidden min-h-screen flex flex-col justify-center select-none"
+      className="relative w-full pt-24 sm:pt-28 md:pt-36 pb-12 sm:pb-16 px-4 sm:px-6 bg-transparent overflow-hidden min-h-screen flex flex-col justify-center select-none"
     >
       {/* ── 8. Background JLT Energy Field (Canvas Particle Engine) ── */}
       <canvas
@@ -1027,8 +1027,8 @@ export const HeroSection: React.FC = () => {
       />
 
       {/* ── TOP MARQUEE RIBBON ── */}
-      <div className="hero-top-ribbon w-full max-w-7xl mx-auto mb-8 relative z-10 overflow-hidden py-2 border-y border-white/5 bg-white/[0.02] backdrop-blur-sm rounded-2xl">
-        <div className="flex w-max animate-marquee gap-8 items-center text-[11px] font-gilroyMedium tracking-widest text-gray-400 uppercase">
+      <div className="hero-top-ribbon w-full max-w-7xl mx-auto mb-6 sm:mb-8 relative z-10 overflow-hidden py-2 border-y border-white/5 bg-white/[0.02] backdrop-blur-sm rounded-2xl">
+        <div className="flex w-max animate-marquee gap-8 items-center text-[10px] sm:text-[11px] font-gilroyMedium tracking-widest text-gray-400 uppercase">
           {[...marqueeItems, ...marqueeItems].map((item, idx) => (
             <div key={idx} className="flex items-center gap-3">
               <span className="text-[#FFA28D]">✦</span>
@@ -1039,39 +1039,39 @@ export const HeroSection: React.FC = () => {
       </div>
 
       <div ref={heroContentRef} className="max-w-7xl mx-auto w-full relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-14 lg:gap-8 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 sm:gap-14 lg:gap-8 items-center">
           
           {/* ── LEFT COLUMN: High-Impact Typography & Interactive CTAs ── */}
-          <div ref={headlineRef} className="lg:col-span-7 flex flex-col items-start gap-8 text-left">
+          <div ref={headlineRef} className="lg:col-span-7 flex flex-col items-start gap-6 sm:gap-8 text-left">
             
             {/* Status Pills: Counter-directional Entrance */}
-            <div className="hero-tagline-pill flex flex-wrap items-center gap-3">
-              <div className="hero-pill-left glass-pill px-4 py-2 inline-flex items-center gap-3 shadow-[0_0_25px_rgba(54,12,159,0.4)] border border-purple-500/30">
+            <div className="hero-tagline-pill flex flex-wrap items-center gap-2.5 sm:gap-3">
+              <div className="hero-pill-left glass-pill px-3 sm:px-4 py-1.5 sm:py-2 inline-flex items-center gap-2.5 sm:gap-3 shadow-[0_0_25px_rgba(54,12,159,0.4)] border border-purple-500/30">
                 <div className="flex items-center -space-x-2">
-                  <div className="h-7 w-7 rounded-full ring-2 ring-[#360C9F] bg-gradient-to-tr from-purple-500 to-indigo-600 flex items-center justify-center text-[10px] font-gilroyBold text-white leading-none shadow shrink-0 select-none">
+                  <div className="h-6 w-6 sm:h-7 sm:w-7 rounded-full ring-2 ring-[#360C9F] bg-gradient-to-tr from-purple-500 to-indigo-600 flex items-center justify-center text-[9px] sm:text-[10px] font-gilroyBold text-white leading-none shadow shrink-0 select-none">
                     DK
                   </div>
-                  <div className="h-7 w-7 rounded-full ring-2 ring-[#360C9F] bg-gradient-to-tr from-pink-500 to-rose-500 flex items-center justify-center text-[10px] font-gilroyBold text-white leading-none shadow shrink-0 select-none">
+                  <div className="h-6 w-6 sm:h-7 sm:w-7 rounded-full ring-2 ring-[#360C9F] bg-gradient-to-tr from-pink-500 to-rose-500 flex items-center justify-center text-[9px] sm:text-[10px] font-gilroyBold text-white leading-none shadow shrink-0 select-none">
                     JM
                   </div>
-                  <div className="h-7 w-7 rounded-full ring-2 ring-[#360C9F] bg-gradient-to-tr from-amber-400 to-orange-500 flex items-center justify-center text-[10px] font-gilroyBold text-white leading-none shadow shrink-0 select-none">
+                  <div className="h-6 w-6 sm:h-7 sm:w-7 rounded-full ring-2 ring-[#360C9F] bg-gradient-to-tr from-amber-400 to-orange-500 flex items-center justify-center text-[9px] sm:text-[10px] font-gilroyBold text-white leading-none shadow shrink-0 select-none">
                     AR
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-2">
-                  <span className="relative flex h-2.5 w-2.5 shrink-0">
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <span className="relative flex h-2 sm:h-2.5 w-2 sm:w-2.5 shrink-0">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                    <span className="relative inline-flex rounded-full h-2 sm:h-2.5 w-2 sm:w-2.5 bg-emerald-500"></span>
                   </span>
-                  <span className="font-gilroyMedium text-xs sm:text-sm text-white/90 leading-none">
+                  <span className="font-gilroyMedium text-[11px] sm:text-sm text-white/90 leading-none">
                     <strong className="text-white font-gilroyBold">1,420 players</strong> online now
                   </span>
                 </div>
               </div>
 
               {/* Cycling Live Activity Pill */}
-              <div className="hero-pill-right glass-pill px-3.5 py-1.5 hidden sm:inline-flex items-center gap-2 border border-purple-500/30 bg-purple-900/25 text-xs transition-all duration-500">
+              <div className="hero-pill-right glass-pill px-3 py-1.5 hidden sm:inline-flex items-center gap-2 border border-purple-500/30 bg-purple-900/25 text-xs transition-all duration-500">
                 <Zap className="w-3.5 h-3.5 text-amber-300 animate-pulse" />
                 <span className="text-gray-300 font-gilroyRegular">
                   <strong className="text-white font-gilroyBold">{currentActivity.user}</strong> {currentActivity.action}
@@ -1083,39 +1083,39 @@ export const HeroSection: React.FC = () => {
             </div>
 
             {/* Masked Statement Typography with Vertical Reveal & Light Sweep */}
-            <div className="flex flex-col gap-1.5 overflow-hidden">
+            <div className="flex flex-col gap-1 sm:gap-1.5 overflow-hidden">
               <div className="overflow-hidden">
-                <h1 className="hero-mask-line font-gilroyBold text-5xl sm:text-7xl lg:text-7xl text-white tracking-tight leading-[1.04]">
+                <h1 className="hero-mask-line font-gilroyBold text-4xl sm:text-6xl lg:text-7xl text-white tracking-tight leading-[1.08] sm:leading-[1.04]">
                   Play daily.
                 </h1>
               </div>
 
               <div className="overflow-hidden">
-                <h1 className="hero-mask-line font-gilroyBold text-5xl sm:text-7xl lg:text-7xl text-white tracking-tight leading-[1.04]">
+                <h1 className="hero-mask-line font-gilroyBold text-4xl sm:text-6xl lg:text-7xl text-white tracking-tight leading-[1.08] sm:leading-[1.04]">
                   Earn real perks.
                 </h1>
               </div>
 
               <div className="overflow-hidden">
-                <h2 className="hero-mask-line font-gilroyBold text-4xl sm:text-6xl lg:text-6xl text-white/90 tracking-tight leading-[1.06]">
+                <h2 className="hero-mask-line font-gilroyBold text-3xl sm:text-5xl lg:text-6xl text-white/90 tracking-tight leading-[1.1] sm:leading-[1.06]">
                   Rule the quest.
                 </h2>
               </div>
             </div>
 
-            <p className="hero-description font-gilroyRegular text-gray-300 text-lg sm:text-xl max-w-2xl leading-relaxed">
+            <p className="hero-description font-gilroyRegular text-gray-300 text-sm sm:text-lg lg:text-xl max-w-2xl leading-relaxed">
               No complex crypto jargon or boring grinds. Complete quick daily missions inside JaxMart, spin for rare passes, and build your reward streak with friends.
             </p>
 
             {/* 5. Magnetic CTAs with Independent Child Motion */}
-            <div className="hero-cta-group flex flex-wrap items-center gap-4 w-full pt-1">
+            <div className="hero-cta-group flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 sm:gap-4 w-full pt-1">
               <Link
                 ref={startQuestBtnRef}
                 href="/dashboard"
                 id="hero-start-quest-btn"
                 data-cursor="cta"
                 data-cursor-text="START →"
-                className="glass-btn gsap-magnetic-btn px-9 py-4.5 rounded-2xl font-gilroyBold text-white text-lg tracking-wide shadow-[0_0_40px_rgba(54,12,159,0.6)] flex items-center gap-3 group hover:shadow-[0_0_60px_rgba(255,162,141,0.5)] hover:scale-[1.03] active:scale-[0.98] transition-all duration-200"
+                className="glass-btn gsap-magnetic-btn px-6 sm:px-9 py-3.5 sm:py-4.5 rounded-2xl font-gilroyBold text-white text-base sm:text-lg tracking-wide shadow-[0_0_40px_rgba(54,12,159,0.6)] flex items-center justify-center gap-3 group hover:shadow-[0_0_60px_rgba(255,162,141,0.5)] hover:scale-[1.03] active:scale-[0.98] transition-all duration-200"
               >
                 <span>Start Your First Quest</span>
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1.5 transition-transform duration-200 magnetic-icon" />
@@ -1128,7 +1128,7 @@ export const HeroSection: React.FC = () => {
                 type="button"
                 data-cursor="reward"
                 data-cursor-text="CLAIM 🪙"
-                className={`relative gsap-magnetic-btn px-7 py-4.5 rounded-2xl font-gilroyMedium text-base transition-all duration-300 flex items-center gap-2.5 border ${
+                className={`relative gsap-magnetic-btn px-5 sm:px-7 py-3.5 sm:py-4.5 rounded-2xl font-gilroyMedium text-sm sm:text-base transition-all duration-300 flex items-center justify-center gap-2.5 border ${
                   claimedBonus
                     ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300 cursor-default'
                     : 'glass-pill hover:bg-white/10 text-white border-white/15 hover:border-white/30 hover:scale-[1.02] active:scale-[0.98] cursor-pointer shadow-lg'
@@ -1136,12 +1136,12 @@ export const HeroSection: React.FC = () => {
               >
                 {claimedBonus ? (
                   <>
-                    <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                    <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400" />
                     <span>+150 Welcome Coins Claimed!</span>
                   </>
                 ) : (
                   <>
-                    <Sparkles className="w-5 h-5 text-[#FFA28D] animate-spin magnetic-icon" style={{ animationDuration: '5s' }} />
+                    <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-[#FFA28D] animate-spin magnetic-icon" style={{ animationDuration: '5s' }} />
                     <span>Claim Demo +150 Coins</span>
                   </>
                 )}
@@ -1149,7 +1149,7 @@ export const HeroSection: React.FC = () => {
             </div>
 
             {/* Trust Badges */}
-            <div className="flex flex-wrap items-center gap-6 pt-2 text-xs sm:text-sm text-gray-400 font-gilroyRegular">
+            <div className="flex flex-wrap items-center gap-3.5 sm:gap-6 pt-2 text-xs sm:text-sm text-gray-400 font-gilroyRegular">
               <div className="hero-trust-badge flex items-center gap-1.5">
                 <CheckCircle2 className="w-4 h-4 text-[#FFA28D]" />
                 <span>Free to Play Forever</span>
@@ -1167,18 +1167,18 @@ export const HeroSection: React.FC = () => {
           </div>
 
           {/* ── 4 & 6. RIGHT COLUMN: Interactive 3D Quest Card & Living UI ── */}
-          <div className="lg:col-span-5 relative flex justify-center items-center perspective-1000">
+          <div className="lg:col-span-5 relative flex justify-center items-center perspective-1000 w-full">
             
             {/* Background Glow Ring */}
             <div
               ref={cardGlowRef}
-              className="absolute w-[420px] h-[420px] rounded-full bg-gradient-to-br from-[#360C9F] via-[#7B2CBF] to-[#FFA28D] opacity-30 blur-3xl transition-opacity duration-500"
+              className="absolute w-[300px] sm:w-[420px] h-[300px] sm:h-[420px] rounded-full bg-gradient-to-br from-[#360C9F] via-[#7B2CBF] to-[#FFA28D] opacity-30 blur-3xl transition-opacity duration-500 pointer-events-none"
             />
 
             {/* 10. Signature "Quest Pulse" Expanding Shockwave Ring */}
             <div
               ref={pulseRingRef}
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[380px] h-[380px] rounded-full border border-[#FFA28D]/60 pointer-events-none opacity-0"
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[280px] sm:w-[380px] h-[280px] sm:h-[380px] rounded-full border border-[#FFA28D]/60 pointer-events-none opacity-0"
               aria-hidden="true"
             />
 
@@ -1190,13 +1190,13 @@ export const HeroSection: React.FC = () => {
               onMouseLeave={handleCardMouseLeave}
               data-cursor="card"
               data-cursor-text="QUEST 🎯"
-              className="hero-dashboard-panel w-full max-w-md glass-panel p-6 sm:p-8 flex flex-col gap-6 relative z-10 border border-white/15 shadow-[0_30px_70px_rgba(0,0,0,0.75)] backdrop-blur-2xl transition-all duration-300 hover:border-white/35 transform-style-preserve-3d"
+              className="hero-dashboard-panel w-full max-w-md glass-panel p-5 sm:p-7 md:p-8 flex flex-col gap-5 sm:gap-6 relative z-10 border border-white/15 shadow-[0_30px_70px_rgba(0,0,0,0.75)] backdrop-blur-2xl transition-all duration-300 hover:border-white/35 transform-style-preserve-3d"
             >
               
               {/* Card Header: Profile & Live Coin Counter */}
-              <div className="flex items-center justify-between pb-4 border-b border-white/10">
-                <div className="flex items-center gap-3">
-                  <div className="relative">
+              <div className="flex items-center justify-between gap-2 pb-3.5 sm:pb-4 border-b border-white/10">
+                <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                  <div className="relative shrink-0">
                     <img
                       src="/icon/mascot.webp"
                       alt="JLT Mascot"
@@ -1204,24 +1204,24 @@ export const HeroSection: React.FC = () => {
                       height={48}
                       loading="lazy"
                       decoding="async"
-                      className="w-12 h-12 object-contain rounded-full bg-[#340073]/80 p-1 border border-white/25 shadow-inner"
+                      className="w-10 h-10 sm:w-12 sm:h-12 object-contain rounded-full bg-[#340073]/80 p-1 border border-white/25 shadow-inner"
                     />
-                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-gradient-to-r from-amber-400 to-orange-500 rounded-full flex items-center justify-center shadow">
-                      <Flame className="w-2.5 h-2.5 text-white animate-flame" />
+                    <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 sm:w-4 sm:h-4 bg-gradient-to-r from-amber-400 to-orange-500 rounded-full flex items-center justify-center shadow">
+                      <Flame className="w-2 sm:w-2.5 h-2 sm:h-2.5 text-white animate-flame" />
                     </div>
                   </div>
-                  <div className="flex flex-col">
+                  <div className="flex flex-col min-w-0">
                     <div className="flex items-center gap-1.5">
-                      <span className="font-gilroyBold text-white text-base">Questor Alex</span>
+                      <span className="font-gilroyBold text-white text-sm sm:text-base truncate">Questor Alex</span>
                       <span
                         ref={lvlBadgeRef}
-                        className="px-1.5 py-0.5 rounded bg-[#360C9F] text-[10px] font-gilroyBold text-purple-200 border border-purple-400/30 transition-all duration-300"
+                        className="px-1.5 py-0.5 rounded bg-[#360C9F] text-[9px] sm:text-[10px] font-gilroyBold text-purple-200 border border-purple-400/30 transition-all duration-300 shrink-0"
                       >
                         LVL 4
                       </span>
                     </div>
-                    <span className="font-gilroyRegular text-xs text-emerald-400 flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> 7 Day Streak Active
+                    <span className="font-gilroyRegular text-[11px] sm:text-xs text-emerald-400 flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0"></span> 7 Day Streak Active
                     </span>
                   </div>
                 </div>
@@ -1229,10 +1229,10 @@ export const HeroSection: React.FC = () => {
                 {/* Coin Counter Pill */}
                 <div
                   ref={coinPillRef}
-                  className="glass-pill px-3.5 py-1.5 flex items-center gap-2 border border-amber-500/40 bg-amber-500/10 relative shadow-[0_0_15px_rgba(251,191,36,0.25)]"
+                  className="glass-pill px-2.5 sm:px-3.5 py-1.5 flex items-center gap-1.5 sm:gap-2 border border-amber-500/40 bg-amber-500/10 relative shadow-[0_0_15px_rgba(251,191,36,0.25)] shrink-0"
                 >
-                  <img src="/icon/coin.webp" alt="Coin" width={20} height={20} className="w-5 h-5 object-contain animate-bounce" style={{ animationDuration: '2.5s' }} />
-                  <span className="font-gilroyBold text-amber-300 text-sm tracking-wide">{coinsCount.toLocaleString()}</span>
+                  <img src="/icon/coin.webp" alt="Coin" width={20} height={20} className="w-4 h-4 sm:w-5 sm:h-5 object-contain animate-bounce" style={{ animationDuration: '2.5s' }} />
+                  <span className="font-gilroyBold text-amber-300 text-xs sm:text-sm tracking-wide">{coinsCount.toLocaleString()}</span>
                   
                   {/* Floating +150 Animation */}
                   {floatingCoins.map((id) => (
@@ -1249,25 +1249,25 @@ export const HeroSection: React.FC = () => {
               {/* Active Interactive Quest Box */}
               <div
                 ref={featuredBoxRef}
-                className="daily-card-panel p-4 sm:p-5 flex flex-col gap-3.5 relative overflow-hidden border border-white/10 shadow-lg transition-all duration-300"
+                className="daily-card-panel p-3.5 sm:p-5 flex flex-col gap-3 sm:gap-3.5 relative overflow-hidden border border-white/10 shadow-lg transition-all duration-300"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span
                       ref={questPlayIconRef}
-                      className="p-1.5 rounded-lg bg-[#360C9F]/80 text-white shadow inline-block"
+                      className="p-1 sm:p-1.5 rounded-lg bg-[#360C9F]/80 text-white shadow inline-block"
                     >
-                      <Play className="w-3.5 h-3.5 fill-white" />
+                      <Play className="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-white" />
                     </span>
-                    <span className="font-gilroyBold text-white text-sm tracking-wide">Today's Featured Quest</span>
+                    <span className="font-gilroyBold text-white text-xs sm:text-sm tracking-wide">Today's Featured Quest</span>
                   </div>
-                  <span className="text-[11px] font-gilroyBold text-[#FFA28D] bg-[#FFA28D]/15 px-2.5 py-0.5 rounded-full border border-[#FFA28D]/40 shadow-sm">
+                  <span className="text-[10px] sm:text-[11px] font-gilroyBold text-[#FFA28D] bg-[#FFA28D]/15 px-2 sm:px-2.5 py-0.5 rounded-full border border-[#FFA28D]/40 shadow-sm">
                     2x Bonus
                   </span>
                 </div>
 
                 <div className="flex flex-col gap-1">
-                  <h4 className="font-gilroyBold text-white text-base">Complete 3 JaxMart Daily Spins</h4>
+                  <h4 className="font-gilroyBold text-white text-sm sm:text-base">Complete 3 JaxMart Daily Spins</h4>
                   <p className="font-gilroyRegular text-xs text-gray-300 leading-relaxed">
                     Spin the daily wheel to unlock instant coins & rare loot boxes.
                   </p>
@@ -1275,7 +1275,7 @@ export const HeroSection: React.FC = () => {
 
                 {/* Progress Bar & Interactive 2/3 Done Preview Surge */}
                 <div className="flex flex-col gap-2 mt-1">
-                  <div className="flex justify-between items-center text-xs font-gilroyMedium">
+                  <div className="flex justify-between items-center text-[11px] sm:text-xs font-gilroyMedium">
                     <span className="text-gray-300 flex items-center gap-1.5">
                       Quest Status
                       {isCardHovered && !questCompleted && (
@@ -1309,13 +1309,13 @@ export const HeroSection: React.FC = () => {
                     <button
                       onClick={handleSimulateQuest}
                       type="button"
-                      className="mt-2 w-full py-2.5 rounded-lg bg-gradient-to-r from-[#360C9F] to-[#7B2CBF] hover:from-[#4310C2] hover:to-[#8C34D9] text-white font-gilroyBold text-xs tracking-wider uppercase shadow-md hover:scale-[1.01] active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer"
+                      className="mt-2 w-full py-2.5 sm:py-3 rounded-lg bg-gradient-to-r from-[#360C9F] to-[#7B2CBF] hover:from-[#4310C2] hover:to-[#8C34D9] text-white font-gilroyBold text-[11px] sm:text-xs tracking-wider uppercase shadow-md hover:scale-[1.01] active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <Sparkles className="w-3.5 h-3.5 text-amber-300" />
                       <span>Simulate Daily Spin ({questProgress}/3)</span>
                     </button>
                   ) : (
-                    <div className="mt-2 w-full py-2.5 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-gilroyBold text-xs tracking-wider uppercase text-center flex items-center justify-center gap-1.5">
+                    <div className="mt-2 w-full py-2.5 sm:py-3 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-gilroyBold text-[11px] sm:text-xs tracking-wider uppercase text-center flex items-center justify-center gap-1.5">
                       <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                       <span>Quest Cleared & Rewarded!</span>
                     </div>
@@ -1329,14 +1329,14 @@ export const HeroSection: React.FC = () => {
                   <Layers className="w-3.5 h-3.5 text-[#FFA28D]" />
                   <span>Unlockable Loot Passes:</span>
                 </span>
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-2 sm:gap-2.5">
                   <div
                     data-cursor="reward"
                     data-cursor-text="MYTHIC"
                     className="hero-collectible-item group relative cursor-pointer"
                     title="Mythic Pass"
                   >
-                    <img src="/card/collect-1.webp" alt="Pass 1" width={36} height={40} loading="lazy" decoding="async" className="w-9 h-9 object-contain transform group-hover:scale-125 transition-transform duration-200 drop-shadow-[0_0_8px_rgba(255,162,141,0.5)]" />
+                    <img src="/card/collect-1.webp" alt="Pass 1" width={36} height={40} loading="lazy" decoding="async" className="w-8 h-8 sm:w-9 sm:h-9 object-contain transform group-hover:scale-125 transition-transform duration-200 drop-shadow-[0_0_8px_rgba(255,162,141,0.5)]" />
                   </div>
                   <div
                     data-cursor="reward"
@@ -1344,7 +1344,7 @@ export const HeroSection: React.FC = () => {
                     className="hero-collectible-item group relative cursor-pointer"
                     title="Rare Drop"
                   >
-                    <img src="/card/collect-2.webp" alt="Pass 2" width={36} height={44} loading="lazy" decoding="async" className="w-9 h-9 object-contain transform group-hover:scale-125 transition-transform duration-200 drop-shadow-[0_0_8px_rgba(123,44,191,0.5)]" />
+                    <img src="/card/collect-2.webp" alt="Pass 2" width={36} height={44} loading="lazy" decoding="async" className="w-8 h-8 sm:w-9 sm:h-9 object-contain transform group-hover:scale-125 transition-transform duration-200 drop-shadow-[0_0_8px_rgba(123,44,191,0.5)]" />
                   </div>
                   <div
                     data-cursor="reward"
@@ -1352,15 +1352,15 @@ export const HeroSection: React.FC = () => {
                     className="hero-collectible-item group relative cursor-pointer"
                     title="Gold Pass"
                   >
-                    <img src="/card/collect-3.webp" alt="Pass 3" width={36} height={43} loading="lazy" decoding="async" className="w-9 h-9 object-contain transform group-hover:scale-125 transition-transform duration-200 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]" />
+                    <img src="/card/collect-3.webp" alt="Pass 3" width={36} height={43} loading="lazy" decoding="async" className="w-8 h-8 sm:w-9 sm:h-9 object-contain transform group-hover:scale-125 transition-transform duration-200 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]" />
                   </div>
                 </div>
               </div>
 
-              {/* Floating Human Testimonial Card */}
+              {/* Floating Human Testimonial Card (Desktop / Tablet view) */}
               <div
                 ref={testimonialRef}
-                className="hero-floating-chip absolute -bottom-6 -left-6 glass-pill p-3.5 max-w-[270px] hidden sm:flex items-start gap-3 border border-white/20 shadow-2xl backdrop-blur-xl"
+                className="hero-floating-chip absolute -bottom-6 -left-6 glass-pill p-3.5 max-w-[270px] hidden md:flex items-start gap-3 border border-white/20 shadow-2xl backdrop-blur-xl"
               >
                 <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-600 to-pink-500 flex items-center justify-center font-gilroyBold text-xs text-white shrink-0 shadow">
                   DK
@@ -1387,48 +1387,48 @@ export const HeroSection: React.FC = () => {
         </div>
 
         {/* ── BOTTOM STATS BAR ── */}
-        <div ref={statsSectionRef} className="mt-14 pt-8 relative grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+        <div ref={statsSectionRef} className="mt-10 sm:mt-14 pt-6 sm:pt-8 relative grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 text-center">
           {/* Animated Top Divider */}
           <div className="stats-divider-line absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-[#360C9F] via-[#FFA28D] to-transparent pointer-events-none" />
 
           <div className="stat-item flex flex-col items-center gap-1 group">
             <span
               ref={stat1Ref}
-              className="font-gilroyBold text-3xl sm:text-5xl text-white tracking-tight group-hover:scale-105 transition-transform duration-200"
+              className="font-gilroyBold text-2xl sm:text-4xl md:text-5xl text-white tracking-tight group-hover:scale-105 transition-transform duration-200"
             >
               0+
             </span>
-            <span className="font-gilroyRegular text-xs sm:text-sm text-gray-400">Active Quest Players</span>
+            <span className="font-gilroyRegular text-[11px] sm:text-xs md:text-sm text-gray-400">Active Quest Players</span>
           </div>
 
           <div className="stat-item flex flex-col items-center gap-1 group">
             <span
               ref={stat2Ref}
-              className="font-gilroyBold text-3xl sm:text-5xl text-transparent bg-clip-text bg-gradient-to-r from-[#FFA28D] to-amber-300 tracking-tight group-hover:scale-105 transition-transform duration-200"
+              className="font-gilroyBold text-2xl sm:text-4xl md:text-5xl text-transparent bg-clip-text bg-gradient-to-r from-[#FFA28D] to-amber-300 tracking-tight group-hover:scale-105 transition-transform duration-200"
             >
               0 Million
             </span>
-            <span className="font-gilroyRegular text-xs sm:text-sm text-gray-400">Daily Quests Cleared</span>
+            <span className="font-gilroyRegular text-[11px] sm:text-xs md:text-sm text-gray-400">Daily Quests Cleared</span>
           </div>
 
           <div className="stat-item flex flex-col items-center gap-1 group">
             <span
               ref={stat3Ref}
-              className="font-gilroyBold text-3xl sm:text-5xl text-white tracking-tight group-hover:scale-105 transition-transform duration-200"
+              className="font-gilroyBold text-2xl sm:text-4xl md:text-5xl text-white tracking-tight group-hover:scale-105 transition-transform duration-200"
             >
               0+
             </span>
-            <span className="font-gilroyRegular text-xs sm:text-sm text-gray-400">Passes & Rewards Claimed</span>
+            <span className="font-gilroyRegular text-[11px] sm:text-xs md:text-sm text-gray-400">Passes & Rewards Claimed</span>
           </div>
 
           <div className="stat-item flex flex-col items-center gap-1 group">
             <span
               ref={stat4Ref}
-              className="font-gilroyBold text-3xl sm:text-5xl text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-[#FFA28D] tracking-tight group-hover:scale-105 transition-transform duration-200"
+              className="font-gilroyBold text-2xl sm:text-4xl md:text-5xl text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-[#FFA28D] tracking-tight group-hover:scale-105 transition-transform duration-200"
             >
               0%
             </span>
-            <span className="font-gilroyRegular text-xs sm:text-sm text-gray-400">Positive Player Feedback</span>
+            <span className="font-gilroyRegular text-[11px] sm:text-xs md:text-sm text-gray-400">Positive Player Feedback</span>
           </div>
         </div>
 

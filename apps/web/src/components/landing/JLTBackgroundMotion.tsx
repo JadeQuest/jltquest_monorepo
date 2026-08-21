@@ -441,7 +441,7 @@ export const JLTBackgroundMotion: React.FC = () => {
               if (node) tokenRefs.current.set(token.id, node);
               else tokenRefs.current.delete(token.id);
             }}
-            className="jlt-bg-token-wrapper flex items-center justify-center will-change-transform"
+            className={`jlt-bg-token-wrapper ${token.size > 80 && !token.isWatermark ? 'hidden sm:flex' : 'flex'} items-center justify-center will-change-transform`}
             style={style}
           >
             {/* Ambient Backlight Glow Ring */}

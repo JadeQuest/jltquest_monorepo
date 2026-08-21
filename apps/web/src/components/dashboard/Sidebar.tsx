@@ -128,7 +128,7 @@ const SidebarComponent: React.FC<SidebarProps> = ({
             className="fixed inset-0 bg-black/80 backdrop-blur-md"
             onClick={onMobileClose}
           />
-          <div className="relative w-[300px] max-w-[85vw] h-full bg-[#080411] p-6 flex flex-col justify-start z-50 border-r border-white/10 overflow-y-auto shadow-2xl animate-fade-in">
+          <div className="relative w-full max-w-full h-full bg-[#080411] p-6 flex flex-col justify-start z-50 border-r border-white/10 overflow-y-auto shadow-2xl animate-fade-in">
             {navContent}
           </div>
         </div>

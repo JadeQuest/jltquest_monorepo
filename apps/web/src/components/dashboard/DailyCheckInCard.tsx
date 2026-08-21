@@ -40,8 +40,8 @@ const DailyCheckInCardComponent: React.FC = () => {
   };
 
   return (
-    <div className="daily-card-panel p-4 sm:p-6 flex flex-col justify-between min-h-[260px] relative overflow-hidden">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+    <div className="daily-card-panel p-4 sm:p-6 flex flex-col justify-between min-h-[160px] sm:min-h-[260px] relative overflow-hidden">
+      <div className="flex flex-row items-start justify-between gap-2 sm:gap-4 w-full">
         <div className="flex flex-col gap-1.5">
           <h2 className="text-white font-gilroyBold text-2xl font-bold tracking-tight">
             Daily Check In
@@ -64,15 +64,15 @@ const DailyCheckInCardComponent: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-7 gap-1 sm:gap-3 mt-4 items-end overflow-x-auto pb-1">
+      <div className="flex justify-between sm:grid sm:grid-cols-7 mt-4 items-end w-full">
         {daysData.map((item, idx) => (
-          <div key={idx} className={`flex flex-col items-center gap-2 ${item.active ? '' : 'opacity-30'}`}>
-            <span className={`${item.active ? 'text-purple-200' : 'text-gray-400'} font-gilroyBold text-sm font-bold tracking-wide`}>
+          <div key={idx} className={`flex flex-col items-center gap-1.5 sm:gap-2 ${item.active ? '' : 'opacity-30'}`}>
+            <span className={`${item.active ? 'text-purple-200' : 'text-gray-400'} font-gilroyBold text-[10px] sm:text-sm font-bold tracking-wide`}>
               {item.day}
             </span>
 
-            <div className="relative w-full h-16 flex items-end justify-center">
-              <svg width="42" height="50" viewBox="0 0 42 50" fill="none">
+            <div className="relative w-full h-12 sm:h-16 flex items-end justify-center">
+              <svg className="w-[30px] sm:w-[42px] h-[36px] sm:h-[50px]" viewBox="0 0 42 50" preserveAspectRatio="xMidYMax meet" fill="none">
                 <defs>
                   <linearGradient id={`coinTopGrad_${idx}`} x1="0" y1="0" x2="42" y2="0">
                     <stop stopColor="#FCD34D" />

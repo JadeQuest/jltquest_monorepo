@@ -457,7 +457,19 @@ export default function RarePassPage() {
             <div className="daily-card-panel p-4 sm:p-6 relative overflow-hidden flex flex-col gap-4 shadow-2xl group/track">
 
               {/* 3-Tier Container: Left Track Labels + Right Horizontal Scrollable Grid */}
-              <div className="flex items-stretch gap-4">
+              <div className="flex flex-col sm:flex-row items-stretch gap-4">
+                {/* Mobile Track Headers */}
+                <div className="flex sm:hidden flex-row justify-between items-center w-full shrink-0 select-none px-2 pb-1">
+                  <div className="flex-1 text-center">
+                    <span className="text-cyan-300 font-gilroyBold text-sm uppercase tracking-wider drop-shadow-sm">Free Pass</span>
+                  </div>
+                  <div className="w-[52px] text-center shrink-0">
+                  </div>
+                  <div className="flex-1 text-center">
+                    <span className="text-amber-300 font-gilroyBold text-sm uppercase tracking-wider drop-shadow-sm">Premium</span>
+                  </div>
+                </div>
+
                 {/* Pinned Left Track Headers */}
                 <div className="hidden sm:flex flex-col justify-between w-[150px] shrink-0 select-none py-1">
                   {/* Top: Premium Header */}
@@ -520,9 +532,9 @@ export default function RarePassPage() {
                 {/* Right Horizontal Scrollable Pass Tiers */}
                 <div
                   ref={scrollRef}
-                  className="overflow-x-auto pb-1 pt-1 px-1 scroll-smooth flex-grow [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+                  className="overflow-y-auto sm:overflow-y-visible overflow-x-hidden sm:overflow-x-auto max-h-[60vh] sm:max-h-none pb-1 pt-1 px-1 scroll-smooth flex-grow [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
                 >
-                  <div className="flex gap-3 w-max min-w-full">
+                  <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-max min-w-full">
                     {rewards.map((levelConfig: RarePassLevelConfig) => {
                       const isLevelUnlocked = currentLevel >= levelConfig.level;
                       const isCurrentLevel = currentLevel === levelConfig.level;
@@ -532,11 +544,11 @@ export default function RarePassPage() {
                       return (
                         <div
                           key={levelConfig.level}
-                          className="w-[164px] shrink-0 flex flex-col justify-between items-center select-none"
+                          className="w-full sm:w-[164px] shrink-0 flex flex-row sm:flex-col justify-between items-stretch sm:items-center select-none"
                         >
-                          {/* ══ TOP ROW: PREMIUM REWARD CARD ══ */}
+                          {/* ══ TOP ROW (Mobile Right): PREMIUM REWARD CARD ══ */}
                           <div
-                            className={`h-[145px] w-full p-2.5 rounded-2xl flex flex-col justify-between items-center text-center relative transition-all duration-300 ${isPremium && isLevelUnlocked
+                            className={`h-[145px] flex-1 sm:w-full p-2.5 rounded-2xl flex flex-col justify-between items-center text-center relative transition-all duration-300 order-3 sm:order-1 ${isPremium && isLevelUnlocked
                               ? 'glass-panel bg-amber-500/10 border-amber-400/30 shadow-[0_0_15px_rgba(245,158,11,0.15)]'
                               : 'glass-panel opacity-70'
                               }`}
@@ -597,14 +609,14 @@ export default function RarePassPage() {
                           </div>
 
                           {/* ══ CENTER ROW: PROGRESS LINE & MILESTONE NODE ══ */}
-                          <div className="h-[52px] w-full flex items-center justify-center relative my-1">
-                            {/* Horizontal Progress Track Line */}
-                            <div className="absolute top-1/2 -translate-y-1/2 left-0 right-0 h-1.5 bg-black/80 border-y border-white/10 z-0" />
+                          <div className="w-[52px] sm:w-full h-auto sm:h-[52px] flex items-center justify-center relative mx-1 sm:mx-0 sm:my-1 order-2 sm:order-2 shrink-0">
+                            {/* Horizontal/Vertical Progress Track Line */}
+                            <div className="absolute left-1/2 -translate-x-1/2 top-0 bottom-0 w-1.5 sm:w-auto sm:top-1/2 sm:-translate-y-1/2 sm:left-0 sm:right-0 sm:h-1.5 bg-black/80 border-x sm:border-x-0 sm:border-y border-white/10 z-0" />
                             {isLevelUnlocked && (
                               <div
-                                className={`absolute top-1/2 -translate-y-1/2 left-0 h-1.5 z-0 ${isCurrentLevel
-                                  ? 'right-1/2 bg-gradient-to-r from-[#00F0FF] via-[#7B2CBF] to-[#FFA28D] shadow-[0_0_8px_#00F0FF]'
-                                  : 'right-0 bg-gradient-to-r from-[#00F0FF] via-[#7B2CBF] to-[#FFA28D]'
+                                className={`absolute left-1/2 -translate-x-1/2 top-0 w-1.5 sm:w-auto sm:top-1/2 sm:-translate-y-1/2 sm:left-0 sm:h-1.5 z-0 ${isCurrentLevel
+                                  ? 'bottom-1/2 sm:bottom-auto sm:right-1/2 bg-gradient-to-b sm:bg-gradient-to-r from-[#00F0FF] via-[#7B2CBF] to-[#FFA28D] shadow-[0_0_8px_#00F0FF]'
+                                  : 'bottom-0 sm:bottom-auto sm:right-0 bg-gradient-to-b sm:bg-gradient-to-r from-[#00F0FF] via-[#7B2CBF] to-[#FFA28D]'
                                   }`}
                               />
                             )}
@@ -622,9 +634,9 @@ export default function RarePassPage() {
                             </div>
                           </div>
 
-                          {/* ══ BOTTOM ROW: FREE REWARD CARD ══ */}
+                          {/* ══ BOTTOM ROW (Mobile Left): FREE REWARD CARD ══ */}
                           <div
-                            className={`h-[145px] w-full p-2.5 rounded-2xl flex flex-col justify-between items-center text-center relative transition-all duration-300 ${isLevelUnlocked
+                            className={`h-[145px] flex-1 sm:w-full p-2.5 rounded-2xl flex flex-col justify-between items-center text-center relative transition-all duration-300 order-1 sm:order-3 ${isLevelUnlocked
                               ? 'glass-panel shadow-[0_0_15px_rgba(0,240,255,0.1)]'
                               : 'glass-panel opacity-70'
                               }`}
@@ -689,7 +701,7 @@ export default function RarePassPage() {
           )}
 
           {activeTab === 'missions' && missions && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {missions.map((mission: RarePassMission) => (
                 <div key={mission.id} className="daily-card-panel p-5 flex flex-col justify-between min-h-[200px] relative overflow-hidden group">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-600/10 rounded-full blur-2xl group-hover:bg-cyan-600/20 transition-all duration-500" />

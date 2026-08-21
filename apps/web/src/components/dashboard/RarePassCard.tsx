@@ -18,7 +18,7 @@ const RarePassCardComponent: React.FC = () => {
   const isPremium = status?.progression?.isPremium ?? false;
 
   return (
-    <div className="cosmic-space-card glass-panel p-5 sm:p-6 flex flex-col justify-between h-[320px] sm:h-[360px] relative overflow-hidden group select-none">
+    <div className="cosmic-space-card glass-panel p-5 sm:p-6 flex flex-col justify-between h-[260px] sm:h-[280px] relative overflow-hidden group select-none">
       {/* Base Dark Background */}
       <div className="absolute inset-0 bg-[#180C30] z-0" />
 

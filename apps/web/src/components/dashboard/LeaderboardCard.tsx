@@ -63,13 +63,13 @@ export const LeaderboardCardComponent: React.FC = () => {
         </div>
 
         {/* Tab Filters */}
-        <div className="flex flex-wrap bg-black/40 border border-white/10 rounded-xl p-1 gap-1 w-fit">
+        <div className="flex w-full sm:w-fit bg-black/40 border border-white/10 rounded-xl p-1 gap-0.5 sm:gap-1">
           {LEADERBOARD_TABS.map((tab) => (
             <button
               key={tab.id}
               type="button"
               onClick={() => setActiveType(tab.id)}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-gilroyBold transition-all cursor-pointer ${activeType === tab.id
+              className={`flex-1 sm:flex-none px-1 sm:px-3.5 py-1.5 rounded-lg text-[10px] sm:text-xs font-gilroyBold transition-all cursor-pointer text-center whitespace-nowrap ${activeType === tab.id
                   ? 'bg-purple-500/30 text-white border border-purple-400/40 shadow-[0_0_12px_#7B2CBF]'
                   : 'text-gray-400 hover:text-white hover:bg-white/5'
                 }`}
@@ -93,9 +93,9 @@ export const LeaderboardCardComponent: React.FC = () => {
             return (
               <div
                 key={user.id}
-                className="lb-row-anim will-change-transform flex items-center justify-between p-3 rounded-xl bg-black/30 border border-white/5 hover:border-purple-500/30 transition-all hover:bg-white/5 gap-3"
+                className="lb-row-anim will-change-transform flex items-center justify-between p-3 rounded-xl bg-black/30 border border-white/5 hover:border-purple-500/30 transition-all hover:bg-white/5 gap-2 sm:gap-3"
               >
-                <div className="flex items-center gap-3 min-w-0">
+                <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
                   {/* Rank Badge */}
                   <span
                     className={`w-7 h-7 shrink-0 rounded-lg flex items-center justify-center font-gilroyBold text-xs font-bold ${user.rank === 1
@@ -121,24 +121,27 @@ export const LeaderboardCardComponent: React.FC = () => {
                   />
 
                   {/* User Address & Level Details */}
-                  <div className="flex items-center gap-2 sm:gap-3 flex-wrap sm:flex-nowrap">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-3 min-w-0">
                     <div 
-                      className="flex items-center gap-1.5 text-white hover:text-purple-300 transition-colors cursor-pointer group"
+                      className="flex items-center gap-1.5 text-white hover:text-purple-300 transition-colors cursor-pointer group min-w-0"
                       onClick={() => user.walletAddress && navigator.clipboard.writeText(user.walletAddress)}
                       title="Copy Wallet Address"
                     >
-                      <span className="font-gilroyBold text-xs sm:text-sm tracking-wide font-mono break-all">
+                      <span className="font-gilroyBold text-xs sm:text-sm tracking-wide font-mono truncate">
                         {user.walletAddress || user.maskedAddress}
                       </span>
-                      <Copy className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                      <Copy className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 hidden sm:block" />
                     </div>
-                    <span className="text-purple-300 font-gilroyMedium text-[11px] sm:text-xs sm:border-l border-white/10 sm:pl-3 shrink-0">
-                      Lvl {user.level}
-                    </span>
-                    <span className={`text-[10px] font-gilroyBold px-1.5 py-0.5 rounded border hidden sm:flex items-center gap-1 shrink-0 ${tierColor}`}>
-                      <img src={tierBadge} alt={tierName} className="w-3.5 h-3.5 object-contain drop-shadow-sm" />
-                      {tierName}
-                    </span>
+                    
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-purple-300 font-gilroyMedium text-[10px] sm:text-xs sm:border-l border-white/10 sm:pl-3 shrink-0">
+                        Lvl {user.level}
+                      </span>
+                      <span className={`text-[9px] sm:text-[10px] font-gilroyBold px-1.5 py-0.5 rounded border flex items-center gap-1 shrink-0 ${tierColor}`}>
+                        <img src={tierBadge} alt={tierName} className="w-3 h-3 sm:w-3.5 sm:h-3.5 object-contain drop-shadow-sm" />
+                        {tierName}
+                      </span>
+                    </div>
                   </div>
                 </div>
 

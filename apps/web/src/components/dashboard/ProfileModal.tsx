@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { X, User, Trophy, Star, Target } from 'lucide-react';
+import { X, User, Trophy, Star, Target, Edit2 } from 'lucide-react';
 import { DashboardData } from '@/hooks/useDashboard';
 import { useAvatar } from '@/hooks/useAvatar';
 import { useRarePass } from '@/hooks/useRarePass';
@@ -119,9 +119,9 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, das
 
         <div className="space-y-6 relative z-10">
           {/* Avatar Section (Live Preview) */}
-          <div className="flex items-center justify-between bg-white/5 rounded-2xl p-5 border border-white/5">
-            <div className="flex items-center gap-5">
-              <div className="relative shrink-0 w-24 h-24 rounded-2xl overflow-hidden border-2 border-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.5)]">
+          <div className="flex flex-row items-center justify-between bg-white/5 rounded-2xl p-4 sm:p-5 border border-white/5 gap-3">
+            <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
+              <div className="relative shrink-0 w-14 h-14 sm:w-24 sm:h-24 rounded-2xl overflow-hidden border-2 border-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.5)]">
                 <img
                   src={previewAvatarUrl}
                   onError={(e) => {
@@ -131,19 +131,21 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, das
                   className="w-full h-full object-cover transition-all duration-200"
                 />
               </div>
-              <div>
-                <p className="text-sm font-gilroyMedium text-white/60">
+              <div className="flex-1 min-w-0">
+                <p className="text-[10px] sm:text-sm font-gilroyMedium text-white/60 truncate">
                   {isChoosingAvatar && selectedVariant ? 'Selected Preview' : 'Current Avatar'}
                 </p>
-                <p className="text-xl font-gilroyBold text-white mt-1">{previewAvatarName}</p>
+                <p className="text-sm sm:text-xl font-gilroyBold text-white mt-0.5 sm:mt-1 truncate">{previewAvatarName}</p>
               </div>
             </div>
             {!isChoosingAvatar && (
               <button
                 onClick={handleOpenChooser}
-                className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-gilroyMedium text-sm transition-colors shadow-lg"
+                className="w-9 h-9 sm:w-auto sm:px-4 sm:py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl transition-colors shadow-lg flex items-center justify-center shrink-0 gap-2"
+                title="Choose Avatar"
               >
-                Choose Avatar
+                <Edit2 className="w-4 h-4 sm:hidden" />
+                <span className="hidden sm:inline font-gilroyMedium text-sm whitespace-nowrap">Choose Avatar</span>
               </button>
             )}
           </div>

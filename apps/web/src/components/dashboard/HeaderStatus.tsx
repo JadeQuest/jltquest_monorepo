@@ -92,7 +92,7 @@ const HeaderStatusComponent: React.FC<HeaderStatusProps> = ({
           <img src="/jltcolor.svg" alt="JLT Logo" width={36} height={36} className="w-9 h-9 object-contain" />
         </div>
 
-        <div className="flex flex-wrap items-center justify-end gap-3 sm:gap-4">
+        <div className="flex items-center justify-end gap-2 sm:gap-4 shrink-0">
           {isConnected && address && (
             <>
 
@@ -107,8 +107,8 @@ const HeaderStatusComponent: React.FC<HeaderStatusProps> = ({
                     className="w-full h-full object-contain"
                   />
                 </div>
-                <span className="text-white font-gilroyBold text-sm sm:text-base font-bold tracking-wide">
-                  {displayCoins} GP
+                <span className="text-white font-gilroyBold text-xs sm:text-base font-bold tracking-wide">
+                  {displayCoins} <span className="hidden sm:inline">GP</span>
                 </span>
               </div>
 
@@ -125,8 +125,8 @@ const HeaderStatusComponent: React.FC<HeaderStatusProps> = ({
                     className="w-full h-full object-contain"
                   />
                 </div>
-                <span className="text-white font-gilroyBold text-sm sm:text-base font-bold tracking-wide">
-                  {displayTokens} JLT
+                <span className="text-white font-gilroyBold text-xs sm:text-base font-bold tracking-wide">
+                  {displayTokens} <span className="hidden sm:inline">JLT</span>
                 </span>
               </div>
             </>

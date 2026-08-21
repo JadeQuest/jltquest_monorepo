@@ -217,7 +217,7 @@ export default function QuestsPage() {
       {/* ════════════════════════════════════════════════════════
           RARE PASS SEASON BANNER & HERO BAR
           ════════════════════════════════════════════════════════ */}
-      <div className="daily-card-panel p-6 sm:p-8 relative overflow-hidden flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 shadow-2xl">
+      <div className="daily-card-panel p-5 sm:p-8 relative overflow-hidden flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 sm:gap-6 shadow-2xl">
         <div className="absolute inset-0 bg-radial from-[#7B2CBF]/25 via-transparent to-transparent pointer-events-none" />
 
         {/* Left — title + description */}
@@ -231,7 +231,7 @@ export default function QuestsPage() {
             </div>
           </div>
 
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-gilroyBold text-white tracking-tight drop-shadow-md">
+          <h1 className="text-2xl sm:text-4xl lg:text-5xl font-gilroyBold text-white tracking-tight drop-shadow-md">
             Quests
           </h1>
           <p className="text-purple-200 font-gilroyRegular text-sm sm:text-base leading-relaxed opacity-90">
@@ -242,9 +242,9 @@ export default function QuestsPage() {
         {/* Right — quick stats or connect prompt */}
         <div className="w-full lg:w-auto z-10 shrink-0">
           {isConnected && quests ? (
-            <div className="glass-panel p-5 sm:p-6 rounded-2xl flex flex-col gap-4 min-w-full lg:min-w-[340px] shadow-xl border border-white/10">
+            <div className="glass-panel p-4 sm:p-6 rounded-2xl flex flex-col gap-3 sm:gap-4 min-w-full lg:min-w-[340px] shadow-xl border border-white/10">
               <div className="flex justify-between items-center">
-                <span className="text-xs text-purple-300 font-gilroyMedium uppercase tracking-wider">
+                <span className="text-[11px] sm:text-xs text-purple-300 font-gilroyMedium uppercase tracking-wider">
                   Ready to Claim
                 </span>
                 <span className="text-2xl font-gilroyBold text-white tracking-wide">
@@ -278,8 +278,8 @@ export default function QuestsPage() {
           ════════════════════════════════════════════════════════ */}
       <div className="w-full">
         {/* Tabs */}
-        <div className="overflow-x-auto pb-2 mb-5 scrollbar-hide">
-          <div className="flex bg-black/40 border border-white/10 rounded-xl p-1.5 w-max gap-1 backdrop-blur-md">
+        <div className="overflow-x-auto pb-2 mb-4 sm:mb-5 hide-scrollbar w-full">
+          <div className="flex bg-black/40 border border-white/10 rounded-xl p-1 sm:p-1.5 w-max gap-1 backdrop-blur-md">
             {CATEGORIES.map((cat) => {
               const meta = CATEGORY_META[cat];
               const count = groupedQuests[cat]?.length ?? 0;
@@ -288,7 +288,7 @@ export default function QuestsPage() {
                 <button
                   key={cat}
                   onClick={() => setActiveTab(cat)}
-                  className={`px-4 py-2 rounded-lg font-gilroyMedium text-sm font-semibold tracking-wide transition-all flex items-center gap-1.5 cursor-pointer ${isActive
+                  className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg font-gilroyMedium text-[11px] sm:text-sm font-semibold tracking-wide transition-all flex items-center gap-1.5 cursor-pointer ${isActive
                     ? 'glass-btn text-white shadow-[0_0_15px_#7B2CBF]'
                     : 'text-gray-400 hover:text-white hover:bg-white/5'
                     }`}
@@ -312,7 +312,7 @@ export default function QuestsPage() {
 
         {/* ── NOT CONNECTED: plain ghost skeleton grid (no overlay) ── */}
         {!isConnected && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 select-none pointer-events-none">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 select-none pointer-events-none">
             {Array.from({ length: 8 }).map((_, i) => (
               <QuestCardSkeleton key={i} delay={i * 60} />
             ))}
@@ -328,9 +328,9 @@ export default function QuestsPage() {
         {isConnected && !isLoadingQuests && !isLoadingMissions && (
           <div className="space-y-6">
             {groupedQuests[activeTab]?.length > 0 && (
-              <div ref={cardsGridRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              <div ref={cardsGridRef} className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
                 {groupedQuests[activeTab].map((quest) => (
-                  <div key={quest.id} className="quest-card-anim will-change-transform">
+                  <div key={quest.id} className="quest-card-anim will-change-transform h-full">
                     <QuestCard
                       quest={quest}
                       onClaim={handleClaimQuest}

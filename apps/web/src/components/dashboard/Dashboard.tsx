@@ -46,11 +46,11 @@ export const Dashboard: React.FC = () => {
     <div ref={containerRef} className="flex flex-col gap-6 max-w-[1550px] w-full mx-auto select-none">
       {/* Top Row Cards */}
       <div className="grid grid-cols-12 gap-4 sm:gap-6">
-        <div className="dash-card-item col-span-12 md:col-span-6 lg:col-span-3 will-change-transform">
+        <div className="dash-card-item col-span-6 lg:col-span-3 will-change-transform">
           <LevelCard />
         </div>
 
-        <div className="dash-card-item col-span-12 md:col-span-6 lg:col-span-3 will-change-transform">
+        <div className="dash-card-item col-span-6 lg:col-span-3 will-change-transform">
           <StreakCard />
         </div>
 
@@ -61,11 +61,11 @@ export const Dashboard: React.FC = () => {
 
       {/* Middle Row Cards */}
       <div className="grid grid-cols-12 gap-4 sm:gap-6">
-        <div className="dash-card-item col-span-12 md:col-span-6 lg:col-span-3 will-change-transform">
+        <div className="dash-card-item col-span-6 lg:col-span-3 will-change-transform">
           <SpinToWinCard />
         </div>
 
-        <div className="dash-card-item col-span-12 md:col-span-6 lg:col-span-3 will-change-transform">
+        <div className="dash-card-item col-span-6 lg:col-span-3 will-change-transform">
           <CollectRaresCard />
         </div>
 

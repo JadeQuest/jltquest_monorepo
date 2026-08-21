@@ -128,28 +128,28 @@ export default function InvitesPage() {
   return (
     <div ref={containerRef} className="flex flex-col gap-6 max-w-[1550px] w-full mx-auto select-none">
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-2 mt-4 sm:mt-8">
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-amber-500/20 border border-amber-500/30 text-amber-400">
-              <Users className="w-6 h-6" />
+      <div className="flex flex-col gap-3 sm:gap-4 mb-2 mt-4 sm:mt-8">
+        <div className="flex justify-between items-center gap-2">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <div className="p-2 sm:p-2.5 rounded-xl bg-amber-500/20 border border-amber-500/30 text-amber-400 shrink-0">
+              <Users className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
-            <h1 className="text-3xl sm:text-4xl font-gilroyBold text-white tracking-tight">
+            <h1 className="text-2xl sm:text-4xl font-gilroyBold text-white tracking-tight">
               Invites
             </h1>
           </div>
-          <p className="text-gray-400 font-gilroyMedium text-sm sm:text-base max-w-xl">
-            Invite your squad and earn 100 GP for every successful referral!
-          </p>
-        </div>
-
-        {/* Quick Stats */}
-        <div className="flex items-center gap-4 bg-black/40 p-4 rounded-2xl border border-white/5">
-          <div className="flex flex-col items-center px-4 border-r border-white/10">
-            <span className="text-xs text-purple-300 font-gilroyMedium uppercase tracking-wider mb-1">Total Squad</span>
-            <span className="text-xl font-gilroyBold text-white">{totalInvited}</span>
+          
+          {/* Quick Stats */}
+          <div className="flex items-center bg-black/40 px-3 py-1.5 sm:px-5 sm:py-3 rounded-xl sm:rounded-2xl border border-white/5 shrink-0">
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <span className="text-[11px] sm:text-xs text-purple-300 font-gilroyMedium uppercase tracking-wider">Total Squad:</span>
+              <span className="text-sm sm:text-xl font-gilroyBold text-white leading-none">{totalInvited}</span>
+            </div>
           </div>
         </div>
+        <p className="text-gray-400 font-gilroyMedium text-sm sm:text-base max-w-xl">
+          Invite your squad and earn 100 GP for every successful referral!
+        </p>
       </div>
 
       {/* Tabs */}
@@ -253,29 +253,31 @@ export default function InvitesPage() {
                   </div>
                 </div>
               ) : (
-                <form onSubmit={handleRedeem} className="flex flex-col gap-4">
-                  <div className="flex flex-col gap-2">
+                <form onSubmit={handleRedeem} className="p-4 rounded-2xl bg-black/50 border border-purple-500/30 flex items-center justify-between gap-4">
+                  <div className="flex flex-col flex-1 min-w-0">
+                    <span className="text-xs text-purple-300 font-gilroyMedium mb-0.5">Enter Referral Code</span>
                     <input
                       type="text"
                       placeholder="e.g. JLT_9A8B7C"
                       value={redeemInput}
                       onChange={(e) => setRedeemInput(e.target.value)}
-                      className="w-full px-4 py-3.5 rounded-xl bg-black/50 border border-white/10 text-white font-mono uppercase tracking-wider focus:outline-none focus:border-purple-500/50 transition-colors"
+                      className="w-full bg-transparent text-lg sm:text-xl font-gilroyBold text-amber-400 tracking-wider font-mono placeholder:text-gray-600 focus:outline-none uppercase"
                     />
                   </div>
                   <button
                     type="submit"
                     disabled={isRedeeming || !redeemInput.trim()}
-                    className={`w-full py-3.5 px-6 rounded-xl font-gilroyBold text-base flex items-center justify-center gap-2 transition-all cursor-pointer ${!redeemInput.trim()
+                    className={`shrink-0 px-4 py-2.5 rounded-xl font-gilroyBold text-xs sm:text-sm flex items-center gap-1.5 transition-all ${!redeemInput.trim() || isRedeeming
                       ? 'bg-black/40 text-gray-500 border border-white/10 cursor-not-allowed'
-                      : 'glass-btn text-white shadow-[0_0_20px_#7B2CBF]'
+                      : 'glass-btn text-white shadow-[0_0_15px_#7B2CBF] cursor-pointer'
                       }`}
                   >
                     {isRedeeming ? (
-                      <JLTLoader variant="inline" size="sm" text="Redeeming Code..." />
+                      <JLTLoader variant="inline" size="sm" text="" />
                     ) : (
-                      'Redeem Referral Code'
+                      <Check className="w-4 h-4" />
                     )}
+                    {isRedeeming ? 'Wait...' : 'Redeem'}
                   </button>
                 </form>
               )}

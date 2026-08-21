@@ -6,25 +6,25 @@ import Link from 'next/link';
 const CollectRaresCardComponent: React.FC = () => {
   return (
     <Link href="/dashboard/collection" className="block h-full">
-      <div className="daily-card-panel p-6 flex flex-col justify-between h-[360px] relative overflow-hidden group select-none cursor-pointer transition-transform hover:scale-[1.02]">
+      <div className="daily-card-panel p-3 sm:p-6 flex flex-col justify-between h-[180px] sm:h-[280px] relative overflow-hidden group select-none cursor-pointer transition-transform hover:scale-[1.02]">
         <div className="absolute inset-0 bg-gradient-to-t from-[#7B2CBF]/20 via-transparent to-transparent pointer-events-none" />
 
         <div className="flex flex-col gap-2 z-10">
           <div className="flex justify-between items-start">
-            <h2 className="text-white font-gilroyBold text-2xl font-bold tracking-tight">
+            <h2 className="text-white font-gilroyBold text-lg sm:text-2xl font-bold tracking-tight">
               Rare Collection
             </h2>
           </div>
-          <p className="text-purple-200 font-gilroyRegular text-sm font-normal opacity-90">
+          <p className="text-purple-200 font-gilroyRegular text-[10px] sm:text-sm font-normal opacity-90 leading-tight">
             Build your collection and discover rare creatures by spins and quests.
           </p>
         </div>
 
       {/* Fan of Official Collect Rare Cards */}
-      <div className="relative w-full h-36 sm:h-44 mt-2 flex items-center justify-center">
+      <div className="relative w-full h-24 sm:h-32 mt-1 sm:mt-2 flex items-center justify-center">
         {/* Collect3 Card - Explorer */}
         <div
-          className="absolute right-2 sm:right-6 bottom-2 w-[95px] sm:w-[121px] h-[130px] sm:h-[166px] rounded-[10px] overflow-hidden transform rotate-[15deg] group-hover:rotate-[22deg] transition-transform duration-500 ease-out will-change-transform z-0 flex flex-col"
+          className="absolute right-1 sm:right-6 bottom-0 sm:bottom-2 w-[55px] sm:w-[95px] h-[75px] sm:h-[130px] rounded-[10px] overflow-hidden transform rotate-[15deg] group-hover:rotate-[22deg] transition-transform duration-500 ease-out will-change-transform z-0 flex flex-col"
           style={{ boxShadow: '2px 6px 4.5px 0px rgba(0, 0, 0, 0.7)' }}
         >
           <img
@@ -45,7 +45,7 @@ const CollectRaresCardComponent: React.FC = () => {
 
         {/* Collect2 Card - Leader */}
         <div
-          className="absolute left-1/2 -translate-x-1/2 bottom-3 w-[95px] sm:w-[121px] h-[130px] sm:h-[166px] rounded-[10px] overflow-hidden transform rotate-[4deg] group-hover:rotate-[8deg] transition-transform duration-500 ease-out will-change-transform z-10 flex flex-col"
+          className="absolute left-1/2 -translate-x-1/2 bottom-1 sm:bottom-3 w-[55px] sm:w-[95px] h-[75px] sm:h-[130px] rounded-[10px] overflow-hidden transform rotate-[4deg] group-hover:rotate-[8deg] transition-transform duration-500 ease-out will-change-transform z-10 flex flex-col"
           style={{ boxShadow: '2px 6px 4.5px 0px rgba(0, 0, 0, 0.7)' }}
         >
           <img
@@ -66,7 +66,7 @@ const CollectRaresCardComponent: React.FC = () => {
 
         {/* Collect1 Card - Starter */}
         <div
-          className="absolute left-2 sm:left-6 bottom-1 w-[95px] sm:w-[121px] h-[130px] sm:h-[166px] rounded-[10px] overflow-hidden transform -rotate-[10deg] group-hover:-rotate-[14deg] transition-transform duration-500 ease-out will-change-transform z-20 flex flex-col"
+          className="absolute left-1 sm:left-6 -bottom-1 sm:bottom-1 w-[55px] sm:w-[95px] h-[75px] sm:h-[130px] rounded-[10px] overflow-hidden transform -rotate-[10deg] group-hover:-rotate-[14deg] transition-transform duration-500 ease-out will-change-transform z-20 flex flex-col"
           style={{ boxShadow: '2px 6px 4.5px 0px rgba(0, 0, 0, 0.7)' }}
         >
           <img

@@ -37,7 +37,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   const closeConnectModal = React.useCallback(() => setIsConnectModalOpen(false), []);
 
   return (
-    <div className="w-full min-h-screen lg:h-screen bg-[#080411] text-white flex flex-col lg:flex-row overflow-x-hidden lg:overflow-hidden relative font-gilroyRegular">
+    <div className="w-full h-[100dvh] bg-[#080411] text-white flex flex-col lg:flex-row overflow-hidden relative font-gilroyRegular">
       {/* Main Dashboard Background Image */}
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat pointer-events-none z-0"
@@ -63,7 +63,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         />
 
         {/* Scrollable Dashboard Content Container */}
-        <main className="flex-1 overflow-y-auto p-3 sm:p-6 lg:p-6 space-y-6">
+        <main className="flex-1 overflow-y-auto p-4 pb-24 sm:p-6 lg:p-6 space-y-6">
           {children}
         </main>
       </div>

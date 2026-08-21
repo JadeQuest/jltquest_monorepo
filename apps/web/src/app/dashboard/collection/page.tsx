@@ -200,34 +200,24 @@ export default function CollectionPage() {
       </div>
 
       {/* Collection Stats Bar */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="glass-panel p-5 flex items-center gap-4 rounded-2xl">
-          <div className="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center shrink-0">
-            <Award className="w-6 h-6 text-purple-400" />
+      <div className="grid grid-cols-2 gap-3 sm:gap-4">
+        <div className="glass-panel p-2.5 sm:p-5 flex flex-row items-center gap-2 sm:gap-4 rounded-2xl">
+          <div className="w-7 h-7 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center shrink-0">
+            <Award className="w-3.5 h-3.5 sm:w-6 sm:h-6 text-purple-400" />
           </div>
-          <div>
-            <p className="text-xs text-purple-300 font-gilroyMedium uppercase tracking-wider">Unique Cards</p>
-            <p className="text-2xl font-gilroyBold text-white mt-0.5">{cards.length}</p>
-          </div>
-        </div>
-
-        <div className="glass-panel p-5 flex items-center gap-4 rounded-2xl">
-          <div className="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shrink-0">
-            <Zap className="w-6 h-6 text-[#00F0FF]" />
-          </div>
-          <div>
-            <p className="text-xs text-purple-300 font-gilroyMedium uppercase tracking-wider">Fragment Progress</p>
-            <p className="text-2xl font-gilroyBold text-white mt-0.5">{progressPercent}%</p>
+          <div className="flex flex-row sm:flex-col items-baseline sm:items-start gap-1.5 sm:gap-0">
+            <p className="text-[9px] sm:text-xs text-purple-300 font-gilroyMedium uppercase tracking-wider whitespace-nowrap">Unique</p>
+            <p className="text-sm sm:text-2xl font-gilroyBold text-white">{cards.length}</p>
           </div>
         </div>
 
-        <div className="glass-panel p-5 flex items-center gap-4 rounded-2xl">
-          <div className="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0">
-            <Layers className="w-6 h-6 text-[#FFA28D]" />
+        <div className="glass-panel p-2.5 sm:p-5 flex flex-row items-center gap-2 sm:gap-4 rounded-2xl">
+          <div className="w-7 h-7 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0">
+            <Layers className="w-3.5 h-3.5 sm:w-6 sm:h-6 text-[#FFA28D]" />
           </div>
-          <div>
-            <p className="text-xs text-purple-300 font-gilroyMedium uppercase tracking-wider">Total Quantity</p>
-            <p className="text-2xl font-gilroyBold text-white mt-0.5">
+          <div className="flex flex-row sm:flex-col items-baseline sm:items-start gap-1.5 sm:gap-0">
+            <p className="text-[9px] sm:text-xs text-purple-300 font-gilroyMedium uppercase tracking-wider whitespace-nowrap">Total</p>
+            <p className="text-sm sm:text-2xl font-gilroyBold text-white">
               {cards.reduce((sum, c) => sum + (c.quantity || 1), 0)}
             </p>
           </div>
@@ -245,14 +235,14 @@ export default function CollectionPage() {
           </div>
 
           {/* Rarity filter tabs */}
-          <div className="flex flex-wrap gap-1.5 sm:gap-2">
+          <div className="flex overflow-x-auto hide-scrollbar sm:flex-wrap gap-2 pb-1 sm:pb-0 w-full md:w-auto -mx-4 px-4 sm:mx-0 sm:px-0">
             {['all', 'common', 'rare', 'epic', 'legendary', 'mythical'].map((rarity) => {
               const isActive = selectedRarity === rarity;
               return (
                 <button
                   key={rarity}
                   onClick={() => setSelectedRarity(rarity)}
-                  className={`px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-xl text-[11px] sm:text-xs font-gilroyBold uppercase tracking-wider transition-all duration-300 border ${isActive
+                  className={`shrink-0 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-xl text-[11px] sm:text-xs font-gilroyBold uppercase tracking-wider transition-all duration-300 border ${isActive
                     ? 'bg-purple-600/90 text-white shadow-[0_0_15px_rgba(123,44,191,0.5)] border-purple-400/40'
                     : 'bg-white/5 text-purple-200 border-white/5 hover:bg-white/10 hover:text-white'
                     }`}

@@ -141,16 +141,16 @@ const SpinToWinCardComponent: React.FC = () => {
     <>
       {/* Dashboard Card Trigger */}
       <div
-        className={`daily-card-panel p-6 flex flex-col items-start justify-between h-[360px] relative overflow-hidden select-none group cursor-pointer transition-all duration-300 hover:border-purple-400/50 hover:shadow-[0_0_30px_rgba(123,44,191,0.3)]`}
+        className={`daily-card-panel p-3 sm:p-6 flex flex-col items-start justify-between h-[180px] sm:h-[280px] relative overflow-hidden select-none group cursor-pointer transition-all duration-300 hover:border-purple-400/50 hover:shadow-[0_0_30px_rgba(123,44,191,0.3)]`}
         onClick={handleCardClick}
       >
         <div className="flex flex-col items-start gap-1.5 z-10 group-hover:scale-105 transition-transform duration-300">
-          <h2 className="text-white font-gilroyBold text-2xl font-bold tracking-tight">
+          <h2 className="text-white font-gilroyBold text-lg sm:text-2xl font-bold tracking-tight">
             Spin to Win
           </h2>
-          <div className="glass-pill px-3.5 py-1 inline-flex items-center gap-2 rounded-full shadow-[0_0_15px_rgba(123,44,191,0.3)]">
-            <span className={`w-2 h-2 rounded-full ${canSpin ? 'bg-[#FFA28D] animate-pulse' : 'bg-purple-300/40'}`} />
-            <span className="text-purple-200 font-gilroyMedium text-xs font-semibold tracking-wide">
+          <div className="glass-pill px-2 py-0.5 sm:px-3.5 sm:py-1 inline-flex items-center gap-1 sm:gap-2 rounded-full shadow-[0_0_15px_rgba(123,44,191,0.3)]">
+            <span className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${canSpin ? 'bg-[#FFA28D] animate-pulse' : 'bg-purple-300/40'}`} />
+            <span className="text-purple-200 font-gilroyMedium text-[9px] sm:text-xs font-semibold tracking-wide">
               {!isConnected
                 ? '1 Free Spin Daily'
                 : !spinStatus
@@ -160,13 +160,11 @@ const SpinToWinCardComponent: React.FC = () => {
                 : '0 Free Spins Today'}
             </span>
           </div>
-          <div className="mt-3 px-5 py-2 rounded-xl text-white font-gilroyBold text-xs font-bold uppercase tracking-wider opacity-90 group-hover:opacity-100 transition-all duration-300 glass-btn shadow-[0_0_20px_rgba(123,44,191,0.5)]">
-            Click to Play →
-          </div>
+
         </div>
 
         {/* Decorative wheel image on the card */}
-        <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 w-[340px] h-[340px] flex items-center justify-center pointer-events-none opacity-80 group-hover:opacity-100 transition-opacity duration-300">
+        <div className="absolute -bottom-8 sm:-bottom-12 left-1/2 -translate-x-1/2 w-[90%] sm:w-[260px] aspect-square flex items-center justify-center pointer-events-none opacity-80 group-hover:opacity-100 transition-opacity duration-300">
           <img
             src="/icon/spin.webp"
             alt="Spin to Win Wheel"
@@ -174,7 +172,7 @@ const SpinToWinCardComponent: React.FC = () => {
             height={340}
             loading="lazy"
             decoding="async"
-            className="w-full h-full object-cover object-bottom drop-shadow-[0_10px_25px_rgba(0,0,0,0.7)]"
+            className="w-full h-full object-contain object-bottom drop-shadow-[0_10px_25px_rgba(0,0,0,0.7)]"
           />
         </div>
       </div>

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useLayoutEffect, useCallback } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import {
   Sparkles,
   Trophy,
@@ -13,7 +14,11 @@ import {
   Zap,
   Play,
   Layers,
+  Gift,
+  Copy,
+  Check,
 } from 'lucide-react';
+import { getStoredReferralCode, storeReferralCode } from '@/lib/authCookie';
 import {
   gsap,
   ScrollTrigger,
@@ -77,7 +82,11 @@ interface CanvasParticle {
   pulseSpeed: number;
 }
 
-export const HeroSection: React.FC = () => {
+function HeroSectionContent() {
+  const searchParams = useSearchParams();
+  const [referralCode, setReferralCode] = useState<string | null>(null);
+  const [copiedRef, setCopiedRef] = useState(false);
+
   const sectionRef = useRef<HTMLElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const heroContentRef = useRef<HTMLDivElement>(null);
@@ -90,8 +99,6 @@ export const HeroSection: React.FC = () => {
   const orb2Ref = useRef<HTMLDivElement>(null);
   const orb3Ref = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
-  const symbol1Ref = useRef<HTMLDivElement>(null);
-  const symbol2Ref = useRef<HTMLDivElement>(null);
   const scannerRef = useRef<HTMLDivElement>(null);
   const pulseRingRef = useRef<HTMLDivElement>(null);
   const cardGlowRef = useRef<HTMLDivElement>(null);
@@ -115,6 +122,32 @@ export const HeroSection: React.FC = () => {
   const [coinsCount, setCoinsCount] = useState(1250);
   const [floatingCoins, setFloatingCoins] = useState<number[]>([]);
   const [currentActivityIndex, setCurrentActivityIndex] = useState(0);
+
+  // Detect and capture referral code from query params or local storage
+  useEffect(() => {
+    try {
+      const refQuery = searchParams?.get('ref');
+      if (refQuery) {
+        const cleaned = refQuery.trim().toUpperCase();
+        storeReferralCode(cleaned);
+        setReferralCode(cleaned);
+      } else {
+        const stored = getStoredReferralCode();
+        if (stored) {
+          setReferralCode(stored);
+        }
+      }
+    } catch {
+      // Safe fallback
+    }
+  }, [searchParams]);
+
+  const handleCopyReferral = useCallback(() => {
+    if (!referralCode) return;
+    navigator.clipboard.writeText(referralCode);
+    setCopiedRef(true);
+    setTimeout(() => setCopiedRef(false), 2000);
+  }, [referralCode]);
 
   // Interactive Quest state
   const [questProgress, setQuestProgress] = useState(2);
@@ -172,7 +205,6 @@ export const HeroSection: React.FC = () => {
     }
   }, [questCompleted, questProgress, triggerCoinAnimation]);
 
-
   // ══════════════════════════════════════════════════════════════════════════
   // 8. BACKGROUND JLT ENERGY FIELD (HIGH-PERFORMANCE CANVAS ENGINE)
   // ══════════════════════════════════════════════════════════════════════════
@@ -181,168 +213,7 @@ export const HeroSection: React.FC = () => {
   const questCardCenterRef = useRef<{ x: number; y: number } | null>(null);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d', { alpha: true, desynchronized: true });
-    if (!ctx) return;
-    if (prefersReducedMotion()) return;
-
-    const isTouch = isTouchDevice();
-    let animFrameId: number | null = null;
-    let width = 1;
-    let height = 1;
-    let isActive = true;
-    let lastRenderTime = 0;
-    const frameInterval = isTouch ? 1000 / 30 : 1000 / 45;
-    const resizeCanvas = () => {
-      const parent = canvas.parentElement;
-      const size = resizeCanvasToDisplaySize(
-        canvas,
-        ctx,
-        parent?.clientWidth || window.innerWidth,
-        parent?.clientHeight || window.innerHeight,
-        isTouch ? 1.15 : 1.35
-      );
-      width = size.width;
-      height = size.height;
-    };
-
-    resizeCanvas();
-
-    const particleCount = isTouch ? 12 : 30;
-    const colors = ['#FFA28D', '#8C52FF', '#00F0FF', '#FFD700', '#FFFFFF', '#360C9F'];
-
-    // Initialize particles
-    const particles: CanvasParticle[] = [];
-    for (let i = 0; i < particleCount; i++) {
-      const baseR = Math.random() * 2.5 + 1.2;
-      particles.push({
-        x: Math.random() * width,
-        y: Math.random() * height,
-        vx: (Math.random() - 0.5) * 0.45,
-        vy: (Math.random() - 0.5) * 0.45,
-        baseRadius: baseR,
-        radius: baseR,
-        color: colors[Math.floor(Math.random() * colors.length)],
-        baseAlpha: Math.random() * 0.45 + 0.2,
-        alpha: 0, // Starts at 0, awakens after entrance sequence
-        phase: Math.random() * Math.PI * 2,
-        speed: Math.random() * 0.015 + 0.008,
-        orbitRadius: Math.random() * 40 + 15,
-        pulseSpeed: Math.random() * 0.03 + 0.02,
-      });
-    }
-    particlesRef.current = particles;
-
-    const handleResize = createDebouncedCallback(resizeCanvas, 140);
-
-    const render = (time: number) => {
-      animFrameId = null;
-      if (!isActive || !isDocumentVisible()) return;
-      if (time - lastRenderTime < frameInterval) {
-        scheduleRender();
-        return;
-      }
-      lastRenderTime = time;
-
-      ctx.clearRect(0, 0, width, height);
-
-      const mx = mousePosRef.current.x;
-      const my = mousePosRef.current.y;
-      const cardCenter = questCardCenterRef.current;
-
-      for (let i = 0; i < particles.length; i++) {
-        const p = particles[i];
-        p.phase += p.speed;
-
-        // Curved orbital motion trajectory
-        p.x += p.vx + Math.cos(p.phase) * 0.35;
-        p.y += p.vy + Math.sin(p.phase * 0.8) * 0.35;
-
-        // 4. Quest Scan Cursor Repulsion & Energy Interaction
-        if (mx > -500 && my > -500) {
-          const dx = p.x - mx;
-          const dy = p.y - my;
-          const dist = Math.hypot(dx, dy);
-          const scanRadius = 160;
-
-          if (dist < scanRadius && dist > 0) {
-            const force = (1 - dist / scanRadius) * 2.8;
-            p.x += (dx / dist) * force;
-            p.y += (dy / dist) * force;
-            p.radius = p.baseRadius * (1 + (1 - dist / scanRadius) * 0.7);
-          } else {
-            p.radius += (p.baseRadius - p.radius) * 0.05;
-          }
-        }
-
-        // Periodic subtle attraction vortex toward the Quest Card
-        if (cardCenter && Math.random() < 0.008) {
-          const dx = cardCenter.x - p.x;
-          const dy = cardCenter.y - p.y;
-          const dist = Math.hypot(dx, dy);
-          if (dist > 80 && dist < 500) {
-            p.vx += (dx / dist) * 0.012;
-            p.vy += (dy / dist) * 0.012;
-          }
-        }
-
-        // Boundary wrap
-        if (p.x < -20) p.x = width + 20;
-        if (p.x > width + 20) p.x = -20;
-        if (p.y < -20) p.y = height + 20;
-        if (p.y > height + 20) p.y = -20;
-
-        // Subtle alpha breathing
-        const currentAlpha = p.alpha * (0.8 + Math.sin(time * 0.002 + p.phase) * 0.2);
-
-        // Draw particle with ambient glow
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-        ctx.fillStyle = p.color;
-        ctx.globalAlpha = Math.max(0, Math.min(1, currentAlpha));
-        ctx.shadowColor = p.color;
-        ctx.shadowBlur = p.radius * 3.5;
-        ctx.fill();
-      }
-
-      ctx.globalAlpha = 1;
-      ctx.shadowBlur = 0;
-      scheduleRender();
-    };
-
-    const scheduleRender = () => {
-      if (animFrameId === null) {
-        animFrameId = requestAnimationFrame(render);
-      }
-    };
-
-    const cleanupVisibilityObserver = sectionRef.current
-      ? observeElementVisibility(
-          sectionRef.current,
-          (isVisible) => {
-            isActive = isVisible;
-            if (isVisible) scheduleRender();
-          },
-          { rootMargin: '360px 0px' }
-        )
-      : () => {};
-
-    const handleVisibilityChange = () => {
-      if (isDocumentVisible()) scheduleRender();
-    };
-
-    window.addEventListener('resize', handleResize, { passive: true });
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    scheduleRender();
-
-    return () => {
-      if (animFrameId !== null) cancelAnimationFrame(animFrameId);
-      handleResize.cancel();
-      cleanupVisibilityObserver();
-      window.removeEventListener('resize', handleResize);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
+    // Canvas rendering disabled here in favor of global JLTBackgroundMotion to eliminate double sparkles and boost performance
   }, []);
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -358,8 +229,6 @@ export const HeroSection: React.FC = () => {
     const orb3 = orb3Ref.current;
     const grid = gridRef.current;
     const headline = headlineRef.current;
-    const sym1 = symbol1Ref.current;
-    const sym2 = symbol2Ref.current;
     const scanner = scannerRef.current;
     if (!section || !card) return;
 
@@ -381,11 +250,6 @@ export const HeroSection: React.FC = () => {
 
     const headX = headline ? gsap.quickTo(headline, 'x', { duration: 0.5, ease: 'power2.out', force3D: true }) : null;
     const headY = headline ? gsap.quickTo(headline, 'y', { duration: 0.5, ease: 'power2.out', force3D: true }) : null;
-
-    const sym1X = sym1 ? gsap.quickTo(sym1, 'x', { duration: 0.4, ease: 'power2.out', force3D: true }) : null;
-    const sym1Y = sym1 ? gsap.quickTo(sym1, 'y', { duration: 0.4, ease: 'power2.out', force3D: true }) : null;
-    const sym2X = sym2 ? gsap.quickTo(sym2, 'x', { duration: 0.4, ease: 'power2.out', force3D: true }) : null;
-    const sym2Y = sym2 ? gsap.quickTo(sym2, 'y', { duration: 0.4, ease: 'power2.out', force3D: true }) : null;
 
     const scannerX = scanner ? gsap.quickTo(scanner, 'x', { duration: 0.15, ease: 'power3.out', force3D: true }) : null;
     const scannerY = scanner ? gsap.quickTo(scanner, 'y', { duration: 0.15, ease: 'power3.out', force3D: true }) : null;
@@ -452,15 +316,6 @@ export const HeroSection: React.FC = () => {
         gridX(relX * 16);
         gridY(relY * 16);
       }
-
-      if (sym1X && sym1Y) {
-        sym1X(relX * 42);
-        sym1Y(relY * 36);
-      }
-      if (sym2X && sym2Y) {
-        sym2X(relX * -46);
-        sym2Y(relY * -40);
-      }
     };
 
     const handleMouseMove = (e: MouseEvent) => {
@@ -498,8 +353,6 @@ export const HeroSection: React.FC = () => {
       if (orb2X && orb2Y) { orb2X(0); orb2Y(0); }
       if (orb3X && orb3Y) { orb3X(0); orb3Y(0); }
       if (gridX && gridY) { gridX(0); gridY(0); }
-      if (sym1X && sym1Y) { sym1X(0); sym1Y(0); }
-      if (sym2X && sym2Y) { sym2X(0); sym2Y(0); }
     };
 
     const scheduleRectUpdate = createRafThrottle(updateRects);
@@ -535,123 +388,103 @@ export const HeroSection: React.FC = () => {
     }
 
     const ctx = gsap.context(() => {
+      // Fast-path GPU accelerated Master Timeline
       const masterTl = gsap.timeline({
-        defaults: { ease: MotionEases.powerOut },
-        onComplete: () => {
-          particlesRef.current.forEach((p) => {
-            gsap.to(p, {
-              alpha: p.baseAlpha,
-              duration: 1.4,
-              ease: 'power2.out',
-              stagger: 0.03,
-            });
-          });
-        },
+        defaults: { ease: MotionEases.powerOut, force3D: true },
       });
 
-      // Phase 0: Dark purple ambient field fades in
+      // Phase 0: Ambient orbs fade in with scale
       masterTl.fromTo(
         [orb1Ref.current, orb2Ref.current, orb3Ref.current],
-        { opacity: 0, scale: 0.8 },
-        { opacity: 1, scale: 1, duration: 1.1, stagger: 0.12, ease: 'power2.out' },
+        { opacity: 0, scale: 0.88 },
+        { opacity: 1, scale: 1, duration: 0.8, stagger: 0.08, ease: 'power2.out' },
         0.0
       );
 
-      // Phase 1: Background grid draws itself from center outward
+      // Phase 1: Background grid fades in cleanly (zero clipPath layout penalty)
       if (gridRef.current) {
         masterTl.fromTo(
           gridRef.current,
-          { clipPath: 'circle(0% at 50% 40%)', opacity: 0 },
-          { clipPath: 'circle(150% at 50% 40%)', opacity: 1, duration: 1.35, ease: 'power2.inOut' },
-          0.05
+          { opacity: 0, scale: 0.95 },
+          { opacity: 1, scale: 1, duration: 0.8, ease: 'power2.out' },
+          0.04
         );
       }
 
-      // Phase 2: JLT Symbols scale 0.7 -> 1 with blur reduction
-      if (symbol1Ref.current && symbol2Ref.current) {
-        masterTl.fromTo(
-          [symbol1Ref.current, symbol2Ref.current],
-          { scale: 0.7, opacity: 0, filter: 'blur(12px)' },
-          { scale: 1, opacity: 0.22, filter: 'blur(0px)', duration: 0.95, stagger: 0.15, ease: MotionEases.backOut },
-          0.18
-        );
-      }
-
-      // Phase 3: Top information ticker / marquee slides horizontally into position
+      // Phase 2: Top ticker slides into position
       masterTl.fromTo(
         '.hero-top-ribbon',
-        { y: -35, opacity: 0, scale: 0.96 },
-        { y: 0, opacity: 1, scale: 1, duration: 0.75, ease: 'power3.out' },
-        0.25
+        { y: -20, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out' },
+        0.15
       );
 
-      // Phase 4: Status pills enter from opposite directions
+      // Phase 4: Status pills enter cleanly
       masterTl.fromTo(
         '.hero-pill-left',
-        { x: -50, opacity: 0, scale: 0.92 },
-        { x: 0, opacity: 1, scale: 1, duration: 0.65, ease: 'power3.out' },
-        0.32
+        { x: -30, opacity: 0 },
+        { x: 0, opacity: 1, duration: 0.5, ease: 'power3.out' },
+        0.2
       );
       masterTl.fromTo(
         '.hero-pill-right',
-        { x: 50, opacity: 0, scale: 0.92 },
-        { x: 0, opacity: 1, scale: 1, duration: 0.65, ease: 'power3.out' },
-        0.38
+        { x: 30, opacity: 0 },
+        { x: 0, opacity: 1, duration: 0.5, ease: 'power3.out' },
+        0.24
       );
 
-      // Phase 5: Masked Vertical Headline Typography with Blur Reduction
+      // Phase 5: Masked Vertical Headline Typography (Fast GPU transform without software blur rasterization)
       masterTl.fromTo(
         '.hero-mask-line',
-        { yPercent: 120, opacity: 0, filter: 'blur(10px)' },
-        { yPercent: 0, opacity: 1, filter: 'blur(0px)', stagger: 0.12, duration: 0.85, ease: 'power4.out' },
+        { yPercent: 100, opacity: 0 },
+        { yPercent: 0, opacity: 1, stagger: 0.08, duration: 0.65, ease: 'power4.out' },
+        0.25
+      );
+
+      // Phase 6: Description Fades Upward
+      masterTl.fromTo(
+        '.hero-description',
+        { y: 15, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out' },
         0.42
       );
 
-
-      // Phase 7: Description Fades Upward
-      masterTl.fromTo(
-        '.hero-description',
-        { y: 25, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.65, ease: 'power3.out' },
-        0.65
-      );
-
-      // Phase 8: CTA Buttons enter with slight spring effect
+      // Phase 7: CTA Buttons enter
       masterTl.fromTo(
         '.hero-cta-group',
-        { y: 25, opacity: 0, scale: 0.88 },
-        { y: 0, opacity: 1, scale: 1, duration: 0.75, ease: MotionEases.backOut },
-        0.75
-      );
-
-      // Phase 9: Trust Badges Cascade
-      masterTl.fromTo(
-        '.hero-trust-badge',
-        { y: 15, opacity: 0 },
-        { y: 0, opacity: 1, stagger: 0.08, duration: 0.5, ease: 'power3.out' },
-        0.85
-      );
-
-      // Phase 10: Right Quest Card enters from the right with Scale + 3D Rotation
-      masterTl.fromTo(
-        '.hero-dashboard-panel',
-        { x: 100, rotationY: 15, rotationZ: -2, scale: 0.88, opacity: 0 },
-        { x: 0, rotationY: 0, rotationZ: 0, scale: 1, opacity: 1, duration: 1.05, ease: 'power3.out' },
+        { y: 15, opacity: 0, scale: 0.95 },
+        { y: 0, opacity: 1, scale: 1, duration: 0.55, ease: MotionEases.backOut },
         0.48
       );
 
-      // Phase 11: Orbiting Chips & Loot Collectibles Pop In
+      // Phase 8: Trust Badges Cascade
+      masterTl.fromTo(
+        '.hero-trust-badge',
+        { y: 10, opacity: 0 },
+        { y: 0, opacity: 1, stagger: 0.05, duration: 0.4, ease: 'power3.out' },
+        0.55
+      );
+
+      // Phase 9: Right Quest Card enters with 3D perspective
+      masterTl.fromTo(
+        '.hero-dashboard-panel',
+        { x: 60, rotationY: 8, scale: 0.92, opacity: 0 },
+        { x: 0, rotationY: 0, scale: 1, opacity: 1, duration: 0.75, ease: 'power3.out' },
+        0.3
+      );
+
+      // Phase 10: Orbiting Chips & Loot Collectibles Pop In
       masterTl.fromTo(
         '.hero-floating-chip',
-        { scale: 0.4, opacity: 0 },
-        { scale: 1, opacity: 1, stagger: 0.12, duration: 0.65, ease: MotionEases.backOut },
-        0.82
+        { scale: 0.6, opacity: 0 },
+        { scale: 1, opacity: 1, stagger: 0.08, duration: 0.5, ease: MotionEases.backOut },
+        0.55
       );
       masterTl.fromTo(
         '.hero-collectible-item',
-        { scale: 0.3, opacity: 0, y: 10 },
-        { scale: 1, opacity: 1, y: 0, stagger: 0.08, duration: 0.55, ease: MotionEases.backOut },
-        0.92
+        { scale: 0.5, opacity: 0, y: 6 },
+        { scale: 1, opacity: 1, y: 0, stagger: 0.05, duration: 0.45, ease: MotionEases.backOut },
+        0.6
       );
 
       // Micro-animation inside Quest Card: Progress Bar Fill
@@ -659,15 +492,17 @@ export const HeroSection: React.FC = () => {
         masterTl.fromTo(
           progressBarRef.current,
           { width: '0%' },
-          { width: `${(initialQuestProgressRef.current / 3) * 100}%`, duration: 1.3, ease: 'power2.out' },
-          0.78
+          { width: `${(initialQuestProgressRef.current / 3) * 100}%`, duration: 0.9, ease: 'power2.out' },
+          0.5
         );
       }
 
       // ──────────────────────────────────────────────────────────────────
       // 2. QUEST CARD — "LIVING UI" (INDEPENDENT CONTINUOUS ANIMATIONS)
+      // Skip on mobile — these subtle bobs/pulses add 6+ continuous tweens
+      // that compete with scroll and touch interactions for GPU time.
       // ──────────────────────────────────────────────────────────────────
-      if (coinPillRef.current) {
+      if (!isTouchDevice() && coinPillRef.current) {
         gsap.to(coinPillRef.current, {
           y: -3.5,
           duration: 3.2,
@@ -678,7 +513,7 @@ export const HeroSection: React.FC = () => {
         });
       }
 
-      if (lvlBadgeRef.current) {
+      if (!isTouchDevice() && lvlBadgeRef.current) {
         gsap.to(lvlBadgeRef.current, {
           scale: 1.05,
           boxShadow: '0 0 12px rgba(140,82,255,0.7)',
@@ -690,7 +525,7 @@ export const HeroSection: React.FC = () => {
         });
       }
 
-      if (questPlayIconRef.current) {
+      if (!isTouchDevice() && questPlayIconRef.current) {
         gsap.to(questPlayIconRef.current, {
           rotation: 8,
           duration: 3.5,
@@ -701,7 +536,7 @@ export const HeroSection: React.FC = () => {
         });
       }
 
-      gsap.utils.toArray<HTMLElement>('.hero-collectible-item').forEach((item, index) => {
+      if (!isTouchDevice()) gsap.utils.toArray<HTMLElement>('.hero-collectible-item').forEach((item, index) => {
         gsap.to(item, {
           y: -4.5 + index * 1.5,
           duration: 3.0 + index * 0.6,
@@ -712,7 +547,7 @@ export const HeroSection: React.FC = () => {
         });
       });
 
-      if (testimonialRef.current) {
+      if (!isTouchDevice() && testimonialRef.current) {
         gsap.to(testimonialRef.current, {
           y: -5.5,
           duration: 4.2,
@@ -722,7 +557,6 @@ export const HeroSection: React.FC = () => {
           delay: 1.5,
         });
       }
-
 
       // ──────────────────────────────────────────────────────────────────
       // 9. SCROLL INTERACTION (GSAP SCROLLTRIGGER HERO -> FEATURES)
@@ -972,7 +806,7 @@ export const HeroSection: React.FC = () => {
     <section
       id="hero"
       ref={sectionRef}
-      className="relative w-full pt-24 sm:pt-28 md:pt-36 pb-12 sm:pb-16 px-4 sm:px-6 bg-transparent overflow-hidden min-h-screen flex flex-col justify-center select-none"
+      className="relative w-full pt-24 sm:pt-28 md:pt-32 pb-0 px-4 sm:px-6 bg-transparent overflow-hidden min-h-[92svh] flex flex-col justify-between select-none"
     >
       {/* ── 8. Background JLT Energy Field (Canvas Particle Engine) ── */}
       <canvas
@@ -1006,20 +840,6 @@ export const HeroSection: React.FC = () => {
         className="absolute bottom-10 right-[-8%] w-[700px] h-[700px] rounded-full bg-radial from-[#7B2CBF]/30 via-transparent to-transparent blur-[150px] pointer-events-none"
       />
 
-      {/* Decorative Floating JLT Symbols with Mouse Parallax (14%) */}
-      <div
-        ref={symbol1Ref}
-        className="absolute top-28 left-[8%] w-12 h-12 opacity-15 pointer-events-none z-0 hidden lg:block"
-      >
-        <img src="/jltcolor.svg" alt="" className="w-full h-full object-contain filter drop-shadow-[0_0_15px_#FFA28D]" />
-      </div>
-      <div
-        ref={symbol2Ref}
-        className="absolute bottom-40 right-[10%] w-16 h-16 opacity-15 pointer-events-none z-0 hidden lg:block"
-      >
-        <img src="/jltcolor.svg" alt="" className="w-full h-full object-contain filter drop-shadow-[0_0_20px_#360C9F]" />
-      </div>
-
       {/* Futuristic Background Grid with Center-Outward Draw Entrance & Continuous Drift */}
       <div
         ref={gridRef}
@@ -1044,6 +864,47 @@ export const HeroSection: React.FC = () => {
           {/* ── LEFT COLUMN: High-Impact Typography & Interactive CTAs ── */}
           <div ref={headlineRef} className="lg:col-span-7 flex flex-col items-start gap-6 sm:gap-8 text-left">
             
+            {/* Squad Referral Welcome Banner */}
+            {referralCode && (
+              <div className="hero-referral-banner w-full p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-[#1E085A]/90 via-[#360C9F]/40 to-[#2A0845]/90 border border-amber-400/50 shadow-[0_0_30px_rgba(245,158,11,0.25)] backdrop-blur-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-fade-in mb-1">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-400/50 flex items-center justify-center shrink-0 text-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.3)]">
+                    <Gift className="w-5 h-5 animate-bounce" style={{ animationDuration: '2.5s' }} />
+                  </div>
+                  <div className="flex flex-col">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[11px] sm:text-xs font-gilroyBold uppercase tracking-wider text-amber-300">
+                        Squad Referral Activated
+                      </span>
+                      <span className="px-2 py-0.5 rounded-md bg-black/70 border border-amber-400/40 text-amber-400 font-mono font-bold text-[11px] tracking-wide">
+                        {referralCode}
+                      </span>
+                    </div>
+                    <p className="text-xs sm:text-sm text-gray-200 font-gilroyMedium">
+                      You've been invited! Join now to claim <strong className="text-amber-300 font-gilroyBold">+150 GP</strong> Welcome Bonus.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                  <button
+                    type="button"
+                    onClick={handleCopyReferral}
+                    className="glass-pill px-3 py-1.5 rounded-xl text-xs font-gilroyBold text-white flex items-center gap-1.5 border-amber-400/30 hover:border-amber-400/60 transition-all shrink-0 cursor-pointer"
+                  >
+                    {copiedRef ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                    <span>{copiedRef ? 'Copied' : 'Copy Code'}</span>
+                  </button>
+                  <Link
+                    href={`/dashboard/invites?ref=${encodeURIComponent(referralCode)}`}
+                    className="px-3 py-1.5 rounded-xl text-xs font-gilroyBold text-amber-300 bg-amber-500/20 border border-amber-400/40 hover:bg-amber-500/30 transition-all shrink-0"
+                  >
+                    Redeem GP →
+                  </Link>
+                </div>
+              </div>
+            )}
+
             {/* Status Pills: Counter-directional Entrance */}
             <div className="hero-tagline-pill flex flex-wrap items-center gap-2.5 sm:gap-3">
               <div className="hero-pill-left glass-pill px-3 sm:px-4 py-1.5 sm:py-2 inline-flex items-center gap-2.5 sm:gap-3 shadow-[0_0_25px_rgba(54,12,159,0.4)] border border-purple-500/30">
@@ -1085,20 +946,20 @@ export const HeroSection: React.FC = () => {
             {/* Masked Statement Typography with Vertical Reveal & Light Sweep */}
             <div className="flex flex-col gap-1 sm:gap-1.5 overflow-hidden">
               <div className="overflow-hidden">
-                <h1 className="hero-mask-line font-gilroyBold text-4xl sm:text-6xl lg:text-7xl text-white tracking-tight leading-[1.08] sm:leading-[1.04]">
-                  Play daily.
+                <h1 className="hero-mask-line font-gilroyBold text-5xl sm:text-7xl lg:text-8xl text-white tracking-tight leading-[1.02]">
+                  JLTQuest
                 </h1>
               </div>
 
               <div className="overflow-hidden">
-                <h1 className="hero-mask-line font-gilroyBold text-4xl sm:text-6xl lg:text-7xl text-white tracking-tight leading-[1.08] sm:leading-[1.04]">
-                  Earn real perks.
-                </h1>
+                <h2 className="hero-mask-line font-gilroyBold text-4xl sm:text-6xl lg:text-7xl text-white tracking-tight leading-[1.08] sm:leading-[1.04]">
+                  Play daily.
+                </h2>
               </div>
 
               <div className="overflow-hidden">
                 <h2 className="hero-mask-line font-gilroyBold text-3xl sm:text-5xl lg:text-6xl text-white/90 tracking-tight leading-[1.1] sm:leading-[1.06]">
-                  Rule the quest.
+                  Earn real perks.
                 </h2>
               </div>
             </div>
@@ -1111,11 +972,11 @@ export const HeroSection: React.FC = () => {
             <div className="hero-cta-group flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 sm:gap-4 w-full pt-1">
               <Link
                 ref={startQuestBtnRef}
-                href="/dashboard"
+                href={referralCode ? `/dashboard?ref=${encodeURIComponent(referralCode)}` : '/dashboard'}
                 id="hero-start-quest-btn"
                 data-cursor="cta"
                 data-cursor-text="START →"
-                className="glass-btn gsap-magnetic-btn px-6 sm:px-9 py-3.5 sm:py-4.5 rounded-2xl font-gilroyBold text-white text-base sm:text-lg tracking-wide shadow-[0_0_40px_rgba(54,12,159,0.6)] flex items-center justify-center gap-3 group hover:shadow-[0_0_60px_rgba(255,162,141,0.5)] hover:scale-[1.03] active:scale-[0.98] transition-all duration-200"
+                className="glass-btn gsap-magnetic-btn px-6 sm:px-9 py-3.5 sm:py-4.5 rounded-2xl font-gilroyBold text-white text-base sm:text-lg tracking-wide leading-tight text-center shadow-[0_0_40px_rgba(54,12,159,0.6)] flex items-center justify-center gap-3 group hover:shadow-[0_0_60px_rgba(255,162,141,0.5)] hover:scale-[1.03] active:scale-[0.98] transition-all duration-200"
               >
                 <span>Start Your First Quest</span>
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1.5 transition-transform duration-200 magnetic-icon" />
@@ -1128,7 +989,7 @@ export const HeroSection: React.FC = () => {
                 type="button"
                 data-cursor="reward"
                 data-cursor-text="CLAIM 🪙"
-                className={`relative gsap-magnetic-btn px-5 sm:px-7 py-3.5 sm:py-4.5 rounded-2xl font-gilroyMedium text-sm sm:text-base transition-all duration-300 flex items-center justify-center gap-2.5 border ${
+                className={`relative gsap-magnetic-btn px-5 sm:px-7 py-3.5 sm:py-4.5 rounded-2xl font-gilroyMedium text-sm sm:text-base leading-tight text-center transition-all duration-300 flex items-center justify-center gap-2.5 border ${
                   claimedBonus
                     ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300 cursor-default'
                     : 'glass-pill hover:bg-white/10 text-white border-white/15 hover:border-white/30 hover:scale-[1.02] active:scale-[0.98] cursor-pointer shadow-lg'
@@ -1137,12 +998,12 @@ export const HeroSection: React.FC = () => {
                 {claimedBonus ? (
                   <>
                     <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400" />
-                    <span>+150 Welcome Coins Claimed!</span>
+                    <span>+150 GP Welcome Bonus Claimed!</span>
                   </>
                 ) : (
                   <>
-                    <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-[#FFA28D] animate-spin magnetic-icon" style={{ animationDuration: '5s' }} />
-                    <span>Claim Demo +150 Coins</span>
+                    <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-amber-300 animate-pulse magnetic-icon" />
+                    <span>Claim Demo +150 GP</span>
                   </>
                 )}
               </button>
@@ -1160,7 +1021,7 @@ export const HeroSection: React.FC = () => {
               </div>
               <div className="hero-trust-badge flex items-center gap-1.5">
                 <Trophy className="w-4 h-4 text-[#FFA28D]" />
-                <span>Daily Leaderboard Prizes</span>
+                <span>+100 GP Squad Rewards</span>
               </div>
             </div>
 
@@ -1182,7 +1043,6 @@ export const HeroSection: React.FC = () => {
               aria-hidden="true"
             />
 
-
             {/* Main Interactive Hero Panel */}
             <div
               ref={dashboardCardRef}
@@ -1193,7 +1053,7 @@ export const HeroSection: React.FC = () => {
               className="hero-dashboard-panel w-full max-w-md glass-panel p-5 sm:p-7 md:p-8 flex flex-col gap-5 sm:gap-6 relative z-10 border border-white/15 shadow-[0_30px_70px_rgba(0,0,0,0.75)] backdrop-blur-2xl transition-all duration-300 hover:border-white/35 transform-style-preserve-3d"
             >
               
-              {/* Card Header: Profile & Live Coin Counter */}
+              {/* Card Header: Profile & Live GP Counter */}
               <div className="flex items-center justify-between gap-2 pb-3.5 sm:pb-4 border-b border-white/10">
                 <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
                   <div className="relative shrink-0">
@@ -1202,7 +1062,7 @@ export const HeroSection: React.FC = () => {
                       alt="JLT Mascot"
                       width={48}
                       height={48}
-                      loading="lazy"
+                      loading="eager"
                       decoding="async"
                       className="w-10 h-10 sm:w-12 sm:h-12 object-contain rounded-full bg-[#340073]/80 p-1 border border-white/25 shadow-inner"
                     />
@@ -1226,21 +1086,21 @@ export const HeroSection: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Coin Counter Pill */}
+                {/* GP Counter Pill */}
                 <div
                   ref={coinPillRef}
                   className="glass-pill px-2.5 sm:px-3.5 py-1.5 flex items-center gap-1.5 sm:gap-2 border border-amber-500/40 bg-amber-500/10 relative shadow-[0_0_15px_rgba(251,191,36,0.25)] shrink-0"
                 >
-                  <img src="/icon/coin.webp" alt="Coin" width={20} height={20} className="w-4 h-4 sm:w-5 sm:h-5 object-contain animate-bounce" style={{ animationDuration: '2.5s' }} />
-                  <span className="font-gilroyBold text-amber-300 text-xs sm:text-sm tracking-wide">{coinsCount.toLocaleString()}</span>
+                  <img src="/icon/coin.webp" alt="GP" width={20} height={20} className="w-4 h-4 sm:w-5 sm:h-5 object-contain animate-bounce" style={{ animationDuration: '2.5s' }} />
+                  <span className="font-gilroyBold text-amber-300 text-xs sm:text-sm tracking-wide">{coinsCount.toLocaleString()} GP</span>
                   
-                  {/* Floating +150 Animation */}
+                  {/* Floating +150 GP Animation */}
                   {floatingCoins.map((id) => (
                     <span
                       key={id}
                       className="absolute -top-7 right-1 font-gilroyBold text-xs text-amber-300 animate-fade-up pointer-events-none drop-shadow-[0_0_10px_rgba(251,191,36,0.9)]"
                     >
-                      +150 🪙
+                      +150 GP 🪙
                     </span>
                   ))}
                 </div>
@@ -1269,7 +1129,7 @@ export const HeroSection: React.FC = () => {
                 <div className="flex flex-col gap-1">
                   <h4 className="font-gilroyBold text-white text-sm sm:text-base">Complete 3 JaxMart Daily Spins</h4>
                   <p className="font-gilroyRegular text-xs text-gray-300 leading-relaxed">
-                    Spin the daily wheel to unlock instant coins & rare loot boxes.
+                    Spin the daily wheel to unlock instant GP & rare loot boxes.
                   </p>
                 </div>
 
@@ -1288,7 +1148,7 @@ export const HeroSection: React.FC = () => {
                       )}
                     </span>
                     <span className={`font-gilroyBold transition-colors duration-300 ${questCompleted ? 'text-emerald-400' : 'text-white'}`}>
-                      {questCompleted ? '🎉 COMPLETED (+300 Coins)' : isCardHovered ? '2.4 / 3 (Simulated)' : `${questProgress} / 3 Done`}
+                      {questCompleted ? '🎉 COMPLETED (+300 GP)' : isCardHovered ? '2.4 / 3 (Simulated)' : `${questProgress} / 3 Done`}
                     </span>
                   </div>
 
@@ -1387,9 +1247,9 @@ export const HeroSection: React.FC = () => {
         </div>
 
         {/* ── BOTTOM STATS BAR ── */}
-        <div ref={statsSectionRef} className="mt-10 sm:mt-14 pt-6 sm:pt-8 relative grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 text-center">
+        <div ref={statsSectionRef} className="mt-12 sm:mt-16 py-7 sm:py-9 md:py-10 relative grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 text-center">
           {/* Animated Top Divider */}
-          <div className="stats-divider-line absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-[#360C9F] via-[#FFA28D] to-transparent pointer-events-none" />
+          <div className="stats-divider-line absolute top-0 left-1/2 -translate-x-1/2 w-[85%] max-w-6xl h-[1.5px] bg-gradient-to-r from-transparent via-[#360C9F] via-[#FFA28D] via-[#00F0FF] to-transparent pointer-events-none" />
 
           <div className="stat-item flex flex-col items-center gap-1 group">
             <span
@@ -1434,5 +1294,13 @@ export const HeroSection: React.FC = () => {
 
       </div>
     </section>
+  );
+}
+
+export const HeroSection: React.FC = () => {
+  return (
+    <React.Suspense fallback={<div className="min-h-[92svh] w-full" />}>
+      <HeroSectionContent />
+    </React.Suspense>
   );
 };

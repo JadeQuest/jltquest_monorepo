@@ -265,3 +265,26 @@ export function clearUserSession(): void {
     window.dispatchEvent(new CustomEvent('auth-state-change', { detail: { isAuthenticated: false } }));
   }
 }
+
+/**
+ * Referral Code Management
+ */
+export const REFERRAL_STORAGE_KEY = 'jlt_referral_code';
+
+export function getStoredReferralCode(): string | null {
+  return safeGetLocalStorage(REFERRAL_STORAGE_KEY) || getCookie(REFERRAL_STORAGE_KEY);
+}
+
+export function storeReferralCode(code: string): void {
+  if (!code) return;
+  const sanitized = sanitizeInput(code.trim().toUpperCase());
+  if (!sanitized) return;
+  safeSetLocalStorage(REFERRAL_STORAGE_KEY, sanitized);
+  setCookie(REFERRAL_STORAGE_KEY, sanitized, { days: 30 });
+}
+
+export function clearReferralCode(): void {
+  safeRemoveLocalStorage(REFERRAL_STORAGE_KEY);
+  deleteCookie(REFERRAL_STORAGE_KEY);
+}
+

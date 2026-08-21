@@ -3,7 +3,6 @@
 import React, { useRef, useEffect, useLayoutEffect } from 'react';
 import {
   gsap,
-  ScrollTrigger,
   createDebouncedCallback,
   createRafThrottle,
   hasFineHoverPointer,
@@ -29,29 +28,23 @@ interface TokenConfig {
 }
 
 const TOKENS: TokenConfig[] = [
-  // ── Hero Section Tokens ──
-  { id: 't-hero-1', top: '12%', left: '6%', size: 68, opacity: 0.08, duration: 8.5, parallaxSpeed: -12, symbolType: 'logo' },
-  { id: 't-hero-2', top: '24%', right: '5%', size: 105, opacity: 0.07, duration: 11.2, parallaxSpeed: -18, symbolType: 'logo' },
-  { id: 't-hero-3', top: '44%', left: '12%', size: 54, opacity: 0.09, duration: 7.4, parallaxSpeed: -10, symbolType: 'star' },
-  { id: 't-hero-4', top: '56%', right: '14%', size: 64, opacity: 0.08, duration: 9.8, parallaxSpeed: -15, symbolType: 'diamond' },
-
   // ── Cosmic Origins Section Tokens ──
-  { id: 't-cosmic-1', top: '850px', left: '5%', size: 76, opacity: 0.07, duration: 9.5, parallaxSpeed: -13, symbolType: 'star' },
-  { id: 't-cosmic-2', top: '1050px', right: '6%', size: 86, opacity: 0.08, duration: 11.0, parallaxSpeed: -16, symbolType: 'diamond' },
+  { id: 't-cosmic-1', top: '34%', left: '5%', size: 76, opacity: 0.07, duration: 9.5, parallaxSpeed: -13, symbolType: 'star' },
+  { id: 't-cosmic-2', top: '41%', right: '6%', size: 86, opacity: 0.08, duration: 11.0, parallaxSpeed: -16, symbolType: 'diamond' },
 
   // ── Features Section Tokens ──
-  { id: 't-feat-1', top: '1650px', left: '4%', size: 84, opacity: 0.06, duration: 10.4, parallaxSpeed: -14, symbolType: 'logo' },
-  { id: 't-feat-2', top: '1900px', right: '4%', size: 98, opacity: 0.07, duration: 12.6, parallaxSpeed: -20, symbolType: 'diamond' },
-  { id: 't-feat-3', top: '2180px', left: '48%', size: 58, opacity: 0.05, duration: 8.2, parallaxSpeed: -11, symbolType: 'star' },
+  { id: 't-feat-1', top: '54%', left: '4%', size: 84, opacity: 0.06, duration: 10.4, parallaxSpeed: -14, symbolType: 'logo' },
+  { id: 't-feat-2', top: '60%', right: '4%', size: 98, opacity: 0.07, duration: 12.6, parallaxSpeed: -20, symbolType: 'diamond' },
+  { id: 't-feat-3', top: '66%', left: '48%', size: 58, opacity: 0.05, duration: 8.2, parallaxSpeed: -11, symbolType: 'star' },
 
   // ── How It Works Tokens ──
-  { id: 't-hiw-1', top: '2600px', left: '8%', size: 76, opacity: 0.06, duration: 9.2, parallaxSpeed: -16, symbolType: 'logo' },
-  { id: 't-hiw-2', top: '2850px', right: '7%', size: 88, opacity: 0.07, duration: 11.8, parallaxSpeed: -18, symbolType: 'diamond' },
+  { id: 't-hiw-1', top: '74%', left: '8%', size: 76, opacity: 0.06, duration: 9.2, parallaxSpeed: -16, symbolType: 'logo' },
+  { id: 't-hiw-2', top: '80%', right: '7%', size: 88, opacity: 0.07, duration: 11.8, parallaxSpeed: -18, symbolType: 'diamond' },
 
   // ── CTA Section Tokens & Grand Watermark ──
-  { id: 't-cta-watermark', top: '3420px', left: '50%', size: 360, opacity: 0.038, duration: 14.5, parallaxSpeed: -8, isWatermark: true, symbolType: 'logo' },
-  { id: 't-cta-1', top: '3580px', left: '14%', size: 72, opacity: 0.07, duration: 8.6, parallaxSpeed: -14, symbolType: 'star' },
-  { id: 't-cta-2', top: '3680px', right: '12%', size: 80, opacity: 0.07, duration: 10.8, parallaxSpeed: -16, symbolType: 'logo' },
+  { id: 't-cta-watermark', top: '89%', left: '50%', size: 360, opacity: 0.038, duration: 14.5, parallaxSpeed: -8, isWatermark: true, symbolType: 'logo' },
+  { id: 't-cta-1', top: '92%', left: '14%', size: 72, opacity: 0.07, duration: 8.6, parallaxSpeed: -14, symbolType: 'star' },
+  { id: 't-cta-2', top: '95%', right: '12%', size: 80, opacity: 0.07, duration: 10.8, parallaxSpeed: -16, symbolType: 'logo' },
 ];
 
 interface GlobalParticle {
@@ -100,7 +93,7 @@ export const JLTBackgroundMotion: React.FC = () => {
         ctx,
         window.innerWidth,
         window.innerHeight,
-        isTouch ? 1.15 : 1.35
+        1.0
       );
       width = size.width;
       height = size.height;
@@ -108,24 +101,24 @@ export const JLTBackgroundMotion: React.FC = () => {
 
     resizeCanvas();
 
-    const particleCount = isTouch ? 14 : 34;
+    const particleCount = isTouch ? 6 : 20;
     const colors = ['#FFA28D', '#8C52FF', '#00F0FF', '#FFD700', '#FFFFFF', '#360C9F', '#E280FF'];
 
     const particles: GlobalParticle[] = [];
     for (let i = 0; i < particleCount; i++) {
-      const baseR = Math.random() * 2.2 + 1.2;
+      const baseR = Math.random() * 2.0 + 1.0;
       particles.push({
         x: Math.random() * width,
         y: Math.random() * height,
-        vx: (Math.random() - 0.5) * 0.4,
-        vy: (Math.random() - 0.5) * 0.4,
+        vx: (Math.random() - 0.5) * 0.35,
+        vy: (Math.random() - 0.5) * 0.35,
         baseRadius: baseR,
         radius: baseR,
         color: colors[Math.floor(Math.random() * colors.length)],
-        baseAlpha: Math.random() * 0.35 + 0.15,
-        alpha: Math.random() * 0.35 + 0.15,
+        baseAlpha: Math.random() * 0.3 + 0.15,
+        alpha: Math.random() * 0.3 + 0.15,
         phase: Math.random() * Math.PI * 2,
-        speed: Math.random() * 0.012 + 0.006,
+        speed: Math.random() * 0.01 + 0.005,
       });
     }
 
@@ -170,21 +163,21 @@ export const JLTBackgroundMotion: React.FC = () => {
         p.phase += p.speed;
 
         // Curved orbital motion trajectory
-        p.x += p.vx + Math.cos(p.phase) * 0.3;
-        p.y += p.vy + Math.sin(p.phase * 0.8) * 0.3;
+        p.x += p.vx + Math.cos(p.phase) * 0.25;
+        p.y += p.vy + Math.sin(p.phase * 0.8) * 0.25;
 
-        // Interactive Cursor Energy Repulsion (180px radius)
+        // Interactive Cursor Energy Repulsion
         if (mx > -500 && my > -500) {
           const dx = p.x - mx;
           const dy = p.y - my;
           const dist = Math.hypot(dx, dy);
-          const scanRadius = 180;
+          const scanRadius = 150;
 
           if (dist < scanRadius && dist > 0) {
-            const force = (1 - dist / scanRadius) * 2.8;
+            const force = (1 - dist / scanRadius) * 2.2;
             p.x += (dx / dist) * force;
             p.y += (dy / dist) * force;
-            p.radius = p.baseRadius * (1 + (1 - dist / scanRadius) * 0.8);
+            p.radius = p.baseRadius * (1 + (1 - dist / scanRadius) * 0.6);
           } else {
             p.radius += (p.baseRadius - p.radius) * 0.05;
           }
@@ -197,20 +190,23 @@ export const JLTBackgroundMotion: React.FC = () => {
         if (p.y > height + 20) p.y = -20;
 
         // Alpha breathing
-        const currentAlpha = p.alpha * (0.8 + Math.sin(time * 0.002 + p.phase) * 0.25);
+        const currentAlpha = Math.max(0, Math.min(1, p.alpha * (0.85 + Math.sin(time * 0.002 + p.phase) * 0.15)));
 
-        // Draw particle with ambient glow
+        // High-performance GPU dual-pass particle: outer soft halo + inner bright core
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius * 2.0, 0, Math.PI * 2);
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = currentAlpha * 0.3;
+        ctx.fill();
+
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
         ctx.fillStyle = p.color;
-        ctx.globalAlpha = Math.max(0, Math.min(1, currentAlpha));
-        ctx.shadowColor = p.color;
-        ctx.shadowBlur = p.radius * 3.5;
+        ctx.globalAlpha = currentAlpha;
         ctx.fill();
       }
 
       ctx.globalAlpha = 1;
-      ctx.shadowBlur = 0;
       scheduleRender();
     };
 
@@ -257,11 +253,11 @@ export const JLTBackgroundMotion: React.FC = () => {
       // 1. Initial entrance for background tokens
       gsap.from('.jlt-bg-token-wrapper', {
         autoAlpha: 0,
-        scale: 0.7,
-        duration: 1.2,
-        stagger: 0.08,
+        scale: 0.8,
+        duration: 0.8,
+        stagger: 0.05,
         ease: 'power2.out',
-        delay: 0.4,
+        delay: 0.2,
       });
 
       // 2. Individual Asynchronous Floating & Rotation Loops
@@ -271,9 +267,9 @@ export const JLTBackgroundMotion: React.FC = () => {
 
         if (token.isWatermark) {
           gsap.to(el, {
-            rotation: 12,
-            scale: 1.05,
-            y: -15,
+            rotation: 10,
+            scale: 1.03,
+            y: -12,
             duration: token.duration,
             repeat: -1,
             yoyo: true,
@@ -283,17 +279,17 @@ export const JLTBackgroundMotion: React.FC = () => {
           const floatTl = gsap.timeline({ repeat: -1, yoyo: true });
           floatTl
             .to(el, {
-              y: -20,
-              x: 8,
-              rotation: 6,
-              scale: 1.03,
+              y: -16,
+              x: 6,
+              rotation: 5,
+              scale: 1.02,
               duration: token.duration * 0.5,
               ease: 'sine.inOut',
             })
             .to(el, {
-              y: 15,
-              x: -8,
-              rotation: -6,
+              y: 12,
+              x: -6,
+              rotation: -5,
               scale: 0.98,
               duration: token.duration * 0.5,
               ease: 'sine.inOut',
@@ -308,7 +304,7 @@ export const JLTBackgroundMotion: React.FC = () => {
             trigger: el,
             start: 'top bottom',
             end: 'bottom top',
-            scrub: 1.2,
+            scrub: 1.0,
           },
         });
       });
@@ -324,9 +320,9 @@ export const JLTBackgroundMotion: React.FC = () => {
           const el = tokenRefs.current.get(token.id);
           if (!el) return;
           quickTos.set(token.id, {
-            x: gsap.quickTo(el, 'x', { duration: 0.6, ease: 'power3.out', force3D: true }),
-            y: gsap.quickTo(el, 'y', { duration: 0.6, ease: 'power3.out', force3D: true }),
-            rot: gsap.quickTo(el, 'rotation', { duration: 0.6, ease: 'power3.out', force3D: true }),
+            x: gsap.quickTo(el, 'x', { duration: 0.5, ease: 'power3.out', force3D: true }),
+            y: gsap.quickTo(el, 'y', { duration: 0.5, ease: 'power3.out', force3D: true }),
+            rot: gsap.quickTo(el, 'rotation', { duration: 0.5, ease: 'power3.out', force3D: true }),
           });
         });
 
@@ -354,7 +350,7 @@ export const JLTBackgroundMotion: React.FC = () => {
 
         const processMouseMove = () => {
           mouseRaf = null;
-          const maxRadius = 450;
+          const maxRadius = 400;
 
           tokenPositions.forEach(({ id, centerX, centerY }) => {
             const setters = quickTos.get(id);
@@ -363,14 +359,14 @@ export const JLTBackgroundMotion: React.FC = () => {
             const dist = Math.hypot(lastClientX - centerX, lastClientY - centerY);
 
             if (dist < maxRadius) {
-              const force = (1 - dist / maxRadius) * 16;
+              const force = (1 - dist / maxRadius) * 14;
               const angle = Math.atan2(lastClientY - centerY, lastClientX - centerX);
               const pushX = Math.cos(angle) * force;
               const pushY = Math.sin(angle) * force;
 
               setters.x(pushX);
               setters.y(pushY);
-              setters.rot(pushX * 0.25);
+              setters.rot(pushX * 0.2);
             } else {
               setters.x(0);
               setters.y(0);
@@ -411,7 +407,7 @@ export const JLTBackgroundMotion: React.FC = () => {
   return (
     <div
       ref={containerRef}
-      className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none z-0 select-none"
+      className="absolute inset-x-0 top-0 bottom-0 w-full overflow-hidden pointer-events-none z-0 select-none"
       aria-hidden="true"
     >
       {/* ── Fixed Viewport Interactive Energy Canvas (Visible Across All Sections) ── */}
@@ -423,13 +419,14 @@ export const JLTBackgroundMotion: React.FC = () => {
 
       {/* ── Floating JLT Tokens & Celestial Watermarks ── */}
       {TOKENS.map((token) => {
+        const size = token.isWatermark ? `clamp(180px, 28vw, ${token.size}px)` : `${token.size}px`;
         const style: React.CSSProperties = {
           position: 'absolute',
           top: token.top,
           left: token.left,
           right: token.right,
-          width: `${token.size}px`,
-          height: `${token.size}px`,
+          width: size,
+          height: size,
           opacity: token.opacity,
           transform: token.isWatermark ? 'translateX(-50%) translate3d(0,0,0)' : 'translate3d(0,0,0)',
         };

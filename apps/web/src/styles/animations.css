@@ -94,48 +94,43 @@ html.lenis body {
   animation: textGradientShimmer 4s ease-in-out infinite;
 }
 
-/* ── GSAP Target Initial States ── */
+/* ── GSAP Target Initial States ──
+   No permanent will-change — GSAP applies it dynamically during animation
+   and removes it after, which is more efficient for mobile VRAM. */
 .gsap-reveal-up {
   opacity: 0;
   transform: translate3d(0, 30px, 0);
-  will-change: transform, opacity;
 }
 
 .gsap-reveal-down {
   opacity: 0;
   transform: translate3d(0, -30px, 0);
-  will-change: transform, opacity;
 }
 
 .gsap-reveal-left {
   opacity: 0;
   transform: translate3d(-30px, 0, 0);
-  will-change: transform, opacity;
 }
 
 .gsap-reveal-right {
   opacity: 0;
   transform: translate3d(30px, 0, 0);
-  will-change: transform, opacity;
 }
 
 .gsap-scale-in {
   opacity: 0;
   transform: scale3d(0.88, 0.88, 1);
-  will-change: transform, opacity;
 }
 
 /* ── Interactive Tilt & Magnetic Classes ── */
 .gsap-tilt-card {
   transition: box-shadow 0.3s ease, border-color 0.3s ease;
   transform-style: preserve-3d;
-  will-change: transform;
 }
 
 .gsap-magnetic-btn {
   display: inline-flex;
   position: relative;
-  will-change: transform;
   transform-style: preserve-3d;
 }
 
@@ -151,7 +146,6 @@ html.lenis body {
 
 .animate-marquee {
   animation: marqueeScroll 26s linear infinite;
-  will-change: transform;
 }
 
 .animate-marquee:hover {
@@ -183,7 +177,6 @@ html.lenis body {
 
 .gsap-token-float {
   animation: tokenFloatIdle 4.5s ease-in-out infinite;
-  will-change: transform;
 }
 
 /* ── Subtle Background Grid Drift ── */
@@ -292,4 +285,29 @@ html.lenis body {
   animation: scrollPillMotion 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
+/* ── Round Orbital Spinning Animations ── */
+@keyframes spinSlow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
 
+@keyframes spinReverse {
+  from {
+    transform: rotate(360deg);
+  }
+  to {
+    transform: rotate(0deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spinSlow 22s linear infinite;
+}
+
+.animate-spin-reverse {
+  animation: spinReverse 16s linear infinite;
+}

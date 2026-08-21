@@ -258,13 +258,13 @@ export const FeaturesSection: React.FC = () => {
 
         const currentExactIndex = progress * (totalCards - 1);
         const cardSpacing = isMobile
-          ? Math.min(window.innerWidth * 0.76, 320)
+          ? 260
           : isTablet
           ? 520
           : 660;
-        const depthMultiplier = isMobile ? 170 : 280;
-        const angleMultiplier = isMobile ? 34 : 28;
-        const inclineSlope = isMobile ? 8 : 16;
+        const depthMultiplier = isMobile ? 80 : 280;
+        const angleMultiplier = isMobile ? 22 : 28;
+        const inclineSlope = isMobile ? 4 : 16;
 
         cardElements.forEach((card, index) => {
           const offset = index - currentExactIndex;
@@ -275,9 +275,9 @@ export const FeaturesSection: React.FC = () => {
           const z = -Math.min(750, Math.pow(absOffset, 1.4) * depthMultiplier);
           const rotY = Math.max(-60, Math.min(60, -offset * angleMultiplier));
           const rotZ = Math.max(-7, Math.min(7, -offset * 2.2));
-          const y = -offset * inclineSlope + Math.pow(absOffset, 1.5) * (isMobile ? 5 : 9);
-          const scale = Math.max(0.72, 1 - absOffset * 0.08);
-          const opacity = Math.max(0.2, 1 - absOffset * 0.3);
+          const y = -offset * inclineSlope + Math.pow(absOffset, 1.5) * (isMobile ? 4 : 9);
+          const scale = Math.max(isMobile ? 0.85 : 0.72, 1 - absOffset * 0.08);
+          const opacity = Math.max(isMobile ? 0.45 : 0.2, 1 - absOffset * 0.3);
 
           gsap.set(card, {
             xPercent: -50,
@@ -387,7 +387,7 @@ export const FeaturesSection: React.FC = () => {
     <section
       id="features"
       ref={sectionRef}
-      className="relative w-full min-h-screen bg-transparent overflow-hidden select-none flex flex-col justify-between py-6 sm:py-10 md:py-16"
+      className="relative w-full min-h-screen bg-transparent overflow-hidden select-none flex flex-col justify-between pt-20 sm:pt-28 md:pt-32 pb-6 sm:pb-12"
       aria-label="Features Showcase - Built for Quest Champions"
     >
       {/* Top Animated Glowing Border */}
@@ -395,23 +395,16 @@ export const FeaturesSection: React.FC = () => {
 
       {/* Dynamic Ambient Background Glows */}
       <div
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1200px] h-[600px] rounded-full blur-[160px] pointer-events-none transition-all duration-700 opacity-25"
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1200px] h-[650px] rounded-full blur-[160px] pointer-events-none transition-all duration-700 opacity-30"
         style={{
-          background: `radial-gradient(ellipse at center, ${activeProject.accentColor} 0%, rgba(54,12,159,0.3) 50%, transparent 80%)`,
+          background: `radial-gradient(ellipse at center, ${activeProject.accentColor} 0%, rgba(54,12,159,0.4) 50%, transparent 80%)`,
         }}
       />
-      <div className="absolute bottom-10 right-[-10%] w-[600px] h-[600px] rounded-full bg-radial from-[#7B2CBF]/20 via-transparent to-transparent blur-[130px] pointer-events-none" />
+      <div className="absolute bottom-10 right-[-10%] w-[650px] h-[650px] rounded-full bg-radial from-[#7B2CBF]/30 via-transparent to-transparent blur-[140px] pointer-events-none" />
 
-      {/* Atmospheric 3D Background Typography (TRIONN Aesthetic) */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full text-center pointer-events-none select-none z-0 opacity-10 overflow-hidden">
-        <div className="font-blockDisplay text-[14vw] sm:text-[12vw] tracking-tighter uppercase whitespace-nowrap bg-gradient-to-b from-white via-white/50 to-transparent bg-clip-text text-transparent transform -rotate-2">
-          QUESTS IN MOTION
-        </div>
-      </div>
-
-      {/* ── 1. SECTION HEADER ── */}
-      <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 flex flex-col items-center gap-1.5 sm:gap-2.5 text-center relative z-20 shrink-0">
-        <div className="features-badge glass-pill px-3.5 sm:px-4 py-1 sm:py-1.5 inline-flex items-center gap-2">
+      {/* ── 1. SECTION HEADER (TEXT ABOVE 3D CARDS STAGE) ── */}
+      <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 flex flex-col items-center gap-1.5 sm:gap-2.5 text-center relative z-20 shrink-0 mb-1 sm:mb-4">
+        <div className="features-badge glass-pill px-3.5 sm:px-4 py-1 sm:py-1.5 inline-flex items-center gap-2 border border-white/15 bg-black/40 backdrop-blur-md">
           <img src="/jlt.svg" alt="JLT" width={18} height={18} loading="lazy" decoding="async" className="w-3.5 h-3.5 sm:w-4 sm:h-4 object-contain" />
           <span className="font-gilroyMedium text-[11px] sm:text-xs text-white/90 tracking-wider uppercase">
             Featured Mechanics
@@ -590,7 +583,14 @@ export const FeaturesSection: React.FC = () => {
         </div>
       </div>
 
-      {/* ── 3. BOTTOM SCRUBBED STEP INDICATORS (CENTERED) ── */}
+      {/* ── 3. BOTTOM DISPLAY TYPOGRAPHY (TEXT BELOW 3D CARDS STAGE) ── */}
+      <div className="max-w-7xl mx-auto w-full px-4 text-center relative z-20 shrink-0 mb-1 sm:mb-4">
+        <span className="font-gilroyBold text-sm sm:text-2xl md:text-3xl tracking-widest uppercase text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-300 to-[#FFA28D] opacity-90 drop-shadow-[0_0_20px_rgba(255,162,141,0.4)]">
+          PLAY DAILY · EARN REAL PERKS
+        </span>
+      </div>
+
+      {/* ── 4. BOTTOM SCRUBBED STEP INDICATORS (CENTERED) ── */}
       <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 flex items-center justify-center relative z-20 shrink-0 mt-2">
         {/* Step Indicators: 01, 02, 03, 04, 05, 06 */}
         <div className="flex items-center justify-center gap-1.5 sm:gap-3 flex-wrap">

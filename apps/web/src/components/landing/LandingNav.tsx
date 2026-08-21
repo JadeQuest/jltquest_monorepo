@@ -1,21 +1,15 @@
 'use client';
 
-import React, { useRef, useState, useEffect, useLayoutEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { Sparkles } from 'lucide-react';
-import { gsap, ScrollTrigger, prefersReducedMotion, MotionEases } from '@/lib/animations';
 import { useMagneticButton } from './useMagneticButton';
 import { getStoredReferralCode } from '@/lib/authCookie';
 
-const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
-
 export const LandingNav: React.FC = () => {
   const [referralCode, setReferralCode] = useState<string | null>(null);
-  const navRef = useRef<HTMLElement>(null);
-  const logoRef = useRef<HTMLDivElement>(null);
-  const logoScrollWrapperRef = useRef<HTMLDivElement>(null);
-  const scrollWrapperRef = useRef<HTMLDivElement>(null);
-  const btnEnterRef = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(true);
+  const lastScrollY = useRef(0);
   const enterAppBtnRef = useMagneticButton<HTMLAnchorElement>({ maxDistance: 12, strength: 0.25 });
 
   useEffect(() => {
@@ -23,110 +17,35 @@ export const LandingNav: React.FC = () => {
     if (code) setReferralCode(code);
   }, []);
 
-
-  useIsomorphicLayoutEffect(() => {
-    if (prefersReducedMotion() || !navRef.current) return;
-
-    const ctx = gsap.context(() => {
-      // 1. Initial Load: Logo scales from 0.8 -> 1, Nav slides down from y: -20
-      gsap.fromTo(
-        logoRef.current,
-        { scale: 0.8, opacity: 0 },
-        {
-          scale: 1,
-          opacity: 1,
-          duration: 0.65,
-          ease: MotionEases.backOut,
-          delay: 0.1,
-          force3D: true,
-          overwrite: 'auto',
-        }
-      );
-
-      gsap.fromTo(
-        navRef.current,
-        { y: -30, opacity: 0 },
-        {
-          y: 0,
-          opacity: 1,
-          duration: 0.6,
-          ease: 'power3.out',
-          delay: 0.2,
-          force3D: true,
-          overwrite: 'auto',
-        }
-      );
-
-      // Button initial entrance animation
-      if (btnEnterRef.current) {
-        gsap.fromTo(
-          btnEnterRef.current,
-          { y: -15, opacity: 0 },
-          {
-            y: 0,
-            opacity: 1,
-            duration: 0.5,
-            ease: 'power3.out',
-            delay: 0.3,
-            force3D: true,
-            overwrite: 'auto',
-          }
-        );
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      
+      // Only open/show header when user scrolls back to the top of the page (< 60px)
+      if (currentScrollY < 60) {
+        setIsVisible(true);
+      } else {
+        // Hide header on scrolling down past top region
+        setIsVisible(false);
       }
+    };
 
-      // 2. Scroll Animation: Smoothly move towards top-left / top-right corners and hide on scroll, reverse on scrolling back to top
-      if (logoScrollWrapperRef.current) {
-        gsap.to(logoScrollWrapperRef.current, {
-          x: -55,
-          y: -35,
-          scale: 0.78,
-          autoAlpha: 0,
-          filter: 'blur(4px)',
-          ease: 'power2.inOut',
-          force3D: true,
-          overwrite: 'auto',
-          scrollTrigger: {
-            trigger: document.body,
-            start: 'top top',
-            end: '+=140',
-            scrub: 0.5,
-            invalidateOnRefresh: true,
-          },
-        });
-      }
-
-      if (scrollWrapperRef.current) {
-        gsap.to(scrollWrapperRef.current, {
-          x: 55,
-          y: -35,
-          scale: 0.78,
-          autoAlpha: 0,
-          filter: 'blur(4px)',
-          ease: 'power2.inOut',
-          force3D: true,
-          overwrite: 'auto',
-          scrollTrigger: {
-            trigger: document.body,
-            start: 'top top',
-            end: '+=140',
-            scrub: 0.5,
-            invalidateOnRefresh: true,
-          },
-        });
-      }
-    }, navRef);
-
-    return () => ctx.revert();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   return (
-    <header ref={navRef} className="fixed top-0 left-0 right-0 z-50 py-3.5 sm:py-5 bg-transparent select-none">
+    <header
+      className={`fixed top-0 left-0 right-0 z-50 py-3.5 sm:py-5 bg-transparent select-none transition-all duration-300 transform ${
+        isVisible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0 pointer-events-none'
+      }`}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between">
         
-        {/* Brand Logo with Scroll Hide Animation */}
-        <div ref={logoScrollWrapperRef} className="flex items-center origin-top-left will-change-transform">
+        {/* Brand Logo */}
+        <div className="flex items-center">
           <Link href="/" className="nav-brand flex items-center gap-2.5 sm:gap-3 group">
-            <div ref={logoRef} className="relative">
+            <div className="relative">
               <img
                 src="/jltcolor.svg"
                 alt="JLT Logo"
@@ -138,23 +57,23 @@ export const LandingNav: React.FC = () => {
           </Link>
         </div>
 
-        {/* Action Button with Scroll Hide Animation */}
-        <div ref={scrollWrapperRef} className="flex items-center origin-top-right will-change-transform">
-          <div ref={btnEnterRef}>
-            <Link
-              ref={enterAppBtnRef}
-              href={referralCode ? `/dashboard?ref=${encodeURIComponent(referralCode)}` : '/dashboard'}
-              id="nav-enter-app-btn"
-              data-cursor="cta"
-              data-cursor-text="ENTER"
-              className="glass-btn gsap-magnetic-btn px-4 py-2 sm:px-6 sm:py-2.5 rounded-xl font-gilroyBold text-white text-xs sm:text-base tracking-wide shadow-[0_0_20px_rgba(54,12,159,0.4)] flex items-center gap-1.5 sm:gap-2 group hover:shadow-[0_0_30px_rgba(255,162,141,0.5)] hover:scale-[1.025] active:scale-[0.98] transition-all duration-200"
-            >
-              <span>Enter App</span>
-              <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#FFA28D] group-hover:rotate-12 transition-transform duration-300 magnetic-icon" />
-            </Link>
-          </div>
+        {/* Action Button */}
+        <div className="flex items-center">
+          <Link
+            ref={enterAppBtnRef}
+            href={referralCode ? `/dashboard?ref=${encodeURIComponent(referralCode)}` : '/dashboard'}
+            id="nav-enter-app-btn"
+            data-cursor="cta"
+            data-cursor-text="ENTER"
+            className="glass-btn gsap-magnetic-btn px-4 py-2 sm:px-6 sm:py-2.5 rounded-xl font-gilroyBold text-white text-xs sm:text-base tracking-wide shadow-[0_0_20px_rgba(54,12,159,0.4)] flex items-center gap-1.5 sm:gap-2 group hover:shadow-[0_0_30px_rgba(255,162,141,0.5)] hover:scale-[1.025] active:scale-[0.98] transition-all duration-200"
+          >
+            <span>Enter App</span>
+            <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#FFA28D] group-hover:rotate-12 transition-transform duration-300 magnetic-icon" />
+          </Link>
         </div>
       </div>
     </header>
   );
 };
+
+export default LandingNav;

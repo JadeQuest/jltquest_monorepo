@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useLayoutEffect, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import {
@@ -19,25 +19,8 @@ import {
   Check,
 } from 'lucide-react';
 import { getStoredReferralCode, storeReferralCode } from '@/lib/authCookie';
-import {
-  gsap,
-  ScrollTrigger,
-  prefersReducedMotion,
-  isTouchDevice,
-  hasFineHoverPointer,
-  createDebouncedCallback,
-  createRafThrottle,
-  isDocumentVisible,
-  observeElementVisibility,
-  resizeCanvasToDisplaySize,
-  createReversibleCounter,
-  createParticleBurst,
-  ReversibleToggleActions,
-  MotionEases,
-} from '@/lib/animations';
+import { createParticleBurst, createReversibleCounter } from '@/lib/animations';
 import { useMagneticButton } from './useMagneticButton';
-
-const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 interface ActivityItem {
   id: number;
@@ -55,31 +38,15 @@ const liveActivities: ActivityItem[] = [
   { id: 4, user: '@Sarah_V', avatar: 'SV', action: 'climbed to Rank #3', reward: 'Seasonal Trophy', color: 'from-[#7B2CBF] to-emerald-400' },
 ];
 
-const marqueeItems = [
-  '50,000+ ACTIVE PLAYERS',
-  '2.4M+ QUESTS CLEARED',
-  '150K+ RARE PASS DROPS',
-  '100% FREE TO PLAY',
-  'POWERED BY JAXMART',
-  'ZERO GAS REQUIRED',
-  'DAILY SPIN TO WIN',
-  'SEASONAL LEADERBOARDS',
-];
-
-interface CanvasParticle {
+interface SparkleParticle {
   x: number;
   y: number;
   vx: number;
   vy: number;
-  baseRadius: number;
-  radius: number;
+  size: number;
   color: string;
-  baseAlpha: number;
   alpha: number;
-  phase: number;
-  speed: number;
-  orbitRadius: number;
-  pulseSpeed: number;
+  alphaSpeed: number;
 }
 
 function HeroSectionContent() {
@@ -89,41 +56,48 @@ function HeroSectionContent() {
 
   const sectionRef = useRef<HTMLElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const heroContentRef = useRef<HTMLDivElement>(null);
-  const headlineRef = useRef<HTMLDivElement>(null);
   const dashboardCardRef = useRef<HTMLDivElement>(null);
-  const statsSectionRef = useRef<HTMLDivElement>(null);
-  const progressBarRef = useRef<HTMLDivElement>(null);
-  const previewProgressRef = useRef<HTMLDivElement>(null);
-  const orb1Ref = useRef<HTMLDivElement>(null);
-  const orb2Ref = useRef<HTMLDivElement>(null);
-  const orb3Ref = useRef<HTMLDivElement>(null);
-  const gridRef = useRef<HTMLDivElement>(null);
-  const scannerRef = useRef<HTMLDivElement>(null);
-  const pulseRingRef = useRef<HTMLDivElement>(null);
-  const cardGlowRef = useRef<HTMLDivElement>(null);
-  const coinPillRef = useRef<HTMLDivElement>(null);
-  const lvlBadgeRef = useRef<HTMLSpanElement>(null);
-  const questPlayIconRef = useRef<HTMLSpanElement>(null);
-  const testimonialRef = useRef<HTMLDivElement>(null);
-  const featuredBoxRef = useRef<HTMLDivElement>(null);
 
-  // Magnetic button refs with independent icon motion & elastic recovery
-  const startQuestBtnRef = useMagneticButton<HTMLAnchorElement>({ maxDistance: 14, strength: 0.28 });
-  const claimBonusBtnRef = useMagneticButton<HTMLButtonElement>({ maxDistance: 12, strength: 0.24 });
-
-  // Numeric counter refs for GSAP numeric interpolation
+  // Stat Counter refs
   const stat1Ref = useRef<HTMLSpanElement>(null);
   const stat2Ref = useRef<HTMLSpanElement>(null);
   const stat3Ref = useRef<HTMLSpanElement>(null);
   const stat4Ref = useRef<HTMLSpanElement>(null);
+
+  // Animate stat counters on scroll into view
+  useEffect(() => {
+    const triggers: any[] = [];
+    if (stat1Ref.current) {
+      const t = createReversibleCounter(stat1Ref.current, 50000, { suffix: '+' });
+      if (t) triggers.push(t);
+    }
+    if (stat2Ref.current) {
+      const t = createReversibleCounter(stat2Ref.current, 2.4, { decimals: 1, suffix: ' Million' });
+      if (t) triggers.push(t);
+    }
+    if (stat3Ref.current) {
+      const t = createReversibleCounter(stat3Ref.current, 150000, { suffix: '+' });
+      if (t) triggers.push(t);
+    }
+    if (stat4Ref.current) {
+      const t = createReversibleCounter(stat4Ref.current, 99.4, { decimals: 1, suffix: '%' });
+      if (t) triggers.push(t);
+    }
+    return () => {
+      triggers.forEach((tr) => tr && typeof tr.kill === 'function' && tr.kill());
+    };
+  }, []);
+
+  // Magnetic button refs
+  const startQuestBtnRef = useMagneticButton<HTMLAnchorElement>({ maxDistance: 14, strength: 0.28 });
+  const claimBonusBtnRef = useMagneticButton<HTMLButtonElement>({ maxDistance: 12, strength: 0.24 });
 
   const [claimedBonus, setClaimedBonus] = useState(false);
   const [coinsCount, setCoinsCount] = useState(1250);
   const [floatingCoins, setFloatingCoins] = useState<number[]>([]);
   const [currentActivityIndex, setCurrentActivityIndex] = useState(0);
 
-  // Detect and capture referral code from query params or local storage
+  // Referral code check
   useEffect(() => {
     try {
       const refQuery = searchParams?.get('ref');
@@ -152,9 +126,6 @@ function HeroSectionContent() {
   // Interactive Quest state
   const [questProgress, setQuestProgress] = useState(2);
   const [questCompleted, setQuestCompleted] = useState(false);
-  const [isCardHovered, setIsCardHovered] = useState(false);
-  const initialQuestProgressRef = useRef(questProgress);
-  const didMountProgressEffectRef = useRef(false);
 
   // Cycle live activity notifications
   useEffect(() => {
@@ -199,606 +170,86 @@ function HeroSectionContent() {
         setCoinsCount((prev) => prev + 300);
         triggerCoinAnimation();
         if (dashboardCardRef.current) {
-          createParticleBurst(dashboardCardRef.current, { count: 28, radius: 95 });
+          createParticleBurst(dashboardCardRef.current, { count: 28, radius: 100 });
         }
       }
     }
   }, [questCompleted, questProgress, triggerCoinAnimation]);
 
-  // ══════════════════════════════════════════════════════════════════════════
-  // 8. BACKGROUND JLT ENERGY FIELD (HIGH-PERFORMANCE CANVAS ENGINE)
-  // ══════════════════════════════════════════════════════════════════════════
-  const particlesRef = useRef<CanvasParticle[]>([]);
-  const mousePosRef = useRef({ x: -1000, y: -1000, isMoving: false });
-  const questCardCenterRef = useRef<{ x: number; y: number } | null>(null);
-
+  // Sparkles canvas particle system
   useEffect(() => {
-    // Canvas rendering disabled here in favor of global JLTBackgroundMotion to eliminate double sparkles and boost performance
-  }, []);
-
-  // ══════════════════════════════════════════════════════════════════════════
-  // 3 & 4. MOUSE-BASED 3D ENVIRONMENT & "QUEST SCAN" CURSOR INTERACTION
-  // ══════════════════════════════════════════════════════════════════════════
-  useEffect(() => {
-    if (isTouchDevice() || !hasFineHoverPointer() || prefersReducedMotion()) return;
-
+    const canvas = canvasRef.current;
     const section = sectionRef.current;
-    const card = dashboardCardRef.current;
-    const orb1 = orb1Ref.current;
-    const orb2 = orb2Ref.current;
-    const orb3 = orb3Ref.current;
-    const grid = gridRef.current;
-    const headline = headlineRef.current;
-    const scanner = scannerRef.current;
-    if (!section || !card) return;
+    if (!canvas || !section) return;
 
-    // High-performance GSAP quickTo setters with hardware acceleration
-    const cardRotX = gsap.quickTo(card, 'rotationX', { duration: 0.45, ease: 'power2.out', force3D: true });
-    const cardRotY = gsap.quickTo(card, 'rotationY', { duration: 0.45, ease: 'power2.out', force3D: true });
-    const cardX = gsap.quickTo(card, 'x', { duration: 0.45, ease: 'power2.out', force3D: true });
-    const cardY = gsap.quickTo(card, 'y', { duration: 0.45, ease: 'power2.out', force3D: true });
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
 
-    const orb1X = orb1 ? gsap.quickTo(orb1, 'x', { duration: 0.8, ease: 'power2.out', force3D: true }) : null;
-    const orb1Y = orb1 ? gsap.quickTo(orb1, 'y', { duration: 0.8, ease: 'power2.out', force3D: true }) : null;
-    const orb2X = orb2 ? gsap.quickTo(orb2, 'x', { duration: 0.9, ease: 'power2.out', force3D: true }) : null;
-    const orb2Y = orb2 ? gsap.quickTo(orb2, 'y', { duration: 0.9, ease: 'power2.out', force3D: true }) : null;
-    const orb3X = orb3 ? gsap.quickTo(orb3, 'x', { duration: 0.85, ease: 'power2.out', force3D: true }) : null;
-    const orb3Y = orb3 ? gsap.quickTo(orb3, 'y', { duration: 0.85, ease: 'power2.out', force3D: true }) : null;
+    let animId: number;
+    let width = (canvas.width = section.clientWidth);
+    let height = (canvas.height = section.clientHeight);
 
-    const gridX = grid ? gsap.quickTo(grid, 'x', { duration: 0.6, ease: 'power2.out', force3D: true }) : null;
-    const gridY = grid ? gsap.quickTo(grid, 'y', { duration: 0.6, ease: 'power2.out', force3D: true }) : null;
+    const colors = ['#FFA28D', '#8C52FF', '#00F0FF', '#FFD700', '#FFFFFF'];
+    const particles: SparkleParticle[] = [];
 
-    const headX = headline ? gsap.quickTo(headline, 'x', { duration: 0.5, ease: 'power2.out', force3D: true }) : null;
-    const headY = headline ? gsap.quickTo(headline, 'y', { duration: 0.5, ease: 'power2.out', force3D: true }) : null;
-
-    const scannerX = scanner ? gsap.quickTo(scanner, 'x', { duration: 0.15, ease: 'power3.out', force3D: true }) : null;
-    const scannerY = scanner ? gsap.quickTo(scanner, 'y', { duration: 0.15, ease: 'power3.out', force3D: true }) : null;
-
-    let cachedRect = section.getBoundingClientRect();
-    const updateRects = () => {
-      if (section) cachedRect = section.getBoundingClientRect();
-      if (card) {
-        const cRect = card.getBoundingClientRect();
-        questCardCenterRef.current = {
-          x: cRect.left + cRect.width / 2 - cachedRect.left,
-          y: cRect.top + cRect.height / 2 - cachedRect.top,
-        };
-      }
-    };
-    updateRects();
-
-    let heroRaf: number | null = null;
-    let clientX = 0;
-    let clientY = 0;
-    let scannerVisible = false;
-
-    const processHeroParallax = () => {
-      heroRaf = null;
-      if (!cachedRect.width || !cachedRect.height) return;
-
-      const localX = clientX - cachedRect.left;
-      const localY = clientY - cachedRect.top;
-      const relX = localX / cachedRect.width - 0.5;
-      const relY = localY / cachedRect.height - 0.5;
-
-      mousePosRef.current.x = localX;
-      mousePosRef.current.y = localY;
-
-      if (scannerX && scannerY) {
-        scannerX(localX);
-        scannerY(localY);
-      }
-
-      cardRotX(relY * -10);
-      cardRotY(relX * 12);
-      cardX(relX * 24);
-      cardY(relY * 18);
-
-      if (headX && headY) {
-        headX(relX * 16);
-        headY(relY * 12);
-      }
-
-      if (orb1X && orb1Y) {
-        orb1X(relX * -25);
-        orb1Y(relY * -18);
-      }
-      if (orb2X && orb2Y) {
-        orb2X(relX * 30);
-        orb2Y(relY * 20);
-      }
-      if (orb3X && orb3Y) {
-        orb3X(relX * -20);
-        orb3Y(relY * 22);
-      }
-
-      if (gridX && gridY) {
-        gridX(relX * 16);
-        gridY(relY * 16);
-      }
-    };
-
-    const handleMouseMove = (e: MouseEvent) => {
-      clientX = e.clientX;
-      clientY = e.clientY;
-
-      if (scanner && !scannerVisible) {
-        scannerVisible = true;
-        gsap.to(scanner, { opacity: 1, duration: 0.25, overwrite: 'auto' });
-      }
-
-      if (!heroRaf) {
-        heroRaf = requestAnimationFrame(processHeroParallax);
-      }
-    };
-
-    const handleMouseLeave = () => {
-      if (heroRaf) cancelAnimationFrame(heroRaf);
-      heroRaf = null;
-
-      mousePosRef.current.x = -1000;
-      mousePosRef.current.y = -1000;
-
-      if (scanner) {
-        scannerVisible = false;
-        gsap.to(scanner, { opacity: 0, duration: 0.4, overwrite: 'auto' });
-      }
-
-      cardRotX(0);
-      cardRotY(0);
-      cardX(0);
-      cardY(0);
-      if (headX && headY) { headX(0); headY(0); }
-      if (orb1X && orb1Y) { orb1X(0); orb1Y(0); }
-      if (orb2X && orb2Y) { orb2X(0); orb2Y(0); }
-      if (orb3X && orb3Y) { orb3X(0); orb3Y(0); }
-      if (gridX && gridY) { gridX(0); gridY(0); }
-    };
-
-    const scheduleRectUpdate = createRafThrottle(updateRects);
-    const debouncedRectUpdate = createDebouncedCallback(updateRects, 140);
-
-    section.addEventListener('mousemove', handleMouseMove, { passive: true });
-    section.addEventListener('mouseleave', handleMouseLeave);
-    window.addEventListener('resize', debouncedRectUpdate, { passive: true });
-    window.addEventListener('scroll', scheduleRectUpdate, { passive: true });
-
-    return () => {
-      if (heroRaf) cancelAnimationFrame(heroRaf);
-      scheduleRectUpdate.cancel();
-      debouncedRectUpdate.cancel();
-      section.removeEventListener('mousemove', handleMouseMove);
-      section.removeEventListener('mouseleave', handleMouseLeave);
-      window.removeEventListener('resize', debouncedRectUpdate);
-      window.removeEventListener('scroll', scheduleRectUpdate);
-    };
-  }, []);
-
-  // ══════════════════════════════════════════════════════════════════════════
-  // 1. HERO ACTIVATION ON PAGE LOAD (MASTER TIMELINE) +
-  // 2. QUEST CARD LIVING UI + 9. SCROLL TRIGGER + 10. SIGNATURE QUEST PULSE
-  // ══════════════════════════════════════════════════════════════════════════
-  useIsomorphicLayoutEffect(() => {
-    if (prefersReducedMotion()) {
-      if (stat1Ref.current) stat1Ref.current.textContent = '50,000+';
-      if (stat2Ref.current) stat2Ref.current.textContent = '2.4 Million';
-      if (stat3Ref.current) stat3Ref.current.textContent = '150,000+';
-      if (stat4Ref.current) stat4Ref.current.textContent = '99.4%';
-      return;
+    for (let i = 0; i < 45; i++) {
+      particles.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        vx: (Math.random() - 0.5) * 0.4,
+        vy: -0.2 - Math.random() * 0.5,
+        size: Math.random() * 2.5 + 1,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        alpha: Math.random() * 0.7 + 0.2,
+        alphaSpeed: 0.006 + Math.random() * 0.008,
+      });
     }
 
-    const ctx = gsap.context(() => {
-      // Fast-path GPU accelerated Master Timeline
-      const masterTl = gsap.timeline({
-        defaults: { ease: MotionEases.powerOut, force3D: true },
-      });
+    const handleResize = () => {
+      if (!canvas || !section) return;
+      width = canvas.width = section.clientWidth;
+      height = canvas.height = section.clientHeight;
+    };
+    window.addEventListener('resize', handleResize);
 
-      // Phase 0: Ambient orbs fade in with scale
-      masterTl.fromTo(
-        [orb1Ref.current, orb2Ref.current, orb3Ref.current],
-        { opacity: 0, scale: 0.88 },
-        { opacity: 1, scale: 1, duration: 0.8, stagger: 0.08, ease: 'power2.out' },
-        0.0
-      );
+    const draw = () => {
+      ctx.clearRect(0, 0, width, height);
 
-      // Phase 1: Background grid fades in cleanly (zero clipPath layout penalty)
-      if (gridRef.current) {
-        masterTl.fromTo(
-          gridRef.current,
-          { opacity: 0, scale: 0.95 },
-          { opacity: 1, scale: 1, duration: 0.8, ease: 'power2.out' },
-          0.04
-        );
-      }
+      particles.forEach((p) => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.alpha += p.alphaSpeed;
 
-      // Phase 2: Top ticker slides into position
-      masterTl.fromTo(
-        '.hero-top-ribbon',
-        { y: -20, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out' },
-        0.15
-      );
-
-      // Phase 4: Status pills enter cleanly
-      masterTl.fromTo(
-        '.hero-pill-left',
-        { x: -30, opacity: 0 },
-        { x: 0, opacity: 1, duration: 0.5, ease: 'power3.out' },
-        0.2
-      );
-      masterTl.fromTo(
-        '.hero-pill-right',
-        { x: 30, opacity: 0 },
-        { x: 0, opacity: 1, duration: 0.5, ease: 'power3.out' },
-        0.24
-      );
-
-      // Phase 5: Masked Vertical Headline Typography (Fast GPU transform without software blur rasterization)
-      masterTl.fromTo(
-        '.hero-mask-line',
-        { yPercent: 100, opacity: 0 },
-        { yPercent: 0, opacity: 1, stagger: 0.08, duration: 0.65, ease: 'power4.out' },
-        0.25
-      );
-
-      // Phase 6: Description Fades Upward
-      masterTl.fromTo(
-        '.hero-description',
-        { y: 15, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out' },
-        0.42
-      );
-
-      // Phase 7: CTA Buttons enter
-      masterTl.fromTo(
-        '.hero-cta-group',
-        { y: 15, opacity: 0, scale: 0.95 },
-        { y: 0, opacity: 1, scale: 1, duration: 0.55, ease: MotionEases.backOut },
-        0.48
-      );
-
-      // Phase 8: Trust Badges Cascade
-      masterTl.fromTo(
-        '.hero-trust-badge',
-        { y: 10, opacity: 0 },
-        { y: 0, opacity: 1, stagger: 0.05, duration: 0.4, ease: 'power3.out' },
-        0.55
-      );
-
-      // Phase 9: Right Quest Card enters with 3D perspective
-      masterTl.fromTo(
-        '.hero-dashboard-panel',
-        { x: 60, rotationY: 8, scale: 0.92, opacity: 0 },
-        { x: 0, rotationY: 0, scale: 1, opacity: 1, duration: 0.75, ease: 'power3.out' },
-        0.3
-      );
-
-      // Phase 10: Orbiting Chips & Loot Collectibles Pop In
-      masterTl.fromTo(
-        '.hero-floating-chip',
-        { scale: 0.6, opacity: 0 },
-        { scale: 1, opacity: 1, stagger: 0.08, duration: 0.5, ease: MotionEases.backOut },
-        0.55
-      );
-      masterTl.fromTo(
-        '.hero-collectible-item',
-        { scale: 0.5, opacity: 0, y: 6 },
-        { scale: 1, opacity: 1, y: 0, stagger: 0.05, duration: 0.45, ease: MotionEases.backOut },
-        0.6
-      );
-
-      // Micro-animation inside Quest Card: Progress Bar Fill
-      if (progressBarRef.current) {
-        masterTl.fromTo(
-          progressBarRef.current,
-          { width: '0%' },
-          { width: `${(initialQuestProgressRef.current / 3) * 100}%`, duration: 0.9, ease: 'power2.out' },
-          0.5
-        );
-      }
-
-      // ──────────────────────────────────────────────────────────────────
-      // 2. QUEST CARD — "LIVING UI" (INDEPENDENT CONTINUOUS ANIMATIONS)
-      // Skip on mobile — these subtle bobs/pulses add 6+ continuous tweens
-      // that compete with scroll and touch interactions for GPU time.
-      // ──────────────────────────────────────────────────────────────────
-      if (!isTouchDevice() && coinPillRef.current) {
-        gsap.to(coinPillRef.current, {
-          y: -3.5,
-          duration: 3.2,
-          repeat: -1,
-          yoyo: true,
-          ease: 'sine.inOut',
-          delay: 1.2,
-        });
-      }
-
-      if (!isTouchDevice() && lvlBadgeRef.current) {
-        gsap.to(lvlBadgeRef.current, {
-          scale: 1.05,
-          boxShadow: '0 0 12px rgba(140,82,255,0.7)',
-          duration: 2.6,
-          repeat: -1,
-          yoyo: true,
-          ease: 'sine.inOut',
-          delay: 1.0,
-        });
-      }
-
-      if (!isTouchDevice() && questPlayIconRef.current) {
-        gsap.to(questPlayIconRef.current, {
-          rotation: 8,
-          duration: 3.5,
-          repeat: -1,
-          yoyo: true,
-          ease: 'sine.inOut',
-          delay: 0.8,
-        });
-      }
-
-      if (!isTouchDevice()) gsap.utils.toArray<HTMLElement>('.hero-collectible-item').forEach((item, index) => {
-        gsap.to(item, {
-          y: -4.5 + index * 1.5,
-          duration: 3.0 + index * 0.6,
-          repeat: -1,
-          yoyo: true,
-          ease: 'sine.inOut',
-          delay: 1.0 + index * 0.3,
-        });
-      });
-
-      if (!isTouchDevice() && testimonialRef.current) {
-        gsap.to(testimonialRef.current, {
-          y: -5.5,
-          duration: 4.2,
-          repeat: -1,
-          yoyo: true,
-          ease: 'sine.inOut',
-          delay: 1.5,
-        });
-      }
-
-      // ──────────────────────────────────────────────────────────────────
-      // 9. SCROLL INTERACTION (GSAP SCROLLTRIGGER HERO -> FEATURES)
-      // ──────────────────────────────────────────────────────────────────
-      if (heroContentRef.current && dashboardCardRef.current) {
-        gsap.to(heroContentRef.current, {
-          y: -45,
-          opacity: 0.7,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            start: 'top top',
-            end: 'bottom 40%',
-            scrub: 0.6,
-          },
-        });
-
-        gsap.to(dashboardCardRef.current, {
-          xPercent: -8,
-          scale: 0.96,
-          rotationY: -4,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            start: 'top top',
-            end: 'bottom 40%',
-            scrub: 0.6,
-          },
-        });
-
-        if (gridRef.current) {
-          gsap.to(gridRef.current, {
-            scale: 0.92,
-            opacity: 0.35,
-            ease: 'none',
-            scrollTrigger: {
-              trigger: sectionRef.current,
-              start: 'top top',
-              end: 'bottom 40%',
-              scrub: 0.6,
-            },
-          });
+        if (p.alpha >= 0.85 || p.alpha <= 0.15) {
+          p.alphaSpeed = -p.alphaSpeed;
         }
-      }
 
-      // Reversible Stats Section Animation
-      const statsTl = gsap.timeline({
-        scrollTrigger: {
-          trigger: statsSectionRef.current,
-          start: 'top 88%',
-          toggleActions: ReversibleToggleActions,
-        },
+        if (p.y < -10) p.y = height + 10;
+        if (p.x < -10) p.x = width + 10;
+        if (p.x > width + 10) p.x = -10;
+
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, Math.min(1, p.alpha));
+        ctx.fillStyle = p.color;
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = p.color;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
       });
 
-      statsTl.fromTo(
-        '.stats-divider-line',
-        { scaleX: 0, opacity: 0 },
-        { scaleX: 1, opacity: 1, transformOrigin: 'center', duration: 0.75, ease: 'power2.out' }
-      );
+      animId = requestAnimationFrame(draw);
+    };
 
-      statsTl.fromTo(
-        '.stat-item',
-        { y: 25, opacity: 0 },
-        { y: 0, opacity: 1, stagger: 0.1, duration: 0.6, ease: MotionEases.powerOut },
-        '-=0.4'
-      );
-
-      if (stat1Ref.current) {
-        createReversibleCounter(stat1Ref.current, 50000, {
-          suffix: '+',
-          duration: 1.6,
-          startTrigger: 'top 88%',
-        });
-      }
-
-      if (stat2Ref.current) {
-        createReversibleCounter(stat2Ref.current, 2.4, {
-          suffix: ' Million',
-          decimals: 1,
-          duration: 1.6,
-          startTrigger: 'top 88%',
-        });
-      }
-
-      if (stat3Ref.current) {
-        createReversibleCounter(stat3Ref.current, 150000, {
-          suffix: '+',
-          duration: 1.6,
-          startTrigger: 'top 88%',
-        });
-      }
-
-      if (stat4Ref.current) {
-        createReversibleCounter(stat4Ref.current, 99.4, {
-          suffix: '%',
-          decimals: 1,
-          duration: 1.6,
-          startTrigger: 'top 88%',
-        });
-      }
-    }, sectionRef);
-
-    // ──────────────────────────────────────────────────────────────────
-    // 10. SIGNATURE ANIMATION — "QUEST PULSE" (EVERY 9.5 SECONDS)
-    // ──────────────────────────────────────────────────────────────────
-    const pulseInterval = setInterval(() => {
-      if (document.hidden) return;
-
-      const ring = pulseRingRef.current;
-      const cardGlow = cardGlowRef.current;
-      const grid = gridRef.current;
-
-      if (ring) {
-        gsap.fromTo(
-          ring,
-          { scale: 0.35, opacity: 0.8 },
-          { scale: 2.8, opacity: 0, duration: 2.2, ease: 'power2.out' }
-        );
-      }
-
-      if (cardGlow) {
-        gsap.fromTo(
-          cardGlow,
-          { opacity: 0.3, scale: 1 },
-          { opacity: 0.85, scale: 1.12, duration: 0.8, yoyo: true, repeat: 1, ease: 'sine.inOut' }
-        );
-      }
-
-      if (grid) {
-        gsap.fromTo(
-          grid,
-          { opacity: 0.5 },
-          { opacity: 0.8, duration: 0.6, yoyo: true, repeat: 1, ease: 'sine.inOut' }
-        );
-      }
-
-      if (questCardCenterRef.current) {
-        const cx = questCardCenterRef.current.x;
-        const cy = questCardCenterRef.current.y;
-        particlesRef.current.forEach((p) => {
-          const dx = p.x - cx;
-          const dy = p.y - cy;
-          const dist = Math.hypot(dx, dy);
-          if (dist > 0 && dist < 450) {
-            const force = (1 - dist / 450) * 1.8;
-            p.vx += (dx / dist) * force;
-            p.vy += (dy / dist) * force;
-          }
-        });
-      }
-    }, 9500);
+    draw();
 
     return () => {
-      clearInterval(pulseInterval);
-      ctx.revert();
+      cancelAnimationFrame(animId);
+      window.removeEventListener('resize', handleResize);
     };
   }, []);
-
-  useEffect(() => {
-    if (!didMountProgressEffectRef.current) {
-      didMountProgressEffectRef.current = true;
-      return;
-    }
-    if (!progressBarRef.current || isCardHovered || prefersReducedMotion()) return;
-
-    gsap.to(progressBarRef.current, {
-      width: `${(questProgress / 3) * 100}%`,
-      duration: 0.45,
-      ease: 'power2.out',
-      overwrite: 'auto',
-    });
-  }, [isCardHovered, questProgress]);
-
-  // ══════════════════════════════════════════════════════════════════════════
-  // 6 & 7. QUEST CARD HOVER & INTERACTIVE "2 / 3 DONE" PREVIEW SURGE
-  // ══════════════════════════════════════════════════════════════════════════
-  const handleCardMouseEnter = useCallback(() => {
-    setIsCardHovered(true);
-
-    if (progressBarRef.current && !questCompleted) {
-      gsap.to(progressBarRef.current, {
-        width: '78%',
-        duration: 0.45,
-        ease: 'power2.out',
-        overwrite: 'auto',
-      });
-    }
-
-    if (previewProgressRef.current && !questCompleted) {
-      gsap.fromTo(
-        previewProgressRef.current,
-        { scale: 0.8, opacity: 0 },
-        { scale: 1, opacity: 1, duration: 0.35, ease: MotionEases.backOut }
-      );
-    }
-
-    if (featuredBoxRef.current) {
-      gsap.to(featuredBoxRef.current, {
-        boxShadow: '0 0 30px rgba(140,82,255,0.35)',
-        borderColor: 'rgba(255,162,141,0.4)',
-        duration: 0.35,
-      });
-    }
-
-    if (coinPillRef.current) {
-      gsap.fromTo(
-        coinPillRef.current,
-        { scale: 1 },
-        { scale: 1.08, duration: 0.3, yoyo: true, repeat: 1, ease: 'back.out(2)' }
-      );
-    }
-  }, [questCompleted]);
-
-  const handleCardMouseLeave = useCallback(() => {
-    setIsCardHovered(false);
-
-    if (progressBarRef.current) {
-      gsap.to(progressBarRef.current, {
-        width: `${(questProgress / 3) * 100}%`,
-        duration: 0.45,
-        ease: 'power2.out',
-        overwrite: 'auto',
-      });
-    }
-
-    if (previewProgressRef.current) {
-      gsap.to(previewProgressRef.current, {
-        opacity: 0,
-        scale: 0.8,
-        duration: 0.25,
-        overwrite: 'auto',
-      });
-    }
-
-    if (featuredBoxRef.current) {
-      gsap.to(featuredBoxRef.current, {
-        boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
-        borderColor: 'rgba(255,255,255,0.1)',
-        duration: 0.35,
-      });
-    }
-  }, [questProgress]);
 
   const currentActivity = liveActivities[currentActivityIndex];
 
@@ -806,67 +257,29 @@ function HeroSectionContent() {
     <section
       id="hero"
       ref={sectionRef}
-      className="relative w-full pt-24 sm:pt-28 md:pt-32 pb-0 px-4 sm:px-6 bg-transparent overflow-hidden min-h-[92svh] flex flex-col justify-between select-none"
+      className="relative w-full pt-24 sm:pt-28 md:pt-32 pb-0 px-4 sm:px-6 bg-transparent overflow-hidden min-h-[90svh] flex flex-col justify-between select-none"
     >
-      {/* ── 8. Background JLT Energy Field (Canvas Particle Engine) ── */}
+      {/* Sparkles Canvas Background */}
       <canvas
         ref={canvasRef}
         className="absolute inset-0 w-full h-full pointer-events-none z-0"
         aria-hidden="true"
       />
 
-      {/* ── 4. "Quest Scan" Circular Energy Scanner Overlay ── */}
-      <div
-        ref={scannerRef}
-        className="absolute -top-[160px] -left-[160px] w-[320px] h-[320px] rounded-full pointer-events-none z-0 opacity-0 transition-opacity duration-300 blur-2xl"
-        style={{
-          background: 'radial-gradient(circle, rgba(140,82,255,0.22) 0%, rgba(255,162,141,0.12) 45%, transparent 70%)',
-          transform: 'translate3d(0,0,0)',
-        }}
-        aria-hidden="true"
-      />
+      {/* Subtle Ambient Glow Orbs */}
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[500px] rounded-full bg-radial from-[#360C9F]/30 via-[#340073]/15 to-transparent blur-[140px] pointer-events-none" />
+      <div className="absolute top-16 left-[-10%] w-[550px] h-[550px] rounded-full bg-radial from-[#FFA28D]/15 via-[#7B2CBF]/10 to-transparent blur-[130px] pointer-events-none" />
+      <div className="absolute bottom-10 right-[-8%] w-[600px] h-[600px] rounded-full bg-radial from-[#7B2CBF]/20 via-transparent to-transparent blur-[140px] pointer-events-none" />
 
-      {/* ── 2. Dynamic Ambient Glow Orbs with Multi-Speed Parallax ── */}
-      <div
-        ref={orb1Ref}
-        className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1200px] h-[600px] rounded-full bg-radial from-[#360C9F]/45 via-[#340073]/20 to-transparent blur-[150px] pointer-events-none"
-      />
-      <div
-        ref={orb2Ref}
-        className="absolute top-16 left-[-10%] w-[650px] h-[650px] rounded-full bg-radial from-[#FFA28D]/22 via-[#7B2CBF]/15 to-transparent blur-[140px] pointer-events-none"
-      />
-      <div
-        ref={orb3Ref}
-        className="absolute bottom-10 right-[-8%] w-[700px] h-[700px] rounded-full bg-radial from-[#7B2CBF]/30 via-transparent to-transparent blur-[150px] pointer-events-none"
-      />
-
-      {/* Futuristic Background Grid with Center-Outward Draw Entrance & Continuous Drift */}
-      <div
-        ref={gridRef}
-        className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff0a_1px,transparent_1px),linear-gradient(to_bottom,#ffffff0a_1px,transparent_1px)] bg-[size:4.5rem_4.5rem] [mask-image:radial-gradient(ellipse_70%_60%_at_50%_15%,#000_80%,transparent_100%)] pointer-events-none animate-grid-drift"
-      />
-
-      {/* ── TOP MARQUEE RIBBON ── */}
-      <div className="hero-top-ribbon w-full max-w-7xl mx-auto mb-6 sm:mb-8 relative z-10 overflow-hidden py-2 border-y border-white/5 bg-white/[0.02] backdrop-blur-sm rounded-2xl">
-        <div className="flex w-max animate-marquee gap-8 items-center text-[10px] sm:text-[11px] font-gilroyMedium tracking-widest text-gray-400 uppercase">
-          {[...marqueeItems, ...marqueeItems].map((item, idx) => (
-            <div key={idx} className="flex items-center gap-3">
-              <span className="text-[#FFA28D]">✦</span>
-              <span>{item}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div ref={heroContentRef} className="max-w-7xl mx-auto w-full relative z-10">
+      <div className="max-w-7xl mx-auto w-full relative z-10 pt-4">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 sm:gap-14 lg:gap-8 items-center">
           
-          {/* ── LEFT COLUMN: High-Impact Typography & Interactive CTAs ── */}
-          <div ref={headlineRef} className="lg:col-span-7 flex flex-col items-start gap-6 sm:gap-8 text-left">
+          {/* LEFT COLUMN: Clean Typography & Interactive CTAs */}
+          <div className="lg:col-span-7 flex flex-col items-start gap-6 sm:gap-8 text-left">
             
             {/* Squad Referral Welcome Banner */}
             {referralCode && (
-              <div className="hero-referral-banner w-full p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-[#1E085A]/90 via-[#360C9F]/40 to-[#2A0845]/90 border border-amber-400/50 shadow-[0_0_30px_rgba(245,158,11,0.25)] backdrop-blur-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-fade-in mb-1">
+              <div className="w-full p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-[#1E085A]/90 via-[#360C9F]/40 to-[#2A0845]/90 border border-amber-400/50 shadow-[0_0_30px_rgba(245,158,11,0.25)] backdrop-blur-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-1">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-400/50 flex items-center justify-center shrink-0 text-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.3)]">
                     <Gift className="w-5 h-5 animate-bounce" style={{ animationDuration: '2.5s' }} />
@@ -905,9 +318,9 @@ function HeroSectionContent() {
               </div>
             )}
 
-            {/* Status Pills: Counter-directional Entrance */}
-            <div className="hero-tagline-pill flex flex-wrap items-center gap-2.5 sm:gap-3">
-              <div className="hero-pill-left glass-pill px-3 sm:px-4 py-1.5 sm:py-2 inline-flex items-center gap-2.5 sm:gap-3 shadow-[0_0_25px_rgba(54,12,159,0.4)] border border-purple-500/30">
+            {/* Status Pills */}
+            <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
+              <div className="glass-pill px-3 sm:px-4 py-1.5 sm:py-2 inline-flex items-center gap-2.5 sm:gap-3 shadow-[0_0_25px_rgba(54,12,159,0.4)] border border-purple-500/30">
                 <div className="flex items-center -space-x-2">
                   <div className="h-6 w-6 sm:h-7 sm:w-7 rounded-full ring-2 ring-[#360C9F] bg-gradient-to-tr from-purple-500 to-indigo-600 flex items-center justify-center text-[9px] sm:text-[10px] font-gilroyBold text-white leading-none shadow shrink-0 select-none">
                     DK
@@ -932,7 +345,7 @@ function HeroSectionContent() {
               </div>
 
               {/* Cycling Live Activity Pill */}
-              <div className="hero-pill-right glass-pill px-3 py-1.5 hidden sm:inline-flex items-center gap-2 border border-purple-500/30 bg-purple-900/25 text-xs transition-all duration-500">
+              <div className="glass-pill px-3 py-1.5 hidden sm:inline-flex items-center gap-2 border border-purple-500/30 bg-purple-900/25 text-xs transition-all duration-500">
                 <Zap className="w-3.5 h-3.5 text-amber-300 animate-pulse" />
                 <span className="text-gray-300 font-gilroyRegular">
                   <strong className="text-white font-gilroyBold">{currentActivity.user}</strong> {currentActivity.action}
@@ -943,33 +356,26 @@ function HeroSectionContent() {
               </div>
             </div>
 
-            {/* Masked Statement Typography with Vertical Reveal & Light Sweep */}
-            <div className="flex flex-col gap-1 sm:gap-1.5 overflow-hidden">
-              <div className="overflow-hidden">
-                <h1 className="hero-mask-line font-gilroyBold text-5xl sm:text-7xl lg:text-8xl text-white tracking-tight leading-[1.02]">
-                  JLTQuest
-                </h1>
-              </div>
-
-              <div className="overflow-hidden">
-                <h2 className="hero-mask-line font-gilroyBold text-4xl sm:text-6xl lg:text-7xl text-white tracking-tight leading-[1.08] sm:leading-[1.04]">
-                  Play daily.
-                </h2>
-              </div>
-
-              <div className="overflow-hidden">
-                <h2 className="hero-mask-line font-gilroyBold text-3xl sm:text-5xl lg:text-6xl text-white/90 tracking-tight leading-[1.1] sm:leading-[1.06]">
-                  Earn real perks.
-                </h2>
-              </div>
+            {/* Headline Typography */}
+            <div className="flex flex-col gap-1 sm:gap-1.5">
+              <h1 className="font-gilroyBold text-5xl sm:text-7xl lg:text-8xl text-white tracking-tight leading-[1.02] flex items-center gap-3">
+                <span>JLTQuest</span>
+                <Sparkles className="w-8 h-8 sm:w-12 sm:h-12 text-[#FFA28D] inline-block animate-pulse" />
+              </h1>
+              <h2 className="font-gilroyBold text-4xl sm:text-6xl lg:text-7xl text-white tracking-tight leading-[1.08] sm:leading-[1.04]">
+                Play daily.
+              </h2>
+              <h2 className="font-gilroyBold text-3xl sm:text-5xl lg:text-6xl text-white/90 tracking-tight leading-[1.1] sm:leading-[1.06]">
+                Earn real perks.
+              </h2>
             </div>
 
-            <p className="hero-description font-gilroyRegular text-gray-300 text-sm sm:text-lg lg:text-xl max-w-2xl leading-relaxed">
+            <p className="font-gilroyRegular text-gray-300 text-sm sm:text-lg lg:text-xl max-w-2xl leading-relaxed">
               No complex crypto jargon or boring grinds. Complete quick daily missions inside JaxMart, spin for rare passes, and build your reward streak with friends.
             </p>
 
-            {/* 5. Magnetic CTAs with Independent Child Motion */}
-            <div className="hero-cta-group flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 sm:gap-4 w-full pt-1">
+            {/* CTAs */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 sm:gap-4 w-full pt-1">
               <Link
                 ref={startQuestBtnRef}
                 href={referralCode ? `/dashboard?ref=${encodeURIComponent(referralCode)}` : '/dashboard'}
@@ -1011,15 +417,15 @@ function HeroSectionContent() {
 
             {/* Trust Badges */}
             <div className="flex flex-wrap items-center gap-3.5 sm:gap-6 pt-2 text-xs sm:text-sm text-gray-400 font-gilroyRegular">
-              <div className="hero-trust-badge flex items-center gap-1.5">
+              <div className="flex items-center gap-1.5">
                 <CheckCircle2 className="w-4 h-4 text-[#FFA28D]" />
                 <span>Free to Play Forever</span>
               </div>
-              <div className="hero-trust-badge flex items-center gap-1.5">
+              <div className="flex items-center gap-1.5">
                 <ShieldCheck className="w-4 h-4 text-[#FFA28D]" />
                 <span>JaxMart Verified</span>
               </div>
-              <div className="hero-trust-badge flex items-center gap-1.5">
+              <div className="flex items-center gap-1.5">
                 <Trophy className="w-4 h-4 text-[#FFA28D]" />
                 <span>+100 GP Squad Rewards</span>
               </div>
@@ -1027,30 +433,18 @@ function HeroSectionContent() {
 
           </div>
 
-          {/* ── 4 & 6. RIGHT COLUMN: Interactive 3D Quest Card & Living UI ── */}
-          <div className="lg:col-span-5 relative flex justify-center items-center perspective-1000 w-full">
+          {/* RIGHT COLUMN: Interactive Quest Panel */}
+          <div className="lg:col-span-5 relative flex justify-center items-center w-full">
             
-            {/* Background Glow Ring */}
-            <div
-              ref={cardGlowRef}
-              className="absolute w-[300px] sm:w-[420px] h-[300px] sm:h-[420px] rounded-full bg-gradient-to-br from-[#360C9F] via-[#7B2CBF] to-[#FFA28D] opacity-30 blur-3xl transition-opacity duration-500 pointer-events-none"
-            />
-
-            {/* 10. Signature "Quest Pulse" Expanding Shockwave Ring */}
-            <div
-              ref={pulseRingRef}
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[280px] sm:w-[380px] h-[280px] sm:h-[380px] rounded-full border border-[#FFA28D]/60 pointer-events-none opacity-0"
-              aria-hidden="true"
-            />
+            {/* Background Glow */}
+            <div className="absolute w-[300px] sm:w-[420px] h-[300px] sm:h-[420px] rounded-full bg-gradient-to-br from-[#360C9F] via-[#7B2CBF] to-[#FFA28D] opacity-25 blur-3xl pointer-events-none" />
 
             {/* Main Interactive Hero Panel */}
             <div
               ref={dashboardCardRef}
-              onMouseEnter={handleCardMouseEnter}
-              onMouseLeave={handleCardMouseLeave}
               data-cursor="card"
               data-cursor-text="QUEST 🎯"
-              className="hero-dashboard-panel w-full max-w-md glass-panel p-5 sm:p-7 md:p-8 flex flex-col gap-5 sm:gap-6 relative z-10 border border-white/15 shadow-[0_30px_70px_rgba(0,0,0,0.75)] backdrop-blur-2xl transition-all duration-300 hover:border-white/35 transform-style-preserve-3d"
+              className="w-full max-w-md glass-panel p-5 sm:p-7 md:p-8 flex flex-col gap-5 sm:gap-6 relative z-10 border border-white/15 shadow-[0_30px_70px_rgba(0,0,0,0.75)] backdrop-blur-2xl transition-all duration-300 hover:border-white/35"
             >
               
               {/* Card Header: Profile & Live GP Counter */}
@@ -1073,10 +467,7 @@ function HeroSectionContent() {
                   <div className="flex flex-col min-w-0">
                     <div className="flex items-center gap-1.5">
                       <span className="font-gilroyBold text-white text-sm sm:text-base truncate">Questor Alex</span>
-                      <span
-                        ref={lvlBadgeRef}
-                        className="px-1.5 py-0.5 rounded bg-[#360C9F] text-[9px] sm:text-[10px] font-gilroyBold text-purple-200 border border-purple-400/30 transition-all duration-300 shrink-0"
-                      >
+                      <span className="px-1.5 py-0.5 rounded bg-[#360C9F] text-[9px] sm:text-[10px] font-gilroyBold text-purple-200 border border-purple-400/30 shrink-0">
                         LVL 4
                       </span>
                     </div>
@@ -1087,11 +478,8 @@ function HeroSectionContent() {
                 </div>
 
                 {/* GP Counter Pill */}
-                <div
-                  ref={coinPillRef}
-                  className="glass-pill px-2.5 sm:px-3.5 py-1.5 flex items-center gap-1.5 sm:gap-2 border border-amber-500/40 bg-amber-500/10 relative shadow-[0_0_15px_rgba(251,191,36,0.25)] shrink-0"
-                >
-                  <img src="/icon/coin.webp" alt="GP" width={20} height={20} className="w-4 h-4 sm:w-5 sm:h-5 object-contain animate-bounce" style={{ animationDuration: '2.5s' }} />
+                <div className="glass-pill px-2.5 sm:px-3.5 py-1.5 flex items-center gap-1.5 sm:gap-2 border border-amber-500/40 bg-amber-500/10 relative shadow-[0_0_15px_rgba(251,191,36,0.25)] shrink-0">
+                  <img src="/icon/coin.webp" alt="GP" width={20} height={20} className="w-4 h-4 sm:w-5 sm:h-5 object-contain" />
                   <span className="font-gilroyBold text-amber-300 text-xs sm:text-sm tracking-wide">{coinsCount.toLocaleString()} GP</span>
                   
                   {/* Floating +150 GP Animation */}
@@ -1107,16 +495,10 @@ function HeroSectionContent() {
               </div>
 
               {/* Active Interactive Quest Box */}
-              <div
-                ref={featuredBoxRef}
-                className="daily-card-panel p-3.5 sm:p-5 flex flex-col gap-3 sm:gap-3.5 relative overflow-hidden border border-white/10 shadow-lg transition-all duration-300"
-              >
+              <div className="daily-card-panel p-3.5 sm:p-5 flex flex-col gap-3 sm:gap-3.5 relative overflow-hidden border border-white/10 shadow-lg">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span
-                      ref={questPlayIconRef}
-                      className="p-1 sm:p-1.5 rounded-lg bg-[#360C9F]/80 text-white shadow inline-block"
-                    >
+                    <span className="p-1 sm:p-1.5 rounded-lg bg-[#360C9F]/80 text-white shadow inline-block">
                       <Play className="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-white" />
                     </span>
                     <span className="font-gilroyBold text-white text-xs sm:text-sm tracking-wide">Today's Featured Quest</span>
@@ -1133,38 +515,23 @@ function HeroSectionContent() {
                   </p>
                 </div>
 
-                {/* Progress Bar & Interactive 2/3 Done Preview Surge */}
+                {/* Progress Bar */}
                 <div className="flex flex-col gap-2 mt-1">
                   <div className="flex justify-between items-center text-[11px] sm:text-xs font-gilroyMedium">
-                    <span className="text-gray-300 flex items-center gap-1.5">
-                      Quest Status
-                      {isCardHovered && !questCompleted && (
-                        <span
-                          ref={previewProgressRef}
-                          className="px-1.5 py-0.2 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 text-[9px] font-gilroyBold"
-                        >
-                          +1 Step Preview
-                        </span>
-                      )}
-                    </span>
+                    <span className="text-gray-300">Quest Status</span>
                     <span className={`font-gilroyBold transition-colors duration-300 ${questCompleted ? 'text-emerald-400' : 'text-white'}`}>
-                      {questCompleted ? '🎉 COMPLETED (+300 GP)' : isCardHovered ? '2.4 / 3 (Simulated)' : `${questProgress} / 3 Done`}
+                      {questCompleted ? '🎉 COMPLETED (+300 GP)' : `${questProgress} / 3 Done`}
                     </span>
                   </div>
 
-                  {/* Progress Bar Container with Continuous Light Shimmer */}
                   <div className="w-full h-2.5 bg-black/50 rounded-full overflow-hidden p-0.5 border border-white/10 relative">
                     <div
-                      ref={progressBarRef}
                       className="h-full bg-gradient-to-r from-[#360C9F] via-[#7B2CBF] to-[#FFA28D] rounded-full transition-all duration-300 relative overflow-hidden"
                       style={{ width: `${(questProgress / 3) * 100}%` }}
-                    >
-                      {/* 2. Continuous Shimmer Sweep */}
-                      <div className="absolute inset-0 w-1/2 bg-gradient-to-r from-transparent via-white/40 to-transparent animate-progress-shimmer pointer-events-none" />
-                    </div>
+                    />
                   </div>
 
-                  {/* Interactive Button inside Preview Card */}
+                  {/* Interactive Button */}
                   {!questCompleted ? (
                     <button
                       onClick={handleSimulateQuest}
@@ -1190,38 +557,20 @@ function HeroSectionContent() {
                   <span>Unlockable Loot Passes:</span>
                 </span>
                 <div className="flex items-center gap-2 sm:gap-2.5">
-                  <div
-                    data-cursor="reward"
-                    data-cursor-text="MYTHIC"
-                    className="hero-collectible-item group relative cursor-pointer"
-                    title="Mythic Pass"
-                  >
-                    <img src="/card/collect-1.webp" alt="Pass 1" width={36} height={40} loading="lazy" decoding="async" className="w-8 h-8 sm:w-9 sm:h-9 object-contain transform group-hover:scale-125 transition-transform duration-200 drop-shadow-[0_0_8px_rgba(255,162,141,0.5)]" />
+                  <div className="group relative cursor-pointer" title="Mythic Pass">
+                    <img src="/card/collect-1.webp" alt="Pass 1" width={36} height={40} loading="lazy" decoding="async" className="w-8 h-8 sm:w-9 sm:h-9 object-contain transform group-hover:scale-125 transition-transform duration-200" />
                   </div>
-                  <div
-                    data-cursor="reward"
-                    data-cursor-text="RARE"
-                    className="hero-collectible-item group relative cursor-pointer"
-                    title="Rare Drop"
-                  >
-                    <img src="/card/collect-2.webp" alt="Pass 2" width={36} height={44} loading="lazy" decoding="async" className="w-8 h-8 sm:w-9 sm:h-9 object-contain transform group-hover:scale-125 transition-transform duration-200 drop-shadow-[0_0_8px_rgba(123,44,191,0.5)]" />
+                  <div className="group relative cursor-pointer" title="Rare Drop">
+                    <img src="/card/collect-2.webp" alt="Pass 2" width={36} height={44} loading="lazy" decoding="async" className="w-8 h-8 sm:w-9 sm:h-9 object-contain transform group-hover:scale-125 transition-transform duration-200" />
                   </div>
-                  <div
-                    data-cursor="reward"
-                    data-cursor-text="GOLD"
-                    className="hero-collectible-item group relative cursor-pointer"
-                    title="Gold Pass"
-                  >
-                    <img src="/card/collect-3.webp" alt="Pass 3" width={36} height={43} loading="lazy" decoding="async" className="w-8 h-8 sm:w-9 sm:h-9 object-contain transform group-hover:scale-125 transition-transform duration-200 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]" />
+                  <div className="group relative cursor-pointer" title="Gold Pass">
+                    <img src="/card/collect-3.webp" alt="Pass 3" width={36} height={43} loading="lazy" decoding="async" className="w-8 h-8 sm:w-9 sm:h-9 object-contain transform group-hover:scale-125 transition-transform duration-200" />
                   </div>
                 </div>
               </div>
 
-              {/* Floating Human Testimonial Card (Desktop / Tablet view) */}
-              <div
-                ref={testimonialRef}
-                className="hero-floating-chip absolute -bottom-6 -left-6 glass-pill p-3.5 max-w-[270px] hidden md:flex items-start gap-3 border border-white/20 shadow-2xl backdrop-blur-xl"
-              >
+              {/* Testimonial Chip */}
+              <div className="absolute -bottom-6 -left-6 glass-pill p-3.5 max-w-[270px] hidden md:flex items-start gap-3 border border-white/20 shadow-2xl backdrop-blur-xl">
                 <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-600 to-pink-500 flex items-center justify-center font-gilroyBold text-xs text-white shrink-0 shadow">
                   DK
                 </div>
@@ -1246,47 +595,38 @@ function HeroSectionContent() {
 
         </div>
 
-        {/* ── BOTTOM STATS BAR ── */}
-        <div ref={statsSectionRef} className="mt-12 sm:mt-16 py-7 sm:py-9 md:py-10 relative grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 text-center">
-          {/* Animated Top Divider */}
-          <div className="stats-divider-line absolute top-0 left-1/2 -translate-x-1/2 w-[85%] max-w-6xl h-[1.5px] bg-gradient-to-r from-transparent via-[#360C9F] via-[#FFA28D] via-[#00F0FF] to-transparent pointer-events-none" />
+        {/* BOTTOM STATS BAR */}
+        <div className="mt-12 sm:mt-16 py-7 sm:py-9 md:py-10 relative grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 text-center">
+          {/* Top Animated Glowing Gradient Line */}
+          <div className="stats-divider-top absolute top-0 left-1/2 -translate-x-1/2 w-[90%] max-w-6xl h-[1.5px] bg-gradient-to-r from-transparent via-[#360C9F] via-[#FFA28D] via-[#00F0FF] to-transparent shadow-[0_0_15px_rgba(255,162,141,0.6)] animate-pulse pointer-events-none" />
 
-          <div className="stat-item flex flex-col items-center gap-1 group">
-            <span
-              ref={stat1Ref}
-              className="font-gilroyBold text-2xl sm:text-4xl md:text-5xl text-white tracking-tight group-hover:scale-105 transition-transform duration-200"
-            >
-              0+
+          {/* Bottom Animated Glowing Gradient Line */}
+          <div className="stats-divider-bottom absolute bottom-0 left-1/2 -translate-x-1/2 w-[90%] max-w-6xl h-[1.5px] bg-gradient-to-r from-transparent via-[#00F0FF] via-[#FFA28D] via-[#360C9F] to-transparent shadow-[0_0_15px_rgba(0,240,255,0.6)] animate-pulse pointer-events-none" />
+
+          <div className="flex flex-col items-center gap-1 group">
+            <span ref={stat1Ref} className="font-gilroyBold text-2xl sm:text-4xl md:text-5xl text-white tracking-tight group-hover:scale-105 transition-transform duration-200">
+              50,000+
             </span>
             <span className="font-gilroyRegular text-[11px] sm:text-xs md:text-sm text-gray-400">Active Quest Players</span>
           </div>
 
-          <div className="stat-item flex flex-col items-center gap-1 group">
-            <span
-              ref={stat2Ref}
-              className="font-gilroyBold text-2xl sm:text-4xl md:text-5xl text-transparent bg-clip-text bg-gradient-to-r from-[#FFA28D] to-amber-300 tracking-tight group-hover:scale-105 transition-transform duration-200"
-            >
-              0 Million
+          <div className="flex flex-col items-center gap-1 group">
+            <span ref={stat2Ref} className="font-gilroyBold text-2xl sm:text-4xl md:text-5xl text-transparent bg-clip-text bg-gradient-to-r from-[#FFA28D] to-amber-300 tracking-tight group-hover:scale-105 transition-transform duration-200">
+              2.4 Million
             </span>
             <span className="font-gilroyRegular text-[11px] sm:text-xs md:text-sm text-gray-400">Daily Quests Cleared</span>
           </div>
 
-          <div className="stat-item flex flex-col items-center gap-1 group">
-            <span
-              ref={stat3Ref}
-              className="font-gilroyBold text-2xl sm:text-4xl md:text-5xl text-white tracking-tight group-hover:scale-105 transition-transform duration-200"
-            >
-              0+
+          <div className="flex flex-col items-center gap-1 group">
+            <span ref={stat3Ref} className="font-gilroyBold text-2xl sm:text-4xl md:text-5xl text-white tracking-tight group-hover:scale-105 transition-transform duration-200">
+              150,000+
             </span>
             <span className="font-gilroyRegular text-[11px] sm:text-xs md:text-sm text-gray-400">Passes & Rewards Claimed</span>
           </div>
 
-          <div className="stat-item flex flex-col items-center gap-1 group">
-            <span
-              ref={stat4Ref}
-              className="font-gilroyBold text-2xl sm:text-4xl md:text-5xl text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-[#FFA28D] tracking-tight group-hover:scale-105 transition-transform duration-200"
-            >
-              0%
+          <div className="flex flex-col items-center gap-1 group">
+            <span ref={stat4Ref} className="font-gilroyBold text-2xl sm:text-4xl md:text-5xl text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-[#FFA28D] tracking-tight group-hover:scale-105 transition-transform duration-200">
+              99.4%
             </span>
             <span className="font-gilroyRegular text-[11px] sm:text-xs md:text-sm text-gray-400">Positive Player Feedback</span>
           </div>
@@ -1299,8 +639,10 @@ function HeroSectionContent() {
 
 export const HeroSection: React.FC = () => {
   return (
-    <React.Suspense fallback={<div className="min-h-[92svh] w-full" />}>
+    <React.Suspense fallback={<div className="min-h-[90svh] w-full" />}>
       <HeroSectionContent />
     </React.Suspense>
   );
 };
+
+export default HeroSection;
